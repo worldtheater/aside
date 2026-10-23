@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" role="img" aria-label="旁白 · Aside">
+  <title>旁白 · Aside</title>
+  <!-- Toolbar optical size: two-pixel margin stroke and a full-pixel gap at 16px. -->
+  <rect width="16" height="16" rx="3.5" fill="#222629"/>
+  <rect x="3" y="3" width="2" height="10" rx="1" fill="#F0ECE4"/>
+  <path d="M8 4H11A2 2 0 0 1 13 6V8A2 2 0 0 1 11 10H9L6 12V6A2 2 0 0 1 8 4Z" fill="#D8A36A"/>
+</svg>

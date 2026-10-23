@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="旁白 · Aside">
+  <title>旁白 · Aside</title>
+  <rect width="128" height="128" rx="28" fill="#222629"/>
+  <rect x="29" y="25" width="9" height="78" rx="4.5" fill="#F0ECE4"/>
+  <path d="M63 36H86A15 15 0 0 1 101 51V65A15 15 0 0 1 86 80H70L48 96V51A15 15 0 0 1 63 36Z" fill="#D8A36A"/>
+</svg>
