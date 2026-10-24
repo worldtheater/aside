@@ -21,7 +21,11 @@ try {
         await image.decode();
         const canvas = document.createElement("canvas");
         canvas.width = canvas.height = size;
-        canvas.getContext("2d").drawImage(image, 0, 0, size, size);
+        // The store icon uses 96px artwork inside a 128px transparent canvas.
+        const inset = size === 128 ? 16 : 0;
+        canvas
+          .getContext("2d")
+          .drawImage(image, inset, inset, size - inset * 2, size - inset * 2);
         return canvas.toDataURL("image/png").split(",")[1];
       },
       { svg, size },

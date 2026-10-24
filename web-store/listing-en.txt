@@ -1,0 +1,33 @@
+Aside helps you understand and keep what you read on the web. Translate passages, explain unfamiliar ideas, ask questions, and save useful results without leaving the page.
+
+BRING YOUR OWN MODEL
+AI features require a compatible model service that you configure with your own endpoint and, where required, API key. Aside does not include model credits or a hosted AI subscription. Your provider's charges and terms apply.
+
+READ IN CONTEXT
+• Translate selected text or a web page while keeping the original text visible. More passages are processed as you scroll.
+• Explain difficult content, interpret classical texts, or extract key points.
+• Use Quick Q&A to ask about a selection or the current page. Clear the quote to ask a question without page context.
+• Create reusable actions with your own instructions, output language, model, and result placement. Try an action before saving it.
+
+KEEP WHAT MATTERS
+• Save processed passages with their original text and source link. Search and revisit your collection later.
+• Generate a daily reflection, optionally using excerpts from your collection. With a model configured, the first visit to Collection each day can generate a reflection; you can refresh it manually or hide the area to stop automatic generation.
+• Review model usage, request inputs and outputs, and the local result cache.
+
+MAKE READING COMFORTABLE
+• Switch website dark mode on or off, or follow the system, with the bundled Dark Reader engine.
+• Adjust result colors and typography, and use light or dark themes for Aside's interface.
+• Open Quick Q&A with Alt+Q and switch between your two most recently viewed tabs in the current window with Alt+W. Shortcuts can be changed in Chrome; existing key bindings may take precedence.
+
+YOUR SERVICES, LOCAL STORAGE
+Requests go directly to the model endpoint you choose. API keys, settings, collections, request history, and cached results are stored locally in your browser. Running a model feature sends the required text and instructions to that service. Aside has no developer-operated relay, analytics service, or cloud sync. The selected provider's privacy policy governs its handling of requests.
+
+Supported protocols: OpenAI Responses, OpenAI-compatible Chat Completions, Anthropic Messages, and Gemini Interactions. Use HTTPS for remote services; supported local HTTP endpoints can also be configured. Model availability and capabilities depend on your provider.
+
+The interface supports English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Spanish, Portuguese (Brazil), Russian, Indonesian, Italian, Turkish, Thai, and Vietnamese.
+
+Page tools work on regular HTTP/HTTPS pages where Chrome permits extensions. Browser-internal pages, the Chrome Web Store, and other restricted pages are not supported.
+
+Aside is open source under the MIT License.
+Project and support: https://github.com/worldtheater/aside
+Privacy policy: https://worldtheater.github.io/aside/privacy.html

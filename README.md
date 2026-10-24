@@ -95,6 +95,8 @@ Browser tests use isolated profiles and local mock model services. They do not r
 
 See the [development guide (Chinese)](docs/DEVELOPMENT.md) for the source layout, focused tests, protocol maintenance, and migration notes.
 
+Chrome Web Store listing copy, artwork, permissions declarations, and reviewer instructions are maintained in [web-store/](web-store/README.md).
+
 ## License
 
 [MIT](LICENSE). See [Third-party notices](THIRD_PARTY_NOTICES.md) for bundled dependencies and provider logos.
