@@ -82,7 +82,13 @@ module.exports = async ({
     await radial.evaluate((root) =>
       Array.from(root.querySelectorAll("button"), (n) => n.dataset.op),
     ),
-    ["home", "page-translate", "toggle-lights", "quick-question", "dock-pin"],
+    [
+      "open-settings",
+      "page-translate",
+      "toggle-lights",
+      "quick-question",
+      "dock-pin",
+    ],
   );
   const tabId = await page.evaluate(
     async (url) => (await chrome.tabs.query({})).find((t) => t.url === url).id,
@@ -222,7 +228,9 @@ module.exports = async ({
   await source.mouse.move(0, 0);
   await source.waitForFunction(
     (button) => {
-      const home = button.parentElement.querySelector('[data-op="home"]');
+      const home = button.parentElement.querySelector(
+        '[data-op="open-settings"]',
+      );
       return (
         getComputedStyle(button).backgroundColor ===
         getComputedStyle(home).backgroundColor

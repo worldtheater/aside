@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "Aside"
+  },
+  "description": {
+    "message": "Webseiten und markierten Text mit einem eigenen Sprachmodell übersetzen, erklären und umformulieren."
+  },
+  "processSelection": {
+    "message": "Auswahl mit Aside verarbeiten"
+  },
+  "switchRecentTab": {
+    "message": "Zwischen den zwei zuletzt angesehenen Tabs dieses Fensters wechseln"
+  },
+  "quickQuestion": {
+    "message": "Schnellfrage öffnen"
+  }
+}

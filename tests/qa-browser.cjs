@@ -171,17 +171,28 @@ module.exports = async ({
     );
     await assertComposerFits();
     const input = question.locator("textarea");
-    assert.equal(await input.evaluate((node) => getComputedStyle(node).resize), "none");
+    assert.equal(
+      await input.evaluate((node) => getComputedStyle(node).resize),
+      "none",
+    );
     const minimumInput = await input.boundingBox();
     assert(minimumInput.height >= 96);
-    await input.fill(Array.from({ length: 10 }, (_, i) => `Question line ${i + 1}`).join("\n"));
+    await input.fill(
+      Array.from({ length: 10 }, (_, i) => `Question line ${i + 1}`).join("\n"),
+    );
     assert((await input.boundingBox()).height > minimumInput.height + 80);
     await input.fill("");
-    assert(Math.abs((await input.boundingBox()).height - minimumInput.height) < 1);
+    assert(
+      Math.abs((await input.boundingBox()).height - minimumInput.height) < 1,
+    );
     const beforeKeyboardResize = await bar.boundingBox();
     await bar.locator(".selection-resize").press("Shift+ArrowRight");
-    assert(Math.abs((await bar.boundingBox()).width - beforeKeyboardResize.width - 40) < 1,
-      "A resize handle nested in the result changes its enclosing toolbar window");
+    assert(
+      Math.abs(
+        (await bar.boundingBox()).width - beforeKeyboardResize.width - 40,
+      ) < 1,
+      "A resize handle nested in the result changes its enclosing toolbar window",
+    );
     await bar.locator(".selection-resize").press("Shift+ArrowLeft");
     // A short height can be inherited from another result, or set by resizing.
     for (let i = 0; i < 6; i++) {
@@ -255,16 +266,33 @@ module.exports = async ({
     await question.locator("[data-op=question-clear-quote]").click();
     assert.equal(await question.locator(".question-reference").count(), 0);
     assert.equal(await input.inputValue(), withoutQuote);
-    assert(await input.evaluate(node => node.getRootNode().activeElement === node));
+    assert(
+      await input.evaluate((node) => node.getRootNode().activeElement === node),
+    );
     assert(await question.locator("[data-op=question-run]").isEnabled());
-    assert.equal(calls.length, beforeClear, "Clearing a quote does not call the model");
+    assert.equal(
+      calls.length,
+      beforeClear,
+      "Clearing a quote does not call the model",
+    );
     await assertComposerFits();
-    await bar.screenshot({path:path.join(artifacts,"qa-cleared-quote-light.png"),animations:"disabled"});
+    await bar.screenshot({
+      path: path.join(artifacts, "qa-cleared-quote-light.png"),
+      animations: "disabled",
+    });
     await input.press("Control+Enter");
-    await host.locator("#result-status").filter({hasText:"处理完成"}).waitFor();
+    await host
+      .locator("#result-status")
+      .filter({ hasText: "处理完成" })
+      .waitFor();
     assert.equal(calls.length, beforeClear + 1);
     assert(JSON.stringify(calls.at(-1).body).includes(withoutQuote));
-    assert(!JSON.stringify(calls.at(-1).body).includes("Why do leaves change color? QA_SELECTION"), "Cleared page selection is not sent as reference or restored during submission");
+    assert(
+      !JSON.stringify(calls.at(-1).body).includes(
+        "Why do leaves change color? QA_SELECTION",
+      ),
+      "Cleared page selection is not sent as reference or restored during submission",
+    );
     await select();
     await bar.locator("[data-selection-command=settings]").click();
     const length = bar.locator("[data-selection-field=outputLength]");
@@ -369,7 +397,10 @@ module.exports = async ({
     assert(await question.locator("[data-op=question-run]").isDisabled());
     assert.equal(calls.length, beforeQuestion);
     assert.equal(await question.locator("#question-quote").count(), 0);
-    assert.equal(await question.locator("[data-op=question-clear-quote]").count(), 0);
+    assert.equal(
+      await question.locator("[data-op=question-clear-quote]").count(),
+      0,
+    );
     await source.keyboard.press("Meta+Enter");
     assert(await question.isVisible());
     assert.equal(

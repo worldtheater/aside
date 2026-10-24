@@ -178,8 +178,9 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
     });
     await translationButton.evaluate((button) => {
       globalThis.translationStateButton = button;
-      globalThis.translationHomeButton =
-        button.parentElement.querySelector("[data-op=home]");
+      globalThis.translationHomeButton = button.parentElement.querySelector(
+        "[data-op=open-settings]",
+      );
       globalThis.translationDockLogo = button
         .getRootNode()
         .querySelector("#dock > svg");
@@ -218,7 +219,7 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
       await translationButton.evaluate(
         (button) =>
           button === globalThis.translationStateButton &&
-          button.parentElement.querySelector("[data-op=home]") ===
+          button.parentElement.querySelector("[data-op=open-settings]") ===
             globalThis.translationHomeButton,
       ),
       "Progress updates preserve menu button identity and focus",

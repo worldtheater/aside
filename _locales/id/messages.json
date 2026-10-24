@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "Aside"
+  },
+  "description": {
+    "message": "Terjemahkan, jelaskan, dan tulis ulang halaman web serta teks pilihan dengan model bahasa Anda sendiri."
+  },
+  "processSelection": {
+    "message": "Proses pilihan dengan Aside"
+  },
+  "switchRecentTab": {
+    "message": "Beralih antara dua tab yang terakhir dilihat di jendela ini."
+  },
+  "quickQuestion": {
+    "message": "Buka tanya jawab cepat"
+  }
+}

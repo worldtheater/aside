@@ -1,19 +1,22 @@
-# 旁白 / Aside
+<img src="icons/icon.svg" alt="Aside logo" width="96" height="96">
 
-一个帮助阅读、理解和收藏网页内容的 Chrome 扩展。使用 TypeScript、原生 HTML/CSS 和 Manifest V3，无需配套服务器。
+# Aside / 旁白
 
-## 功能
+A Chrome extension for translating, understanding, and collecting what you read on the web. Built with TypeScript, native HTML/CSS, and Manifest V3. No companion server required.
 
-- **页内翻译**：处理可见区域及少量预加载内容，随滚动、动态内容增量翻译；保留原文，可随时恢复。
-- **内容处理**：翻译、各语言古文释义、解释内容、提炼要点，以及自定义处理方式；总结类操作处理全文。
-- **快问快答**：引用选中文字或网页正文，也可清空引文；输入问题并主动提交后开始流式回答。
-- **阅读工具**：划词工具条、悬浮菜单、按网站设置的暗色模式，支持多套配色和结果样式。
-- **收藏与随想**：收藏、搜索、复制结果；使用所选模型生成一句随想，可参考收藏。
-- **模型与用量**：自行配置模型服务、推理等级及输出语言，查看调用用量与管理本地结果缓存。
+## Features
 
-## 安装
+- **Inline translation:** Translate the visible area with a small preload margin, then process more content as you scroll or the page changes. Keep the original text and restore it at any time.
+- **Reading actions:** Translate, explain classical texts across languages, clarify content, extract key points, or define your own actions. Summary actions process the full page.
+- **Quick Q&A:** Ask about selected text or page content, or clear the quote to ask an independent question. Answers stream after you submit your question.
+- **Reading tools:** A selection toolbar and floating menu, with configurable color palettes and result styles.
+- **Website dark mode:** Powered by [Dark Reader](https://github.com/darkreader/darkreader), with per-site settings.
+- **Collections and reflections:** Save, search, and copy results. Generate a short reflection with your chosen model, optionally drawing on saved passages.
+- **Models and usage:** Configure model services, reasoning levels, and output languages; review usage and manage the local result cache.
 
-需要 Node.js 22+ 和 npm。仓库的 `.nvmrc` 使用 Node.js 24；浏览器要求 Chrome 120+。
+## Installation
+
+Requires Node.js 22+, npm, and Chrome 120+. The repository's `.nvmrc` specifies Node.js 24.
 
 ```sh
 git clone https://github.com/worldtheater/aside.git
@@ -22,53 +25,74 @@ npm ci
 npm run build
 ```
 
-1. 打开 `chrome://extensions`，开启开发者模式。
-2. 点击“加载已解压的扩展程序”，选择 **aside 仓库根目录**，即包含 `manifest.json` 的目录。
-3. 点击插件入口中的首页按钮，在侧边栏进入“模型连接”。
-4. 填写服务地址、API Key 和协议，测试连接并从返回列表中选择模型，保存连接。
-5. 打开普通 HTTP/HTTPS 网页，通过划词工具条、悬浮菜单或插件入口开始使用。
+1. Open `chrome://extensions` and enable **Developer mode**.
+2. Click **Load unpacked** and select the **aside repository root**, which contains `manifest.json`.
+3. Open the extension popup and click **Settings** in the top-right corner to open **Model connections**.
+4. Enter your service URL, API key, and protocol. Test the connection, select a model from the returned list, and save.
+5. Open a regular HTTP/HTTPS page and use the selection toolbar, floating menu, or extension popup.
 
-修改代码后重新运行 `npm run build`，在扩展管理页重新加载插件，并刷新已打开的网页。生成的 JS 位于仓库根目录，不提交 Git；请修改 `src/` 中的源码。
+After changing code, run `npm run build`, reload the extension in Chrome, and refresh open web pages. Generated JavaScript lives in the repository root and is excluded from Git; edit the source in `src/`.
 
-### 模型服务
+The **About** page at the bottom of the sidebar includes the current version, project and support links, and open-source acknowledgements. New users can also open model setup directly from the reflection card.
 
-支持 OpenAI Responses、OpenAI 兼容 Chat Completions、Anthropic Messages 和 Gemini Interactions 四种协议。连接测试只读取模型列表，不生成文本；成功读取列表不代表服务的所有模型都支持所选生成协议。
+### Interface languages
 
-模型请求从扩展直接发往你配置的服务。可以使用 HTTPS 服务或支持的本地 HTTP 服务，无需运行其他本地项目或后台服务。所有界面资源和运行依赖随扩展打包，不依赖 CDN。
+Available in 15 interface languages: English, Simplified Chinese, Traditional Chinese, Japanese, Korean, French, German, Spanish, Portuguese (Brazil), Russian, Indonesian, Italian, Turkish, Thai, and Vietnamese. Use the language menu in the top bar to choose a language or follow your system language. Traditional Chinese is also selected for Chinese system locales in Taiwan, Hong Kong, and Macao. Portuguese system locales use Brazilian Portuguese.
 
-### 快捷键
+Translation targets and other built-in actions default to **Follow interface language**, which uses the current interface language when a request runs. You can choose a fixed language separately; saved explicit language choices stay unchanged.
 
-| 功能 | 默认快捷键 | 行为 |
+### Today's thought
+
+With a model configured, Aside generates a reflection the first time you open Collection each day, using your local date. Today's saved result is reused when you return or reload; the refresh button can generate another at any time. Hidden reflections do not generate automatically. If generation fails, the previous result is kept and you can retry with the refresh button.
+
+### Model services
+
+Aside supports four protocols: OpenAI Responses, OpenAI-compatible Chat Completions, Anthropic Messages, and Gemini Interactions. New OpenAI Responses connections use implicit prefix caching by default. Prefix caching, maximum output tokens, and batching/concurrency controls are grouped under **Advanced settings**. Connection tests only retrieve the model list; they do not generate text. A successful test does not guarantee that every listed model supports the selected generation protocol.
+
+**Duplicate connection** opens a new draft with the current provider settings, API key, model list, and advanced settings. Choose another model and save to add a separate connection.
+
+Requests go directly from the extension to your configured service. Use an HTTPS endpoint or a supported local HTTP endpoint. Aside does not depend on another local project or background service. UI assets and runtime dependencies are bundled with the extension, without a CDN dependency.
+
+### Website dark mode
+
+Aside bundles the **Dark Reader dynamic theme engine** to adapt web page colors. You do not need to install the separate Dark Reader extension. Choose on, off, or follow system from the floating menu; the setting is saved per site, separately from Aside's own interface theme.
+
+The engine runs locally and may fetch stylesheets or images referenced by the page. It does not call a model or download executable code. Dark Reader's MIT license is included in [licenses/darkreader.txt](licenses/darkreader.txt); build-time adaptations are described in [Third-party notices](THIRD_PARTY_NOTICES.md).
+
+### Keyboard shortcuts
+
+| Feature | Default shortcut | Behavior |
 | --- | --- | --- |
-| 最近两页切换 | `Alt+W` | 在当前窗口最近浏览的两个标签页之间往返 |
-| 快问快答 | `Alt+Q` | 优先引用选中文字，否则使用网页正文；打开面板后等待提问 |
+| Recent tabs | `Alt+W` | Switch back and forth between the two most recently visited tabs in the current window |
+| Quick Q&A | `Alt+Q` | Quote selected text, or page content if nothing is selected, and open the question panel |
 
-macOS 上 Alt 对应 Option。侧边栏“快捷键”页面显示 Chrome 当前的实际绑定，并可打开 `chrome://extensions/shortcuts` 修改。若按键被其他扩展占用，需要在那里重新分配。
+On macOS, Alt is Option. The **Keyboard shortcuts** page in the sidebar shows Chrome's actual bindings and opens `chrome://extensions/shortcuts` for editing. Reassign a shortcut there if another extension already uses it.
 
-快问快答不在插件自身页面、空白页、浏览器内部页面或浏览器禁止注入的网页上运行。最近两页切换不受这一限制；浏览器重启或插件重载后，先浏览两个标签页即可使用。
+Quick Q&A is unavailable on extension pages, blank pages, browser-internal pages, and pages where Chrome blocks script injection. Recent-tab switching does not require page injection. After restarting the browser or reloading the extension, visit two tabs to establish a new recent-tab history.
 
-## 数据与权限
+## Data and permissions
 
-- API Key、配置、收藏、用量记录保存在本机扩展存储；结果缓存使用 IndexedDB，不使用云同步。
-- 执行内容处理时，相应网页内容会发送给所选模型服务。随想开启“参考我的收藏”时，会发送最多 5 条收藏片段。
-- 密钥只提供给扩展自己的受信任页面和后台，不提供给网页内容脚本；本地存储不等于加密密钥库。
-- 网页访问用于划词、结果插入和暗色模式；模型连接按服务地址申请访问权限。暗色模式可能读取网页引用的样式或图片，但不调用模型。
-- 没有遥测或自建转发服务。卸载插件会删除其本地数据。
+- API keys, settings, and collections stay in local extension storage. Usage summaries and request details share the `aside-usage` IndexedDB database; the result cache has its own database. There is no cloud sync. History is read in pages of 50 using time and model indexes, while totals and daily charts are queried separately.
+- Each new usage record has a **Details** view with the model instructions, submitted input (including context or batched passages), and received output. Interrupted calls retain any text already received. Authorization headers and API keys are not included. Clearing usage history also deletes these details; clearing the result cache does not. Older records have no request details.
+- Running an action sends the relevant page content to your selected model service. Reflections can include up to five saved passages when collection references are enabled.
+- API keys are available only to trusted extension pages and the background worker, not content scripts. Local storage is not an encrypted credential vault.
+- Page access supports text selection, result insertion, and dark mode. Model connections request access to the configured service address.
+- Aside has no telemetry or hosted relay. Uninstalling the extension deletes its local data.
 
-从旧目录迁移时，请先阅读[加载路径与本地数据](docs/DEVELOPMENT.md#加载路径与本地数据)：改变未打包扩展路径可能改变扩展 ID，旧配置和收藏不会自动迁移。
+If migrating from another directory, read [Loading paths and local data (Chinese)](docs/DEVELOPMENT.md#加载路径与本地数据). Changing an unpacked extension's path may change its extension ID; existing settings and collections do not migrate automatically.
 
-## 开发与打包
+## Development and packaging
 
 ```sh
-npm test               # 类型检查、构建和核心逻辑测试
-npm run test:browser   # 使用本机 Chrome 运行浏览器回归
-npm run package        # 生成 artifacts/aside-0.1.0.zip，需要 Python 3
+npm test               # Type checking, build, and core tests
+npm run test:browser   # Browser regression tests using local Chrome
+npm run package        # Create artifacts/aside-0.1.0.zip; requires Python 3
 ```
 
-浏览器测试使用隔离配置和本地模拟模型，不读取个人 Chrome 配置，也不调用收费模型。测试需要本机安装 Google Chrome；可用 `CHROME_PATH` 指定其他安装路径。
+Browser tests use isolated profiles and local mock model services. They do not read your personal Chrome profile or call paid models. Install Google Chrome locally, or set `CHROME_PATH` to a custom executable path.
 
-源码结构、专项测试、协议维护和迁移说明见[开发文档](docs/DEVELOPMENT.md)。
+See the [development guide (Chinese)](docs/DEVELOPMENT.md) for the source layout, focused tests, protocol maintenance, and migration notes.
 
-## 许可证
+## License
 
-[MIT](LICENSE)。随包依赖及第三方图标说明见[第三方声明](THIRD_PARTY_NOTICES.md)。
+[MIT](LICENSE). See [Third-party notices](THIRD_PARTY_NOTICES.md) for bundled dependencies and provider logos.

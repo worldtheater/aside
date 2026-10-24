@@ -5,8 +5,18 @@ module.exports = async ({ page, artifacts, nav, op, choose }) => {
     const data = await chrome.storage.local.get(null);
     return {
       settings: data.settings,
-      usage: Object.fromEntries(
-        Object.entries(data).filter(([key]) => key.startsWith("usage:")),
+      usage: await Promise.all(
+        (await chrome.runtime.sendMessage({ type: "usage.list" })).value.map(
+          async (record) => ({
+            record,
+            details: (
+              await chrome.runtime.sendMessage({
+                type: "usage.details",
+                id: record.id,
+              })
+            ).value,
+          }),
+        ),
       ),
     };
   });
@@ -101,8 +111,9 @@ module.exports = async ({ page, artifacts, nav, op, choose }) => {
             theme: "light",
           },
         },
-        ...Object.fromEntries(records.map((r) => ["usage:" + r.id, r])),
       });
+      const { addUsage } = await import("./usage-store.js");
+      for (const record of records) await addUsage(record);
     }, fixture.records);
     await page.reload();
     await page.locator("h1").waitFor();
@@ -219,7 +230,7 @@ module.exports = async ({ page, artifacts, nav, op, choose }) => {
       usageFinal: true,
     };
     await page.evaluate(
-      (r) => chrome.storage.local.set({ ["usage:" + r.id]: r }),
+      async (r) => (await import("./usage-store.js")).addUsage(r),
       extra,
     );
     await page.waitForFunction(
@@ -236,7 +247,9 @@ module.exports = async ({ page, artifacts, nav, op, choose }) => {
     );
     await op("usage-clear-ask").click();
     assert.equal(await page.locator("dialog > .dialog-close").count(), 0);
-    const cancelClear = await page.locator("dialog [data-op=dialog-close]").boundingBox();
+    const cancelClear = await page
+      .locator("dialog [data-op=dialog-close]")
+      .boundingBox();
     const confirmClear = await op("usage-clear").boundingBox();
     assert(cancelClear.x + cancelClear.width < confirmClear.x);
     await op("usage-clear").click();
@@ -260,8 +273,10 @@ module.exports = async ({ page, artifacts, nav, op, choose }) => {
       await chrome.runtime.sendMessage({ type: "usage.clear" });
       await chrome.storage.local.set({
         settings: stored.settings,
-        ...stored.usage,
       });
+      const { addUsage } = await import("./usage-store.js");
+      for (const { record, details } of stored.usage)
+        await addUsage(record, details || undefined);
     }, stored);
     await page.reload();
     await page.locator("h1").waitFor();

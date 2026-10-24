@@ -66,7 +66,11 @@ module.exports = async ({
     "long-code-".repeat(24) +
     '";\n```\n\n[Safe link](https://example.com/ "Link description") [Unsafe](javascript:alert(1))\n\n<script>window.markdownExecuted = true</script><img src="https://invalid.example/leak" onerror="window.markdownExecuted=true"><button data-selection-command="action">Injected control</button><a href="https://example.com" data-op="close-result" id="output">Safe text</a>';
   const verifyMarkdown = async (output) => {
-    assert.equal(await output.locator("[title]").count(), 0, "Rendered Markdown does not introduce native tips");
+    assert.equal(
+      await output.locator("[title]").count(),
+      0,
+      "Rendered Markdown does not introduce native tips",
+    );
     assert.equal(await output.locator("h2").textContent(), "Clear result");
     assert.equal(await output.locator("strong").textContent(), "bold");
     assert.equal(await output.locator("ul > li").count(), 2);
@@ -99,10 +103,7 @@ module.exports = async ({
     await select("STREAM_FIXTURE markdown-result");
     await action("translate").hover();
     await bar.locator(".hover-tip:popover-open").waitFor();
-    assert.equal(
-      await bar.locator(".hover-tip").textContent(),
-      "Translate",
-    );
+    assert.equal(await bar.locator(".hover-tip").textContent(), "Translate");
     assert.equal(await action("translate").getAttribute("title"), null);
     assert.equal(await bar.locator(".hover-tip kbd").count(), 0);
     await source.screenshot({
@@ -324,9 +325,7 @@ module.exports = async ({
       path: path.join(artifacts, "selection-footer-custom-tip.png"),
     });
     await source.mouse.move(8, 8);
-    await bar
-      .locator(".hover-tip:popover-open")
-      .waitFor({ state: "hidden" });
+    await bar.locator(".hover-tip:popover-open").waitFor({ state: "hidden" });
     await bar
       .locator(".selection-result-body")
       .evaluate((node) => (node.scrollTop = 0));

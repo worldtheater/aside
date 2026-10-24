@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "Aside"
+  },
+  "description": {
+    "message": "Web sayfalarını ve seçili metni kendi dil modelinizle çevirin, açıklayın ve yeniden yazın."
+  },
+  "processSelection": {
+    "message": "Seçimi Aside ile işle"
+  },
+  "switchRecentTab": {
+    "message": "Bu pencerede son görüntülenen iki sekme arasında geçiş yapın."
+  },
+  "quickQuestion": {
+    "message": "Hızlı soru-cevabı aç"
+  }
+}

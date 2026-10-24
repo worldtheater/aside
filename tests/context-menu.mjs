@@ -327,7 +327,11 @@ console.log(
 );
 
 // Page commands use the tab captured with the shortcut, not a later active tab.
-await listeners.command("quick-question", { id: 17, windowId: 9, url: "https://example.com/article" });
+await listeners.command("quick-question", {
+  id: 17,
+  windowId: 9,
+  url: "https://example.com/article",
+});
 assert.deepEqual(sent.at(-1), {
   tabId: 17,
   message: { type: "page.run", actionId: "qa", scope: "body", panel: true },
@@ -339,30 +343,66 @@ await listeners.command("unknown-command", { id: 17 });
 assert.equal(injected.length, afterCommands);
 assert.equal(sent.length, messagesAfterCommands);
 const openedBeforeBlocked = opened.length;
-for (const url of [undefined, "", "about:blank", "chrome://newtab/", "chrome://extensions/", "chrome-search://local-ntp/", "chrome-extension://fixture/index.html", "file:///tmp/page.html", "data:text/html,blank"]) {
+for (const url of [
+  undefined,
+  "",
+  "about:blank",
+  "chrome://newtab/",
+  "chrome://extensions/",
+  "chrome-search://local-ntp/",
+  "chrome-extension://fixture/index.html",
+  "file:///tmp/page.html",
+  "data:text/html,blank",
+]) {
   await listeners.command("quick-question", { id: 17, url });
 }
-assert.equal(injected.length, afterCommands, "Non-web pages are rejected before injection");
+assert.equal(
+  injected.length,
+  afterCommands,
+  "Non-web pages are rejected before injection",
+);
 assert.equal(sent.length, messagesAfterCommands);
-assert.equal(opened.length, openedBeforeBlocked, "Non-web shortcuts never open settings tabs");
+assert.equal(
+  opened.length,
+  openedBeforeBlocked,
+  "Non-web shortcuts never open settings tabs",
+);
 const commandExecute = chrome.scripting.executeScript;
 const commandLog = console.info;
 let blockedLog;
 try {
-  chrome.scripting.executeScript = async () => { throw new Error("Cannot access a protected page"); };
-  console.info = (...args) => { blockedLog = args; };
-  await listeners.command("quick-question", { id: 17, url: "https://chromewebstore.google.com/detail/example" });
+  chrome.scripting.executeScript = async () => {
+    throw new Error("Cannot access a protected page");
+  };
+  console.info = (...args) => {
+    blockedLog = args;
+  };
+  await listeners.command("quick-question", {
+    id: 17,
+    url: "https://chromewebstore.google.com/detail/example",
+  });
   assert(blockedLog);
   assert.equal(sent.length, messagesAfterCommands);
-  assert.equal(opened.length, openedBeforeBlocked, "Rejected injection must not redirect to the homepage");
+  assert.equal(
+    opened.length,
+    openedBeforeBlocked,
+    "Rejected injection must not redirect to the homepage",
+  );
 } finally {
   chrome.scripting.executeScript = commandExecute;
   console.info = commandLog;
 }
 const actionsBefore = stored.settings.actions;
-stored.settings.actions = actionsBefore.filter(action => action.kind !== "qa");
-await listeners.command("quick-question", { id: 17, url: "https://example.com/article" });
+stored.settings.actions = actionsBefore.filter(
+  (action) => action.kind !== "qa",
+);
+await listeners.command("quick-question", {
+  id: 17,
+  url: "https://example.com/article",
+});
 assert.equal(injected.length, afterCommands);
 assert(opened.at(-1).url.endsWith("#actions"));
 stored.settings.actions = actionsBefore;
-console.log("PASS: Q&A preserves its invoking tab, ignores retired/non-web commands, never redirects on blocked injection and opens action settings only for a removed Q&A action on a web page.");
+console.log(
+  "PASS: Q&A preserves its invoking tab, ignores retired/non-web commands, never redirects on blocked injection and opens action settings only for a removed Q&A action on a web page.",
+);

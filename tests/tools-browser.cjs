@@ -328,11 +328,25 @@ module.exports = async ({
   );
   assert.equal(await dock.getAttribute("aria-expanded"), "false");
   assert(await host.locator("#result.panel").isVisible());
-  assert.equal(await source.locator("[data-pagework=result]").count(), 0,
-    "The popup opens a result panel instead of inserting translations into the page");
-  assert.equal(await host.locator(".result .selection-result-body").evaluate((node) => getComputedStyle(node).paddingTop), "0px");
-  assert((await host.locator(".original").textContent()).includes("Reading is active thinking."));
-  assert(!(await host.locator(".original").textContent()).includes("Navigation"));
+  assert.equal(
+    await source.locator("[data-pagework=result]").count(),
+    0,
+    "The popup opens a result panel instead of inserting translations into the page",
+  );
+  assert.equal(
+    await host
+      .locator(".result .selection-result-body")
+      .evaluate((node) => getComputedStyle(node).paddingTop),
+    "0px",
+  );
+  assert(
+    (await host.locator(".original").textContent()).includes(
+      "Reading is active thinking.",
+    ),
+  );
+  assert(
+    !(await host.locator(".original").textContent()).includes("Navigation"),
+  );
   await source.screenshot({
     path: path.join(artifacts, "popup-translated-page.png"),
   });
@@ -388,59 +402,128 @@ module.exports = async ({
   await composer.waitFor();
   const popupResult = host.locator("#result.panel");
   assert(await popupResult.isVisible());
-  assert(await host.locator("#selection").isHidden(), "Popup Q&A uses the independent result window");
+  assert(
+    await host.locator("#selection").isHidden(),
+    "Popup Q&A uses the independent result window",
+  );
   assert.equal(await host.locator("#selection #question").count(), 0);
-  const qaName = await page.evaluate(async () =>
-    (await chrome.runtime.sendMessage({ type: "settings.public" })).value.actions.find((a) => a.id === "qa").name);
-  assert.equal(await popupResult.locator(".header strong").textContent(), qaName);
+  const qaName = await page.evaluate(
+    async () =>
+      (
+        await chrome.runtime.sendMessage({ type: "settings.public" })
+      ).value.actions.find((a) => a.id === "qa").name,
+  );
+  assert.equal(
+    await popupResult.locator(".header strong").textContent(),
+    qaName,
+  );
   let composerBounds = await popupResult.boundingBox();
-  assert(composerBounds.x > source.viewportSize().width / 2,
-    "Popup Q&A opens in the right-hand result window rather than the upper-left toolbar");
+  assert(
+    composerBounds.x > source.viewportSize().width / 2,
+    "Popup Q&A opens in the right-hand result window rather than the upper-left toolbar",
+  );
   const sharedAppearance = await popupResult.evaluate((node) => {
     const toolbar = node.getRootNode().querySelector("#selection");
-    const actual = getComputedStyle(node), reference = getComputedStyle(toolbar);
-    const keys = ["borderTopWidth", "borderRightWidth", "borderBottomWidth", "borderLeftWidth", "boxShadow", "borderRadius", "paddingTop", "paddingRight", "paddingLeft", "gap"];
+    const actual = getComputedStyle(node),
+      reference = getComputedStyle(toolbar);
+    const keys = [
+      "borderTopWidth",
+      "borderRightWidth",
+      "borderBottomWidth",
+      "borderLeftWidth",
+      "boxShadow",
+      "borderRadius",
+      "paddingTop",
+      "paddingRight",
+      "paddingLeft",
+      "gap",
+    ];
     const button = getComputedStyle(node.querySelector(".header button"));
-    const toolbarButton = getComputedStyle(toolbar.querySelector(".selection-button"));
+    const toolbarButton = getComputedStyle(
+      toolbar.querySelector(".selection-button"),
+    );
     return {
       matchingSurface: keys.every((key) => actual[key] === reference[key]),
       border: actual.borderTopWidth,
-      matchingButton: ["width", "height", "padding", "borderRadius"].every((key) => button[key] === toolbarButton[key]),
+      matchingButton: ["width", "height", "padding", "borderRadius"].every(
+        (key) => button[key] === toolbarButton[key],
+      ),
     };
   });
-  assert.deepEqual(sharedAppearance, { matchingSurface: true, border: "0px", matchingButton: true });
-  assert.equal(calls.length, beforeQuestion, "Opening Q&A never sends page text to the model");
+  assert.deepEqual(sharedAppearance, {
+    matchingSurface: true,
+    border: "0px",
+    matchingButton: true,
+  });
+  assert.equal(
+    calls.length,
+    beforeQuestion,
+    "Opening Q&A never sends page text to the model",
+  );
   assert.equal(await composer.locator("#question-quote").textContent(), quoted);
   assert.equal(await composer.locator("textarea").inputValue(), "");
   assert(await composer.locator("[data-op=question-run]").isDisabled());
   const input = composer.locator("textarea");
-  assert.equal(await input.evaluate((node) => getComputedStyle(node).resize), "none");
+  assert.equal(
+    await input.evaluate((node) => getComputedStyle(node).resize),
+    "none",
+  );
   const initialInput = await input.boundingBox();
   assert(initialInput.height >= 96);
-  await input.fill(Array.from({ length: 10 }, (_, i) => `Question line ${i + 1}`).join("\n"));
+  await input.fill(
+    Array.from({ length: 10 }, (_, i) => `Question line ${i + 1}`).join("\n"),
+  );
   const grownInput = await input.boundingBox();
-  assert(grownInput.height > initialInput.height + 80, "Question input grows with its content");
-  assert(await input.evaluate((node) => node.scrollHeight <= node.clientHeight + 1));
+  assert(
+    grownInput.height > initialInput.height + 80,
+    "Question input grows with its content",
+  );
+  assert(
+    await input.evaluate((node) => node.scrollHeight <= node.clientHeight + 1),
+  );
   await input.fill("");
-  assert(Math.abs((await input.boundingBox()).height - initialInput.height) < 1,
-    "Clearing the question restores its minimum height");
+  assert(
+    Math.abs((await input.boundingBox()).height - initialInput.height) < 1,
+    "Clearing the question restores its minimum height",
+  );
   const assertFooter = async (result, question = false) => {
     const geometry = await result.evaluate((node, question) => {
-      const footer = node.querySelector(question ? ".selection-settings-footer" : ".selection-result-footer");
-      const button = footer.querySelector(question ? "[data-op=question-run]" : ".selection-result-actions button:not([hidden])");
+      const footer = node.querySelector(
+        question ? ".selection-settings-footer" : ".selection-result-footer",
+      );
+      const button = footer.querySelector(
+        question
+          ? "[data-op=question-run]"
+          : ".selection-result-actions button:not([hidden])",
+      );
       const grip = footer.querySelector(".selection-resize");
       const box = button.getBoundingClientRect();
       const handle = grip.getBoundingClientRect();
       return {
-        top: box.top - footer.getBoundingClientRect().top - parseFloat(getComputedStyle(footer).borderTopWidth),
+        top:
+          box.top -
+          footer.getBoundingClientRect().top -
+          parseFloat(getComputedStyle(footer).borderTopWidth),
         bottom: node.getBoundingClientRect().bottom - box.bottom,
-        alignment: Math.abs(handle.top + handle.height / 2 - box.top - box.height / 2),
+        alignment: Math.abs(
+          handle.top + handle.height / 2 - box.top - box.height / 2,
+        ),
         resize: getComputedStyle(node).resize,
       };
     }, question);
-    assert(Math.abs(geometry.top - geometry.bottom) < 1, JSON.stringify(geometry));
-    assert(geometry.alignment < 1, "Resize grip shares the action row: " + JSON.stringify(geometry));
-    assert.equal(geometry.resize, "none", "The panel uses the shared resize grip");
+    assert(
+      Math.abs(geometry.top - geometry.bottom) < 1,
+      JSON.stringify(geometry),
+    );
+    assert(
+      geometry.alignment < 1,
+      "Resize grip shares the action row: " + JSON.stringify(geometry),
+    );
+    assert.equal(
+      geometry.resize,
+      "none",
+      "The panel uses the shared resize grip",
+    );
   };
   await assertFooter(popupResult, true);
   await source.screenshot({ path: path.join(artifacts, "popup-qa-quote.png") });
@@ -448,7 +531,9 @@ module.exports = async ({
   const grip = await popupResult.locator(".header").boundingBox();
   await source.mouse.move(grip.x + 30, grip.y + grip.height / 2);
   await source.mouse.down();
-  await source.mouse.move(grip.x - 50, grip.y - 60 + grip.height / 2, { steps: 6 });
+  await source.mouse.move(grip.x - 50, grip.y - 60 + grip.height / 2, {
+    steps: 6,
+  });
   await source.mouse.up();
   composerBounds = await popupResult.boundingBox();
   const beforeResize = await popupResult.boundingBox();
@@ -457,12 +542,22 @@ module.exports = async ({
   const afterResize = await popupResult.boundingBox();
   assert(Math.abs(afterResize.width - beforeResize.width + 40) < 1);
   assert(Math.abs(afterResize.height - beforeResize.height - 40) < 1);
-  assert.equal((await input.boundingBox()).height, initialInput.height,
-    "Resizing the panel does not stretch the empty question");
+  assert.equal(
+    (await input.boundingBox()).height,
+    initialInput.height,
+    "Resizing the panel does not stretch the empty question",
+  );
   const handle = await popupResult.locator(".selection-resize").boundingBox();
-  await source.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2);
+  await source.mouse.move(
+    handle.x + handle.width / 2,
+    handle.y + handle.height / 2,
+  );
   await source.mouse.down();
-  await source.mouse.move(handle.x + handle.width / 2 + 70, handle.y + handle.height / 2 + 30, { steps: 6 });
+  await source.mouse.move(
+    handle.x + handle.width / 2 + 70,
+    handle.y + handle.height / 2 + 30,
+    { steps: 6 },
+  );
   await source.mouse.up();
   const resized = await popupResult.boundingBox();
   assert(Math.abs(resized.width - afterResize.width - 70) < 2);
@@ -472,26 +567,47 @@ module.exports = async ({
   composerBounds = resized;
   const question = "What does active thinking mean? POPUP_QUESTION";
   await composer.locator("textarea").fill(question);
-  assert.equal(calls.length, beforeQuestion, "Typing a question does not submit it");
+  assert.equal(
+    calls.length,
+    beforeQuestion,
+    "Typing a question does not submit it",
+  );
   await composer.locator("textarea").press("Meta+Enter");
-  await host.locator("#result-status").filter({ hasText: "处理完成" }).waitFor();
+  await host
+    .locator("#result-status")
+    .filter({ hasText: "处理完成" })
+    .waitFor();
   const questionInput = calls.at(-1).body.messages.at(-1).content;
   assert(questionInput.includes(question));
   assert(questionInput.includes(`> ${quoted}`));
   assert(await popupResult.isVisible());
   assert(await host.locator("#selection").isHidden());
-  assert.equal(await popupResult.locator(".header strong").textContent(), qaName);
+  assert.equal(
+    await popupResult.locator(".header strong").textContent(),
+    qaName,
+  );
   await assertFooter(popupResult);
   const answerBounds = await popupResult.boundingBox();
-  assert(Math.abs(answerBounds.x - composerBounds.x) < 1 && Math.abs(answerBounds.y - composerBounds.y) < 1,
-    "The answer stays in the same dragged result window");
+  assert(
+    Math.abs(answerBounds.x - composerBounds.x) < 1 &&
+      Math.abs(answerBounds.y - composerBounds.y) < 1,
+    "The answer stays in the same dragged result window",
+  );
   await popupResult.locator("[data-op=refresh-result]").click();
-  await popupResult.locator("#result-status").filter({ hasText: "处理完成" }).waitFor();
+  await popupResult
+    .locator("#result-status")
+    .filter({ hasText: "处理完成" })
+    .waitFor();
   assert(await popupResult.isVisible());
   assert(await host.locator("#selection").isHidden());
   const regeneratedBounds = await popupResult.boundingBox();
-  assert(Math.abs(regeneratedBounds.x - composerBounds.x) < 1 && Math.abs(regeneratedBounds.y - composerBounds.y) < 1);
-  await popupResult.screenshot({ path: path.join(artifacts, "popup-qa-result.png") });
+  assert(
+    Math.abs(regeneratedBounds.x - composerBounds.x) < 1 &&
+      Math.abs(regeneratedBounds.y - composerBounds.y) < 1,
+  );
+  await popupResult.screenshot({
+    path: path.join(artifacts, "popup-qa-result.png"),
+  });
   await source.keyboard.press("Escape");
   await source.evaluate(() => getSelection().removeAllRanges());
 
@@ -506,16 +622,29 @@ module.exports = async ({
   await composer.waitFor();
   const pageQuote = await composer.locator("#question-quote").textContent();
   assert(pageQuote.includes("Read carefully") && pageQuote.includes(quoted));
-  assert(!pageQuote.includes("Navigation") && !pageQuote.includes("FORM_SECRET"));
+  assert(
+    !pageQuote.includes("Navigation") && !pageQuote.includes("FORM_SECRET"),
+  );
   assert.equal(calls.length, beforePageQuestion);
   assert.equal(await composer.locator("textarea").inputValue(), "");
   const compact = await popupResult.boundingBox();
-  assert(compact.x >= 0 && compact.y >= 0 && compact.x + compact.width <= 390 && compact.y + compact.height <= 640);
+  assert(
+    compact.x >= 0 &&
+      compact.y >= 0 &&
+      compact.x + compact.width <= 390 &&
+      compact.y + compact.height <= 640,
+  );
   const inputBox = await composer.locator("textarea").boundingBox();
-  const footerBox = await composer.locator(".selection-settings-footer").boundingBox();
-  assert(inputBox.height >= 96 && inputBox.y + inputBox.height <= footerBox.y,
-    "The complete question input stays above the footer on a narrow screen");
-  await source.screenshot({ path: path.join(artifacts, "popup-qa-mobile.png") });
+  const footerBox = await composer
+    .locator(".selection-settings-footer")
+    .boundingBox();
+  assert(
+    inputBox.height >= 96 && inputBox.y + inputBox.height <= footerBox.y,
+    "The complete question input stays above the footer on a narrow screen",
+  );
+  await source.screenshot({
+    path: path.join(artifacts, "popup-qa-mobile.png"),
+  });
   await composer.locator("[data-op=question-close]").click();
   await source.setViewportSize({ width: 1440, height: 1000 });
 
@@ -528,7 +657,9 @@ module.exports = async ({
   for (const action of ["translate", "plain", "explain", "summary"]) {
     const text = `STREAM_FIXTURE_WAIT popup-${action}`;
     await source.locator("main").evaluate((main, text) => {
-      main.replaceChildren(Object.assign(document.createElement("p"), { textContent: text }));
+      main.replaceChildren(
+        Object.assign(document.createElement("p"), { textContent: text }),
+      );
     }, text);
     await openPopup();
     await choose("#action", action);
@@ -537,26 +668,57 @@ module.exports = async ({
     const result = host.locator("#result.panel");
     await result.waitFor();
     const output = result.locator("#output");
-    await result.locator("#output[aria-busy=true]").waitFor({ state: "attached" });
-    assert.equal(await output.textContent(), "", "The panel is visible before the first response byte");
+    await result
+      .locator("#output[aria-busy=true]")
+      .waitFor({ state: "attached" });
+    assert.equal(
+      await output.textContent(),
+      "",
+      "The panel is visible before the first response byte",
+    );
     assert.equal(await result.locator(".original").textContent(), text);
-    assert.equal(await result.evaluate((node) => getComputedStyle(node).borderTopWidth), "0px");
-    assert.equal(await result.locator(".header button").first().evaluate((node) => getComputedStyle(node).width), "32px");
+    assert.equal(
+      await result.evaluate((node) => getComputedStyle(node).borderTopWidth),
+      "0px",
+    );
+    assert.equal(
+      await result
+        .locator(".header button")
+        .first()
+        .evaluate((node) => getComputedStyle(node).width),
+      "32px",
+    );
     assert(await result.locator("[data-op=bookmark]").isDisabled());
     const stream = await nextStream(start);
     if (action === "explain")
-      await result.screenshot({ path: path.join(artifacts, "popup-panel-waiting.png") });
+      await result.screenshot({
+        path: path.join(artifacts, "popup-panel-waiting.png"),
+      });
     const element = await output.elementHandle();
     stream.write("## A partial answer");
-    await output.locator("h2").filter({ hasText: "A partial answer" }).waitFor();
-    assert(!stream.closed, "Partial output is shown while the request is still running");
+    await output
+      .locator("h2")
+      .filter({ hasText: "A partial answer" })
+      .waitFor();
+    assert(
+      !stream.closed,
+      "Partial output is shown while the request is still running",
+    );
     stream.write("\n\nMore streamed content.");
     await output.filter({ hasText: "More streamed content." }).waitFor();
     if (action === "explain")
-      await result.screenshot({ path: path.join(artifacts, "popup-panel-streaming.png") });
+      await result.screenshot({
+        path: path.join(artifacts, "popup-panel-streaming.png"),
+      });
     stream.finish();
-    await result.locator("#result-status").filter({ hasText: "处理完成" }).waitFor();
-    assert(await element.evaluate((node) => node.isConnected), "Completing a stream preserves the panel DOM");
+    await result
+      .locator("#result-status")
+      .filter({ hasText: "处理完成" })
+      .waitFor();
+    assert(
+      await element.evaluate((node) => node.isConnected),
+      "Completing a stream preserves the panel DOM",
+    );
     assert(await result.locator("[data-op=bookmark]").isEnabled());
     assert.equal(await source.locator("[data-pagework=result]").count(), 0);
     assert.equal(await output.getAttribute("aria-busy"), "false");
@@ -565,9 +727,15 @@ module.exports = async ({
     const top = await result.locator(".original").evaluate((node) => {
       const body = node.parentElement;
       body.scrollTop = 0;
-      return node.getBoundingClientRect().top - body.getBoundingClientRect().top;
+      return (
+        node.getBoundingClientRect().top - body.getBoundingClientRect().top
+      );
     });
-    assert.equal(top, 0, "The original text starts at the top of its content area");
+    assert.equal(
+      top,
+      0,
+      "The original text starts at the top of its content area",
+    );
   }
   // Regeneration stays in the popup's result panel and can be stopped mid-stream.
   const beforeRegenerate = streams.length;
@@ -575,11 +743,15 @@ module.exports = async ({
   await host.locator("#output[aria-busy=true]").waitFor({ state: "attached" });
   const regenerate = await nextStream(beforeRegenerate);
   regenerate.write("A stopped partial answer");
-  await host.locator("#output").filter({ hasText: "A stopped partial answer" }).waitFor();
+  await host
+    .locator("#output")
+    .filter({ hasText: "A stopped partial answer" })
+    .waitFor();
   await host.locator("#result [data-op=stop-result]").click();
   await host.locator("#result-status").filter({ hasText: "已停止" }).waitFor();
   assert(await host.locator("#result [data-op=copy]").isDisabled());
-  for (let i = 0; i < 30 && !regenerate.closed; i++) await source.waitForTimeout(50);
+  for (let i = 0; i < 30 && !regenerate.closed; i++)
+    await source.waitForTimeout(50);
   assert(regenerate.closed, "Stopping the panel aborts the upstream request");
   await cdp.detach();
   assert.deepEqual(errors, []);

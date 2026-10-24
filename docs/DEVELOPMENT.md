@@ -10,10 +10,13 @@
 | 命令 | 用途 |
 | --- | --- |
 | `npm run typecheck` | 严格 TypeScript 检查 |
+| `npm run format:check` | 检查源码、测试和界面样式格式 |
+| `npm run format` | 按共享 Prettier 配置整理格式 |
 | `npm run build` | 类型检查并生成根目录 JS |
 | `npm run build:icons` | 从 SVG 母版生成图标 PNG |
 | `npm test` | 构建并运行核心逻辑测试 |
 | `npm run test:browser` | 构建并运行主浏览器回归、内容脚本恢复和最近标签页测试 |
+| `node tests/browser.cjs --onboarding-only` | 已构建产物的首次安装引导、设置跳转及配置实时更新回归 |
 | `node tests/theme-browser.cjs` | 已构建产物的首屏主题专项回归 |
 | `npm run package` | 构建并生成 `artifacts/aside-<manifest版本>.zip` |
 
@@ -37,7 +40,8 @@ CHROME_PATH="/path/to/chrome" npm run test:browser
 
 | 文件 | 职责 |
 | --- | --- |
-| `src/app.ts`、`src/copy.ts`、`src/controls.ts` | 收藏与设置界面、双语文案和共享控件 |
+| `src/app.ts`、`src/ui.ts`、`src/copy.ts`、`src/controls.ts` | 页面调度、共享界面元素、文案选择和控件 |
+| `src/locale.ts`、`src/locales/`、`_locales/` | 界面语言定义、完整文案与 Chrome 扩展元数据 |
 | `style.css`、`themes.css` | 扩展页面样式与主题 |
 | `src/popup.ts`、`popup.html`、`popup.css` | 浏览器入口弹窗 |
 | `src/background.ts`、`src/store.ts`、`src/client.ts` | 权限、任务、受限存储及消息边界 |
@@ -47,12 +51,20 @@ CHROME_PATH="/path/to/chrome" npm run test:browser
 | `src/selection-tools.ts`、`src/result-content.ts` | 划词工具条状态和结果渲染 |
 | `src/recent-tabs.ts` | 当前窗口最近标签页记录与切换 |
 | `src/lights.ts`、`src/lights-*.ts` | 网页暗色模式、框架控制和本地图形修复 |
-| `src/usage.ts`、`src/app.ts` | 服务上报用量的统一与显示 |
+| `src/usage.ts`、`src/usage-store.ts`、`src/usage-page.ts` | 用量统一、IndexedDB 记录存储与分页显示 |
 | `tests/` | 核心与隔离 Chrome 回归 |
 
 内部 `pagework` 标识用于存储、DOM 和消息等既有契约，不因仓库更名而批量替换。
 
 ## 需要保持的实现约定
+
+### 界面语言
+
+当前支持英语、简体中文、繁体中文、日语、韩语、法语、德语、西班牙语、葡萄牙语（巴西）、俄语、印尼语、意大利语、土耳其语、泰语和越南语。`src/locale.ts` 统一声明语言名称、缩写、输出语言及系统语言匹配，界面与后台共用解析规则。繁体中文地区（台湾、香港、澳门）和 `zh-Hant` 匹配繁体中文；显式 `zh-Hans` 匹配简体中文。
+
+文案按语言存放于 `src/locales/`，每种语言需完整满足英文资源导出的 `Copy` 类型，不使用英语覆盖缺失文案。动态参数、占位符和用量格式函数同样需要翻译。释义、解释、总结和问答的模型指令共用 `ACTION_PROMPTS`；翻译和随想的可编辑默认要求按界面语言提供。修改显示语言不会改写自定义名称、提示词或显式输出语言。
+
+新增语言时同步维护语言表、完整文案、`DAILY_PROMPT` 及 Chrome 的 `_locales/<locale>/messages.json`。运行 `node tests/locales.mjs` 和 `node tests/browser.cjs --locales-only`，验证系统匹配、保存、后台输出指令、弹窗及网页面板，并检查长文案在窄屏下的布局。
 
 ### 模型与协议
 
@@ -107,3 +119,7 @@ node tests/browser.cjs --lights-recovery-only
 当前 manifest 不固定扩展 `key`。未打包扩展更换加载路径可能改变扩展 ID，Chrome 会将新 ID 视为另一个扩展，旧的配置、密钥、收藏及缓存不会自动出现在新实例中。项目目前没有数据导入/导出功能。
 
 切换前保留旧扩展及其目录，记下连接和自定义处理方式，妥善保存需要的收藏。加载新目录后重新配置，并在 `chrome://extensions/shortcuts` 检查快捷键；确认新实例正常后再处理旧实例。验证新实例时先禁用旧实例，避免两个扩展同时向网页注入界面。不要通过卸载旧扩展来尝试迁移数据，卸载会删除其本地数据。
+
+调用记录概要和输入输出详情统一保存在 `aside-usage` IndexedDB 数据库中。概要和详情在同一事务中写入、清空。列表通过时间及模型索引每次读取 50 条，用 `(startedAt, id)` 游标处理同时间记录；汇总和每日图表单独扫描筛选范围的概要并累加，不读取详情或把所有记录传入界面。数据库变更通过扩展同源 BroadcastChannel 通知用量页刷新。
+
+页面渲染只负责生成和挂载界面，数据查询由页面进入、筛选、翻页或刷新事件触发。用量页刷新保留已展开的记录范围；调用记录写入失败单独记录诊断，不覆盖模型调用的原始结果或错误。连接列表的滚动恢复由连接页更新函数负责。

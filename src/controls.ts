@@ -20,22 +20,31 @@ export function closeMenu(restoreFocus = false) {
 function positionMenu() {
   if (!popup || !anchor) return;
   const rect = anchor.getBoundingClientRect();
-  const width = Math.min(Math.max(rect.width, 210), innerWidth - 24);
+  const preferredWidth =
+    parseFloat(getComputedStyle(popup).getPropertyValue("--popover-width")) ||
+    210;
+  const width = Math.min(Math.max(rect.width, preferredWidth), innerWidth - 24);
   popup.style.width = `${width}px`;
-  const below = innerHeight - rect.bottom - 12,
-    above = rect.top - 12;
-  const upward = below < 180 && above > below;
-  popup.style.maxHeight = `${Math.min(350, upward ? above : below)}px`;
+  const below = innerHeight - rect.bottom - 18,
+    above = rect.top - 18;
+  popup.style.maxHeight = `${Math.min(350, innerHeight - 24)}px`;
+  const upward = below < popup.getBoundingClientRect().height && above > below;
+  popup.style.maxHeight = `${Math.max(0, Math.min(350, upward ? above : below))}px`;
   const height = popup.getBoundingClientRect().height;
   popup.style.left = `${Math.min(Math.max(12, rect.left), innerWidth - width - 12)}px`;
   popup.style.top = `${upward ? Math.max(12, rect.top - height - 6) : rect.bottom + 6}px`;
 }
-export function showMenu(trigger: HTMLElement, html: string, label: string) {
+export function showMenu(
+  trigger: HTMLElement,
+  html: string,
+  label: string,
+  className = "",
+) {
   closeMenu();
   anchor = trigger;
   anchor.setAttribute("aria-expanded", "true");
   popup = document.createElement("div");
-  popup.className = "popover-surface";
+  popup.className = `popover-surface ${className}`.trim();
   popup.setAttribute("aria-label", label);
   popup.innerHTML = html;
   (trigger.closest("dialog") || document.body).append(popup);
@@ -43,6 +52,7 @@ export function showMenu(trigger: HTMLElement, html: string, label: string) {
     if ((event.target as HTMLElement).closest("[data-op]")) closeMenu();
   });
   positionMenu();
+  return popup;
 }
 function highlight(index: number) {
   if (!popup || !anchor || !menuOptions.length) return;
@@ -67,7 +77,7 @@ function renderOptions(query = "") {
       ? menuOptions
           .map(
             (option, i) =>
-              `<button type="button" role="option" id="option-${sequence}-${i}" aria-selected="${option.value === selectedValue}" data-option="${i}" data-value="${escape(option.value)}" tabindex="-1"><span>${escape(option.textContent)}</span><span class="option-check" aria-hidden="true">${option.value === selectedValue ? "✓" : ""}</span></button>`,
+              `<button type="button" role="option" id="option-${sequence}-${i}" aria-selected="${option.value === selectedValue}" data-option="${i}" data-value="${escape(option.value)}" tabindex="-1"><span class="option-copy"><span class="option-title">${escape(option.dataset.title || option.textContent)}</span>${option.dataset.description ? `<small class="option-description">${escape(option.dataset.description)}</small>` : ""}</span><span class="option-check" aria-hidden="true">${option.value === selectedValue ? "✓" : ""}</span></button>`,
           )
           .join("")
       : `<div class="no-options">${C.noOptions}</div>`;
@@ -100,7 +110,7 @@ function openSelect(
   }
   showMenu(
     trigger,
-    `${source.options.length > 6 ? `<input class="option-search" aria-label="${C.searchOptions}" placeholder="${C.searchOptions}" autocomplete="off">` : ""}<div class="option-list" role="listbox" id="options-${sequence}"></div>`,
+    `${source.dataset.search !== "false" && source.options.length > 6 ? `<input class="option-search" aria-label="${C.searchOptions}" placeholder="${C.searchOptions}" autocomplete="off">` : ""}<div class="option-list" role="listbox" id="options-${sequence}"></div>`,
     trigger.getAttribute("aria-label") || "",
   );
   select = source;
@@ -191,7 +201,7 @@ document.addEventListener(
       closeMenu(true);
       return;
     }
-    if (event.key === "Tab") {
+    if (event.key === "Tab" && popup.getAttribute("role") !== "dialog") {
       closeMenu();
       return;
     }

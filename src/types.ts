@@ -1,8 +1,8 @@
+import type { LocalePreference } from "./locale.js";
 export type Protocol =
   "responses" | "anthropic" | "gemini" | "chat" | "typesafe";
 export type ModelPurpose = "generation" | "decision";
-export type Locale = "zh-CN" | "en";
-export type LocalePreference = Locale | "system";
+export type { Locale, LocalePreference } from "./locale.js";
 export type ActionKind =
   "translate" | "plain" | "explain" | "summary" | "qa" | "custom";
 export type OutputLength = "brief" | "balanced" | "detailed";
@@ -118,6 +118,7 @@ export interface Preferences {
   locale: LocalePreference;
   theme: "system" | "light" | "dark";
   palette: string;
+  hideDaily?: boolean;
 }
 export type LightsMode = "off" | "on" | "system";
 export interface WebsiteFeatures {
@@ -202,6 +203,11 @@ export interface UsageUpdate {
   tokens: Tokens;
   final: boolean;
 }
+export interface UsageDetails {
+  instructions: string;
+  input: string;
+  output: string;
+}
 export interface UsageRecord {
   id: string;
   startedAt: number;
@@ -222,6 +228,19 @@ export interface UsageSummary extends Tokens {
   reported: number;
   partial: number;
   missing: number;
+}
+export type UsageCursor = [number, string];
+export interface UsageDay {
+  date: number;
+  totalTokens: number | null;
+  calls: number;
+  incomplete: boolean;
+}
+export interface UsageOverview {
+  summary: UsageSummary;
+  days: UsageDay[];
+  models: { value: string; model: string; connectionName: string }[];
+  totalRecords: number;
 }
 export interface UsageFilter {
   period: string;
@@ -248,9 +267,7 @@ export interface ExtractedBlock extends TextBlock {
 }
 export interface Sample {
   title: string;
-  category: string;
   paragraphs: string[];
-  translations: string[];
 }
 
 export interface PublicConfig extends PublicSettings {
@@ -311,7 +328,15 @@ export interface RequestMap {
   };
   "cache.stats": { payload: {}; result: CacheInfo };
   "cache.clear": { payload: {}; result: boolean };
-  "usage.list": { payload: {}; result: UsageRecord[] };
+  "usage.list": {
+    payload: { filter?: UsageFilter; before?: UsageCursor };
+    result: UsageRecord[];
+  };
+  "usage.overview": {
+    payload: { filter?: UsageFilter };
+    result: UsageOverview;
+  };
+  "usage.details": { payload: { id: string }; result: UsageDetails | null };
   "usage.clear": { payload: {}; result: boolean };
   "collection.add": {
     payload: { item: CollectionInput };

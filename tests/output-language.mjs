@@ -40,6 +40,27 @@ for (const kind of Object.keys(ACTION_PROMPTS)) {
     "My saved prompt",
   );
 }
+const { hasSameLanguages } = await import("../translation.js");
+for (const presets of [english, chinese])
+  assert.equal(
+    presets.find((action) => action.kind === "translate").targetLanguage,
+    "interface",
+  );
+const following = {
+  ...english[0],
+  sourceLanguage: "en",
+  targetLanguage: "interface",
+};
+assert(hasSameLanguages(following, "en"));
+assert(!hasSameLanguages(following, "ja"));
+assert(!hasSameLanguages({ ...following, sourceLanguage: "auto" }, "en"));
+const resolvedTranslation = (locale) => ({
+  ...following,
+  sourceLanguage: "auto",
+  targetLanguage: resolveOutputLanguage(following.targetLanguage, locale),
+});
+assert(actionInstructions(resolvedTranslation("ja")).includes("into ja."));
+assert.equal(localizeAction(following, "ja").targetLanguage, "interface");
 assert(!hasOutputLanguage({ kind: "translate" }));
 assert(!hasOutputLanguage({ kind: "custom" }));
 assert.equal(
@@ -63,6 +84,11 @@ const connection = {
   model: "fixture",
   maxTokens: 1000,
 };
+assert.notEqual(
+  await resultKey(connection, resolvedTranslation("en"), "same"),
+  await resultKey(connection, resolvedTranslation("ja"), "same"),
+  "Translation cache keys follow the resolved target language",
+);
 const cache = {
   generation: 0,
   entries: new Map(),

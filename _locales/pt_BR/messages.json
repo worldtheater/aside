@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "Aside"
+  },
+  "description": {
+    "message": "Traduza, explique e reescreva páginas e textos selecionados com seu próprio modelo de linguagem."
+  },
+  "processSelection": {
+    "message": "Processar seleção com o Aside"
+  },
+  "switchRecentTab": {
+    "message": "Alterne entre as duas últimas abas visualizadas nesta janela."
+  },
+  "quickQuestion": {
+    "message": "Abrir Perguntas rápidas"
+  }
+}

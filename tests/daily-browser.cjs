@@ -22,6 +22,10 @@ module.exports = async ({
       async () =>
         (await chrome.runtime.sendMessage({ type: "snapshot" })).value,
     );
+  const openSettings = async () => {
+    await page.locator(".daily-card").hover();
+    await op("daily-settings").click();
+  };
   const close = async () => {
     await page.locator("dialog .dialog-actions [data-op=dialog-close]").click();
     await page.waitForFunction(() => !document.querySelector("dialog").open);
@@ -83,8 +87,8 @@ module.exports = async ({
           prompt: DAILY_PROMPT["zh-CN"],
           outputLanguage: "interface",
           useCollection: false,
-          result: null,
-          date: null,
+          result: "An existing reflection.",
+          date: new Date().toLocaleDateString("en-CA"),
         },
       });
       return {
@@ -96,9 +100,11 @@ module.exports = async ({
     await page.reload();
     await page.locator("h1").waitFor();
     await nav("home");
-    const emptyText = await page.locator(".workspace .daily-thought").textContent();
-    const readyHint = await page.locator(".daily-caption").textContent();
-    await op("daily-settings").click();
+    const emptyText = await page
+      .locator(".workspace .daily-thought")
+      .textContent();
+    assert.equal(await page.locator(".daily-caption").count(), 0);
+    await openSettings();
     assert.equal(
       await page.locator("[data-op=daily-preset],#daily-template-name").count(),
       0,
@@ -120,7 +126,7 @@ module.exports = async ({
     await close();
 
     const prompt = "从平常的阅读中写一句具体、平实的随想。";
-    await op("daily-settings").click();
+    await openSettings();
     await page.locator("#daily-prompt").fill(prompt);
     await choose("#daily-model", models.alternate);
     await choose("#daily-output-language", "en");
@@ -135,9 +141,9 @@ module.exports = async ({
     let config = (await snapshot()).daily;
     assert.equal(config.model, models.alternate);
     assert.equal(config.prompt, prompt);
-    assert.equal(config.result, null);
+    assert.equal(config.result, emptyText);
     await page.reload();
-    await op("daily-settings").click();
+    await openSettings();
     assert.equal(
       await page.locator("#daily-model").inputValue(),
       models.alternate,
@@ -147,7 +153,7 @@ module.exports = async ({
     await page.locator("#daily-prompt").fill("Discarded instructions");
     await choose("#daily-model", "default");
     await close();
-    await op("daily-settings").click();
+    await openSettings();
     assert.equal(await page.locator("#daily-prompt").inputValue(), prompt);
     assert.equal(
       await page.locator("#daily-model").inputValue(),
@@ -175,7 +181,7 @@ module.exports = async ({
     assert((await op("daily-save").textContent()).includes("保存并采用"));
     assert.equal(
       (await snapshot()).daily.result,
-      null,
+      emptyText,
       "Preview does not publish before saving",
     );
     const beforeUse = calls.length;
@@ -193,7 +199,7 @@ module.exports = async ({
       published.result,
     );
 
-    await op("daily-settings").click();
+    await openSettings();
     await page.locator("#daily-prompt").fill(prompt + " 再简短一些。");
     await choose("#daily-model", "default");
     await choose("#daily-output-language", "fr");
@@ -207,7 +213,7 @@ module.exports = async ({
       "Saving revised settings preserves today's thought",
     );
     assert.equal(config.date, published.date);
-    await op("daily-settings").click();
+    await openSettings();
     await preview();
     assert.equal(calls.at(-1).body.model, models.defaultModel);
     await choose("#daily-model", models.alternate);
@@ -224,6 +230,7 @@ module.exports = async ({
       });
     });
     await page.reload();
+    await page.locator(".daily-card").hover();
     await op("daily-refresh").click();
     await page
       .locator(".workspace .daily-thought")
@@ -237,7 +244,7 @@ module.exports = async ({
     assert(
       calls.at(-1).body.messages[0].content.includes("Output language: fr."),
     );
-    await op("daily-settings").click();
+    await openSettings();
     await choose("#daily-model", "default");
     assert(await op("daily-preview").isDisabled());
     assert(
@@ -253,7 +260,7 @@ module.exports = async ({
       collection[0].text = "DELAY_FIXTURE saved thought";
       await chrome.storage.local.set({ collection });
     });
-    await op("daily-settings").click();
+    await openSettings();
     const beforeSlow = calls.length;
     await op("daily-preview").click();
     await page.waitForFunction(
@@ -275,7 +282,7 @@ module.exports = async ({
         credentials: { ...credentials, [id]: "invalid-fixture" },
       });
     }, models.alternate);
-    await op("daily-settings").click();
+    await openSettings();
     await op("daily-preview").click();
     await page.locator("#daily-preview-error").waitFor();
     assert.equal(await page.locator(".daily-preview-text").count(), 0);
@@ -295,7 +302,7 @@ module.exports = async ({
     assert.deepEqual((await snapshot()).daily, beforeReject);
 
     await choose("#ui-locale", "en");
-    await op("daily-settings").click();
+    await openSettings();
     assert(
       (await page.locator("#daily-prompt").inputValue()).startsWith(prompt),
     );
@@ -317,7 +324,7 @@ module.exports = async ({
       { base: models.base, stored },
     );
     await page.reload();
-    await op("daily-settings").click();
+    await openSettings();
     await choose("#daily-model", "default");
     await preview();
     await page.screenshot({
@@ -342,7 +349,7 @@ module.exports = async ({
       animations: "disabled",
     });
     await close();
-    assert(emptyText && readyHint);
+    assert(emptyText);
     console.log(
       "PASS: one reflection, localized defaults, model selection/reload/home generation, collection limits, preview reuse, settings-only retention, cancel/stale/error isolation and responsive dialog.",
     );

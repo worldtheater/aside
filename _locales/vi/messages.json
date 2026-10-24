@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "Aside"
+  },
+  "description": {
+    "message": "Dịch, giải thích và viết lại trang web cùng văn bản đã chọn bằng mô hình ngôn ngữ của riêng bạn."
+  },
+  "processSelection": {
+    "message": "Xử lý phần đã chọn bằng Aside"
+  },
+  "switchRecentTab": {
+    "message": "Chuyển qua lại giữa hai tab được xem gần nhất trong cửa sổ này."
+  },
+  "quickQuestion": {
+    "message": "Mở Hỏi đáp nhanh"
+  }
+}

@@ -3,9 +3,10 @@ import { HoverTips } from "./hover-tips.js";
 import brandMark from "../icons/brand-mark.svg";
 import { hasOutputLanguage, DEFAULT_OUTPUT_LENGTH } from "./prompts.js";
 import { MAX_ACTIONS, toolbarActions } from "./action-policy.js";
-import { ModelError } from "./providers.js";
+import { ModelError, hasDefaultModel } from "./providers.js";
 import { request } from "./client.js";
 import { hasSameLanguages } from "./translation.js";
+import { resolveLocale } from "./locale.js";
 import type { Action, ActionEdit, PublicConfig } from "./types.js";
 
 const fields = (a: Action): ActionEdit => ({
@@ -253,6 +254,14 @@ export class SelectionTools {
     this.reset();
   }
 
+  refreshTips() {
+    this.tips.refresh();
+  }
+
+  destroy() {
+    this.tips.destroy();
+  }
+
   updatePin() {
     const button = this.root.querySelector<HTMLButtonElement>(
       "[data-selection-command=pin]",
@@ -331,12 +340,16 @@ export class SelectionTools {
 
   updateSelection() {
     const source = this.options.selection(),
-      active = this.visibleResultAction();
+      active = this.visibleResultAction(),
+      needsSetup =
+        !hasDefaultModel(this.options.config()) &&
+        !this.root.closest("[inert]");
     this.root
       .querySelectorAll<HTMLButtonElement>("[data-selection-command=action]")
       .forEach((button) => {
         const isResult = button.dataset.selectionAction === active;
-        button.disabled = this.busy || (!this.drafts && !source && !isResult);
+        button.disabled =
+          needsSetup || this.busy || (!this.drafts && !source && !isResult);
         if (!this.drafts) {
           if (isResult) button.setAttribute("aria-pressed", "true");
           else button.removeAttribute("aria-pressed");
@@ -357,8 +370,13 @@ export class SelectionTools {
   }
 
   private async click(button: HTMLButtonElement) {
-    if (this.busy) return;
     const command = button.dataset.selectionCommand!;
+    // Navigation remains available while processing or saving toolbar settings.
+    if (command === "home") {
+      await this.options.home();
+      return;
+    }
+    if (this.busy || button.disabled) return;
     this.error = "";
     if (command === "action") {
       // Check again during the click: selectionchange can arrive after the click event.
@@ -397,9 +415,6 @@ export class SelectionTools {
     } else if (command === "cancel") {
       this.drafts = null;
       this.selected = this.options.selected();
-    } else if (command === "home") {
-      await this.options.home();
-      return;
     } else if (command === "add") {
       if ((this.drafts || this.options.config().actions).length >= MAX_ACTIONS)
         throw new ModelError("actionLimit");
@@ -454,7 +469,10 @@ export class SelectionTools {
       const error =
         !action.name.trim() || !action.instruction.trim()
           ? S.requiredAction
-          : hasSameLanguages(action)
+          : hasSameLanguages(
+                action,
+                resolveLocale(this.options.config().preferences.locale),
+              )
             ? S.errors.sameLanguages
             : "";
       if (error) {
@@ -497,7 +515,8 @@ export class SelectionTools {
     this.root.querySelector(".selection-resize")?.remove();
     this.tips.hide(true);
     const config = this.options.config(),
-      S = config.strings;
+      S = config.strings,
+      needsSetup = !hasDefaultModel(config) && !this.root.closest("[inert]");
     const actions = this.drafts || config.actions;
     const active = actions.find((a) => a.id === this.selected);
     const visibleActions = toolbarActions(actions, this.expanded);
@@ -507,7 +526,7 @@ export class SelectionTools {
     );
     const glyph = this.options.icon;
     const button = (command: string, label: string, name = "", attrs = "") =>
-      `<button type="button" class="selection-button${name ? "" : " selection-text-button"}" data-selection-command="${command}" ${attrs} aria-label="${escape(label)}" ${this.busy ? "disabled" : ""}>${name ? glyph(name) : escape(label)}</button>`;
+      `<button type="button" class="selection-button${name ? "" : " selection-text-button"}" data-selection-command="${command}" ${attrs} aria-label="${escape(label)}" ${this.busy || needsSetup ? "disabled" : ""}>${name ? glyph(name) : escape(label)}</button>`;
     const actionButton = (a: Action) =>
       button(
         "action",
@@ -533,8 +552,8 @@ export class SelectionTools {
       this.root.prepend(toolbar);
     }
     const brand = toolbar.querySelector<HTMLButtonElement>(".selection-brand")!;
-    brand.setAttribute("aria-label", S.openHome);
-    brand.disabled = this.busy;
+    brand.setAttribute("aria-label", needsSetup ? S.settings : S.openHome);
+    brand.disabled = false;
     toolbar.querySelector(".selection-actions")!.innerHTML = visibleActions
       .map(actionButton)
       .join("");
@@ -583,6 +602,7 @@ export class SelectionTools {
         .append(this.result.element);
     this.updateResultVisibility();
     this.updateSelection();
+    this.tips.setHint(needsSetup ? brand : null, S.configureModelHint);
     const selectedAction = this.root.querySelector<HTMLElement>(
       ".selection-actions [aria-pressed=true]",
     );
@@ -623,7 +643,10 @@ export class SelectionTools {
           ? `<div class="selection-languages">${select("sourceLanguage", S.sourceLanguage, Object.entries(S.languages), a.sourceLanguage)}${select(
               "targetLanguage",
               S.targetLanguage,
-              Object.entries(S.languages).filter(([id]) => id !== "auto"),
+              [
+                ["interface", S.followInterfaceLanguage],
+                ...Object.entries(S.languages).filter(([id]) => id !== "auto"),
+              ],
               a.targetLanguage,
             )}</div>`
           : hasOutputLanguage(a)

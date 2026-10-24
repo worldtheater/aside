@@ -47,6 +47,78 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
   );
   fixtures[1].actionName = plainName;
   try {
+    assert(
+      await op("collection-search-toggle").isHidden(),
+      "Empty collections hide search",
+    );
+    assert(await page.locator(".daily-guidance").isVisible());
+    await page.screenshot({
+      path: path.join(artifacts, "home-setup-entry.png"),
+      animations: "disabled",
+    });
+    await page.locator(".daily-setup").click();
+    assert.equal(await page.locator("h1").textContent(), "模型连接");
+    await nav("help");
+    assert.equal(await page.locator("h1").textContent(), "关于");
+    const version = await page.evaluate(
+      () => chrome.runtime.getManifest().version,
+    );
+    assert(
+      (await page.locator(".help-version").textContent()).includes(version),
+    );
+    assert.equal(
+      await page.locator('.help-links a[href$="/issues"]').getAttribute("href"),
+      "https://github.com/worldtheater/aside/issues",
+    );
+    assert.equal(await page.locator(".help-credits li").count(), 3);
+    assert(
+      (await page.locator(".help-credits").textContent()).includes(
+        "Dark Reader",
+      ),
+    );
+    const helpLink = await page
+      .locator('.sidebar-footer [data-route="help"]')
+      .boundingBox();
+    assert(helpLink.y > 850, "Help is anchored at the bottom of the sidebar");
+    await page.screenshot({
+      path: path.join(artifacts, "help-about-light.png"),
+      fullPage: true,
+      animations: "disabled",
+    });
+    await page.evaluate(
+      () => (document.documentElement.dataset.theme = "dark"),
+    );
+    await page.screenshot({
+      path: path.join(artifacts, "help-about-dark.png"),
+      fullPage: true,
+      animations: "disabled",
+    });
+    const helpLabels = await page.evaluate(async () => {
+      const { messages } = await import("./copy.js");
+      return Object.entries(messages).map(([locale, copy]) => [
+        locale,
+        copy.nav.help,
+      ]);
+    });
+    for (const [locale, label] of helpLabels) {
+      await choose("#ui-locale", locale);
+      assert.equal(await page.locator("h1").textContent(), label);
+    }
+    await choose("#ui-locale", "ru");
+    await page.setViewportSize({ width: 390, height: 844 });
+    assert(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth,
+      ),
+    );
+    await page.screenshot({
+      path: path.join(artifacts, "help-about-mobile.png"),
+      fullPage: true,
+      animations: "disabled",
+    });
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await choose("#ui-locale", "zh-CN");
+    await nav("home");
     await page.evaluate(
       async ({ fixtures }) => {
         const { daily } = await chrome.storage.local.get("daily");
@@ -93,7 +165,10 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
       "zh.wikisource.org",
     );
     assert.equal(
-      await page.locator(".collection-origin").first().getAttribute("aria-label"),
+      await page
+        .locator(".collection-origin")
+        .first()
+        .getAttribute("aria-label"),
       pageTitle,
     );
     assert(
@@ -103,6 +178,192 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
     );
     assert((await page.locator(".daily-date").textContent()).includes("18"));
     assert.equal(await page.locator(".daily-caption").count(), 0);
+    const daily = page.locator(".daily-region");
+    const controls = daily.locator(".daily-controls");
+    assert.deepEqual(
+      await controls
+        .locator("button")
+        .evaluateAll((buttons) => buttons.map((b) => b.dataset.op)),
+      ["daily-settings", "daily-refresh", "daily-hide-ask"],
+    );
+    await page.mouse.move(0, 0);
+    await page.waitForFunction(
+      () =>
+        document.querySelector(".daily-controls").getBoundingClientRect()
+          .right <=
+        document.querySelector(".daily-card").getBoundingClientRect().right,
+    );
+    await daily.hover();
+    await page.waitForFunction(
+      () =>
+        getComputedStyle(document.querySelector(".daily-controls")).right ===
+        "0px",
+    );
+    assert(
+      await daily.evaluate((region) => {
+        const card = region
+          .querySelector(".daily-card")
+          .getBoundingClientRect();
+        const panel = region
+          .querySelector(".daily-controls")
+          .getBoundingClientRect();
+        return (
+          panel.left < card.right &&
+          panel.right > card.right &&
+          panel.right <= innerWidth
+        );
+      }),
+      "The hover panel extends from behind the card without overflowing the page",
+    );
+    const expectCenteredTip = async (anchor) => {
+      await anchor.hover();
+      const tip = page.locator(".hover-tip:popover-open");
+      await tip.waitFor();
+      await tip.evaluate((node) =>
+        Promise.all(
+          node
+            .getAnimations()
+            .map((animation) => animation.finished.catch(() => {})),
+        ),
+      );
+      const controlBounds = await anchor.boundingBox(),
+        tipBounds = await tip.boundingBox();
+      const expectedLeft = Math.max(
+        8,
+        Math.min(
+          controlBounds.x + (controlBounds.width - tipBounds.width) / 2,
+          page.viewportSize().width - tipBounds.width - 8,
+        ),
+      );
+      assert(
+        Math.abs(tipBounds.x - expectedLeft) < 1,
+        "Tips center over their anchor and only shift at viewport edges",
+      );
+      assert.equal(
+        await tip.textContent(),
+        await anchor.getAttribute("data-tooltip"),
+      );
+    };
+    await expectCenteredTip(op("daily-settings"));
+    assert.equal(
+      await controls.evaluate((node) => getComputedStyle(node).right),
+      "0px",
+      "Moving into the panel keeps it open",
+    );
+    await page.screenshot({
+      path: path.join(artifacts, "daily-hover-panel.png"),
+      animations: "disabled",
+    });
+    await page.setViewportSize({ width: 320, height: 900 });
+    await daily.hover();
+    await expectCenteredTip(op("daily-settings"));
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await expectCenteredTip(
+      page.locator(".collection-card-footer [data-tooltip]").first(),
+    );
+    await nav("actions");
+    await expectCenteredTip(
+      page.locator(".toggle-label[data-tooltip]").first(),
+    );
+    await nav("home");
+    await daily.hover();
+    await op("daily-settings").click();
+    await page.locator("dialog .dialog-actions [data-op=dialog-close]").click();
+    await page.waitForFunction(() => !document.querySelector("dialog").open);
+    await page.mouse.move(0, 0);
+    await page.waitForFunction(
+      () =>
+        document.querySelector(".daily-controls").getBoundingClientRect()
+          .right <=
+        document.querySelector(".daily-card").getBoundingClientRect().right,
+    );
+    assert(
+      await op("daily-settings").evaluate(
+        (node) => node === document.activeElement,
+      ),
+      "Pointer cancellation restores focus without keeping the panel open",
+    );
+    await page.keyboard.press("Tab");
+    assert(
+      await op("daily-refresh").evaluate(
+        (node) => node === document.activeElement,
+      ),
+    );
+    await page.waitForFunction(
+      () =>
+        getComputedStyle(document.querySelector(".daily-controls")).right ===
+        "0px",
+    );
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Enter");
+    await page.locator("#daily-prompt").waitFor();
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(() => !document.querySelector("dialog").open);
+    await page.waitForFunction(
+      () =>
+        getComputedStyle(document.querySelector(".daily-controls")).right ===
+        "0px",
+    );
+    assert(
+      await op("daily-settings").evaluate(
+        (node) =>
+          node === document.activeElement && node.matches(":focus-visible"),
+      ),
+      "Keyboard cancellation keeps the focused panel accessible",
+    );
+    await daily.hover();
+    const savedDaily = await page.evaluate(
+      async () => (await chrome.storage.local.get("daily")).daily,
+    );
+    await op("daily-hide-ask").click();
+    assert(await daily.isVisible(), "Closing first asks for confirmation");
+    assert.equal(await page.locator("dialog > .dialog-close").count(), 0);
+    await page.locator("dialog [data-op=dialog-close]").click();
+    await page.waitForFunction(() => !document.querySelector("dialog").open);
+    assert(await daily.isVisible(), "Cancel keeps the card");
+    await daily.hover();
+    await op("daily-hide-ask").click();
+    await op("daily-hide").click();
+    await page.waitForFunction(() => !document.querySelector("dialog").open);
+    assert.equal(await daily.count(), 0);
+    assert(
+      await page.locator(".page-heading [data-op=daily-restore]").isVisible(),
+    );
+    await page.reload();
+    await op("daily-restore").waitFor();
+    assert.equal(await daily.count(), 0, "Hidden state persists after reload");
+    assert.deepEqual(
+      await page.evaluate(
+        async () => (await chrome.storage.local.get("daily")).daily,
+      ),
+      savedDaily,
+    );
+    await op("daily-restore").press("Enter");
+    await daily.waitFor();
+    assert.equal(await op("daily-restore").count(), 0);
+    assert.equal(
+      await page.locator(".daily-thought").textContent(),
+      savedDaily.result,
+    );
+    await page.mouse.move(0, 0);
+    await page.waitForFunction(
+      () =>
+        getComputedStyle(document.querySelector(".daily-controls")).right ===
+        "0px",
+    );
+    assert(
+      await op("daily-settings").evaluate(
+        (node) => node === document.activeElement,
+      ),
+      "Restoring focuses settings and reveals the panel for keyboard use",
+    );
+    await page.reload();
+    await daily.waitFor();
+    assert.equal(
+      await op("daily-restore").count(),
+      0,
+      "Restored state persists after reload",
+    );
     await page.evaluate(() =>
       Promise.all(
         document
@@ -121,20 +382,33 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
     const searchToggle = op("collection-search-toggle");
     assert.equal(await page.locator(".home-shortcut").count(), 0);
     const assertNoTip = async (control) => {
-      assert(await control.getAttribute("aria-label"), "Keep an accessible name");
+      assert(
+        await control.getAttribute("aria-label"),
+        "Keep an accessible name",
+      );
       assert.equal(await control.getAttribute("data-tooltip"), null);
       assert.equal(await control.getAttribute("title"), null);
     };
     await assertNoTip(searchToggle);
     await assertNoTip(page.locator('[data-select-for="ui-locale"]'));
     await assertNoTip(op("theme-menu"));
-    assert.equal(await page.locator(".language-control").getAttribute("data-tooltip"), null);
+    assert.equal(
+      await page.locator(".language-control").getAttribute("data-tooltip"),
+      null,
+    );
     await assertNoTip(op("history-back"));
     await assertNoTip(op("history-forward"));
-    const settle = (node) => node.evaluate(async (root) => {
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      await Promise.all(root.getAnimations({subtree:true}).map((animation) => animation.finished.catch(() => {})));
-    });
+    const settle = (node) =>
+      node.evaluate(async (root) => {
+        await new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        );
+        await Promise.all(
+          root
+            .getAnimations({ subtree: true })
+            .map((animation) => animation.finished.catch(() => {})),
+        );
+      });
     assert(await search.isHidden());
     assert(await search.isDisabled());
     assert.equal(await searchToggle.getAttribute("aria-expanded"), "false");
@@ -142,7 +416,8 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
     await searchBox.evaluate((root) => {
       root.dataset.transitions = "";
       root.addEventListener("transitionend", (event) => {
-        if (event.target === root) root.dataset.transitions += event.propertyName + ";";
+        if (event.target === root)
+          root.dataset.transitions += event.propertyName + ";";
       });
     });
     await searchToggle.click();
@@ -150,8 +425,13 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
     await assertNoTip(searchToggle);
     await settle(searchBox);
     assert((await searchBox.boundingBox()).width > collapsedSearchWidth);
-    assert((await searchBox.getAttribute("data-transitions")).includes("width"), "Search expands with a real width transition");
-    await page.locator(".collection-bar").screenshot({path:path.join(artifacts,"collection-search-expanded.png")});
+    assert(
+      (await searchBox.getAttribute("data-transitions")).includes("width"),
+      "Search expands with a real width transition",
+    );
+    await page.locator(".collection-bar").screenshot({
+      path: path.join(artifacts, "collection-search-expanded.png"),
+    });
     await page.locator("#collection-search").fill("王生");
     assert.equal(await page.locator(".collection-card").count(), 1);
     assert.equal(
@@ -163,12 +443,43 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
     await search.press("Escape");
     await settle(searchBox);
     assert(await search.isHidden());
-    assert.equal(await page.locator(".collection-card").count(), 4, "Collapsing search clears hidden filters");
-    assert(await searchToggle.evaluate((button) => button === document.activeElement));
+    assert.equal(
+      await page.locator(".collection-card").count(),
+      4,
+      "Collapsing search clears hidden filters",
+    );
+    assert(
+      await searchToggle.evaluate(
+        (button) => button === document.activeElement,
+      ),
+    );
     await assertNoTip(searchToggle);
     await page.keyboard.press("Enter");
     assert(await search.evaluate((input) => input === document.activeElement));
     await assertNoTip(searchToggle);
+    await search.fill("王生");
+    await page.locator(".page-heading h1").click();
+    await settle(searchBox);
+    assert(
+      (await search.isHidden()) && (await search.isDisabled()),
+      "Clicking outside on the page collapses search",
+    );
+    assert.equal(await searchToggle.getAttribute("aria-expanded"), "false");
+    assert.equal(await search.inputValue(), "");
+    assert.equal(await page.locator(".collection-card").count(), 4);
+    await searchToggle.click();
+    await search.fill("王生");
+    await search.press("Tab");
+    assert(await search.evaluate((input) => input !== document.activeElement));
+    await page.keyboard.press("Escape");
+    await settle(searchBox);
+    assert(
+      await search.isHidden(),
+      "Escape collapses search even after focus leaves the input",
+    );
+    assert.equal(await searchToggle.getAttribute("aria-expanded"), "false");
+    assert.equal(await page.locator(".collection-card").count(), 4);
+    await searchToggle.click();
     await page.locator("#collection-search").fill("");
     assert.equal(
       await page
@@ -198,62 +509,125 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
       ),
     );
     await assertNoTip(page.locator("dialog > .dialog-close"));
-    await page.locator("dialog").screenshot({ path: path.join(artifacts, "collection-detail.png"), animations: "disabled" });
+    await page.locator("dialog").screenshot({
+      path: path.join(artifacts, "collection-detail.png"),
+      animations: "disabled",
+    });
     await page.locator("dialog > .dialog-close").click();
     await page.waitForFunction(() => !document.querySelector("dialog").open);
 
     // A long passage and expanded source must share one bounded scroll area.
-    await page.evaluate(async fixtures => chrome.storage.local.set({collection:fixtures.map((item, i) => i ? item : {
-      ...item, sourceText:item.sourceText.repeat(40), text:item.text.repeat(50),
-    })}), fixtures);
-    await page.setViewportSize({width:390,height:640});
+    await page.evaluate(
+      async (fixtures) =>
+        chrome.storage.local.set({
+          collection: fixtures.map((item, i) =>
+            i
+              ? item
+              : {
+                  ...item,
+                  sourceText: item.sourceText.repeat(40),
+                  text: item.text.repeat(50),
+                },
+          ),
+        }),
+      fixtures,
+    );
+    await page.setViewportSize({ width: 390, height: 640 });
     await page.locator("[data-op=collection-open][data-id=first]").click();
     const detail = page.locator("dialog");
     await detail.locator(".collection-original summary").click();
-    assert(await detail.locator(".collection-original").getAttribute("open") !== null);
-    assert(await detail.evaluate(node => {
-      const footer = node.querySelector(".dialog-actions").getBoundingClientRect();
-      const body = node.querySelector(".collection-detail-body");
-      return footer.bottom <= innerHeight && body.scrollHeight > body.clientHeight &&
-        node.getBoundingClientRect().bottom <= innerHeight;
-    }), "Expanding the original keeps the footer inside the viewport");
+    assert(
+      (await detail.locator(".collection-original").getAttribute("open")) !==
+        null,
+    );
+    assert(
+      await detail.evaluate((node) => {
+        const footer = node
+          .querySelector(".dialog-actions")
+          .getBoundingClientRect();
+        const body = node.querySelector(".collection-detail-body");
+        return (
+          footer.bottom <= innerHeight &&
+          body.scrollHeight > body.clientHeight &&
+          node.getBoundingClientRect().bottom <= innerHeight
+        );
+      }),
+      "Expanding the original keeps the footer inside the viewport",
+    );
     await page.evaluate(() => {
-      navigator.clipboard.writeText = async () => { throw Error("Fixture copy denied"); };
+      navigator.clipboard.writeText = async () => {
+        throw Error("Fixture copy denied");
+      };
     });
     await detail.locator("[data-op=collection-copy]").click();
-    const notice = page.locator('#toast[data-kind=error]:not([hidden])');
+    const notice = page.locator("#toast[data-kind=error]:not([hidden])");
     await notice.waitFor();
     assert.equal(await notice.getAttribute("role"), "alert");
-    assert(await notice.locator(":scope > svg circle").count(), "Errors use a warning icon");
-    assert(await notice.evaluate(node => {
-      const rect = node.querySelector("span").getBoundingClientRect();
-      return document.elementFromPoint(rect.x + rect.width/2, rect.y + rect.height/2)?.closest("#toast") === node;
-    }), "Feedback is in the active modal and accepts pointer input");
-    assert(await detail.evaluate(node => {
-      const footer = node.querySelector(".dialog-actions").getBoundingClientRect();
-      const notice = node.querySelector("#toast").getBoundingClientRect();
-      return footer.bottom <= notice.top && notice.bottom <= innerHeight;
-    }), "Inline feedback leaves the footer visible");
+    assert(
+      await notice.locator(":scope > svg circle").count(),
+      "Errors use a warning icon",
+    );
+    assert(
+      await notice.evaluate((node) => {
+        const rect = node.querySelector("span").getBoundingClientRect();
+        return (
+          document
+            .elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
+            ?.closest("#toast") === node
+        );
+      }),
+      "Feedback is in the active modal and accepts pointer input",
+    );
+    assert(
+      await detail.evaluate((node) => {
+        const footer = node
+          .querySelector(".dialog-actions")
+          .getBoundingClientRect();
+        const notice = node.querySelector("#toast").getBoundingClientRect();
+        return footer.bottom <= notice.top && notice.bottom <= innerHeight;
+      }),
+      "Inline feedback leaves the footer visible",
+    );
     await page.waitForTimeout(3200);
     assert(await notice.isVisible(), "Errors remain readable until dismissed");
-    await page.screenshot({path:path.join(artifacts,"collection-long-error-mobile.png"),animations:"disabled"});
+    await page.screenshot({
+      path: path.join(artifacts, "collection-long-error-mobile.png"),
+      animations: "disabled",
+    });
     await notice.locator("[data-op=dismiss-notice]").click();
     assert(await page.locator("#toast").isHidden());
     await detail.locator("[data-op=collection-copy]").click();
     await notice.waitFor();
     await detail.locator(":scope > .dialog-close").click();
     await page.waitForFunction(() => !document.querySelector("dialog").open);
-    assert(await page.locator("#toast").isHidden(), "Closing a dialog also dismisses its feedback");
-    await page.evaluate(fixtures => chrome.storage.local.set({collection:fixtures}), fixtures);
-    await page.setViewportSize({width:1440,height:1000});
+    assert(
+      await page.locator("#toast").isHidden(),
+      "Closing a dialog also dismisses its feedback",
+    );
+    await page.evaluate(
+      (fixtures) => chrome.storage.local.set({ collection: fixtures }),
+      fixtures,
+    );
+    await page.setViewportSize({ width: 1440, height: 1000 });
 
     const assertOptionsHover = async (name) => {
       const card = page.locator(".collection-card").first();
       const options = card.locator('[data-op="collection-menu"]');
       await options.hover();
       await settle(card);
-      assert(await options.evaluate((button) => getComputedStyle(button).backgroundColor !== getComputedStyle(button.closest(".collection-card")).backgroundColor), "The options button remains distinct from the highlighted card");
-      await card.screenshot({path:path.join(artifacts,`collection-options-hover-${name}.png`),animations:"disabled"});
+      assert(
+        await options.evaluate(
+          (button) =>
+            getComputedStyle(button).backgroundColor !==
+            getComputedStyle(button.closest(".collection-card"))
+              .backgroundColor,
+        ),
+        "The options button remains distinct from the highlighted card",
+      );
+      await card.screenshot({
+        path: path.join(artifacts, `collection-options-hover-${name}.png`),
+        animations: "disabled",
+      });
     };
     await assertOptionsHover("light");
     await page.locator(".collection-card").first().hover();
@@ -297,8 +671,12 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
       "Delete is not applied before confirmation",
     );
     assert.equal(await page.locator("dialog > .dialog-close").count(), 0);
-    const cancelDelete = await page.locator("dialog [data-op=dialog-close]").boundingBox();
-    const confirmDelete = await page.locator("dialog [data-op=collection-remove]").boundingBox();
+    const cancelDelete = await page
+      .locator("dialog [data-op=dialog-close]")
+      .boundingBox();
+    const confirmDelete = await page
+      .locator("dialog [data-op=collection-remove]")
+      .boundingBox();
     assert(cancelDelete.x + cancelDelete.width < confirmDelete.x);
     await page.locator("dialog .dialog-actions [data-op=dialog-close]").click();
     await page.waitForFunction(() => !document.querySelector("dialog").open);
@@ -359,12 +737,17 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
     });
 
     await assertOptionsHover("dark");
-    await page.emulateMedia({reducedMotion:"reduce"});
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await searchToggle.click();
-    assert.equal(await searchBox.evaluate((root) => root.getAnimations({subtree:true}).length), 0);
+    assert.equal(
+      await searchBox.evaluate(
+        (root) => root.getAnimations({ subtree: true }).length,
+      ),
+      0,
+    );
     await searchToggle.click();
     assert(await search.isEnabled());
-    await page.emulateMedia({reducedMotion:"no-preference"});
+    await page.emulateMedia({ reducedMotion: "no-preference" });
     await page.setViewportSize({ width: 390, height: 844 });
     await page.waitForFunction(() => document.querySelector(".sidebar").inert);
     assert(
@@ -378,7 +761,7 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
     await page.keyboard.press("Shift+Tab");
     assert.equal(
       await page.evaluate(() => document.activeElement.dataset.route),
-      "usage",
+      "help",
     );
     await page.keyboard.press("Escape");
     assert.equal(
@@ -422,8 +805,12 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
         `No page overflow at ${width}px`,
       );
     }
+    await page.evaluate(() => chrome.storage.local.set({ collection: [] }));
+    await op("collection-search-toggle").waitFor({ state: "hidden" });
+    await page.keyboard.press("Escape");
+    assert.equal(await page.locator("#collection-search").inputValue(), "");
     console.log(
-      "Homepage navigation, collection presentation, search, menus and responsive layout passed",
+      "Homepage setup, About in all locales, empty collection search, navigation, menus and responsive layout passed",
     );
   } finally {
     await page.setViewportSize({ width: 1440, height: 1000 });

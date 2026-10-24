@@ -4,6 +4,7 @@ import type {
   UsageRecord,
   UsageSummary,
   UsageFilter,
+  UsageDay,
 } from "./types.js";
 const count = (value: unknown): number | null =>
   typeof value === "number" && Number.isSafeInteger(value) && value >= 0
@@ -97,7 +98,7 @@ const tokenFields = [
 ] as const;
 export function summarizeUsage(records: UsageRecord[]): UsageSummary {
   const result: UsageSummary = {
-    calls: records.length,
+    calls: 0,
     reported: 0,
     partial: 0,
     missing: 0,
@@ -108,16 +109,16 @@ export function summarizeUsage(records: UsageRecord[]): UsageSummary {
     reasoningTokens: null,
     totalTokens: null,
   };
-  for (const record of records) result[usageState(record)]++;
-  for (const field of tokenFields) {
-    const values = records
-      .map((record) => record.tokens?.[field])
-      .filter((value): value is number => count(value) !== null);
-    result[field] = values.length
-      ? values.reduce((sum, value) => sum + value, 0)
-      : null;
-  }
+  for (const record of records) addUsageToSummary(result, record);
   return result;
+}
+export function addUsageToSummary(summary: UsageSummary, record: UsageRecord) {
+  summary.calls++;
+  summary[usageState(record)]++;
+  for (const field of tokenFields) {
+    const value = count(record.tokens?.[field]);
+    if (value !== null) summary[field] = (summary[field] ?? 0) + value;
+  }
 }
 export const usageModelKey = (
   record: Pick<UsageRecord, "connectionId" | "model">,
@@ -127,6 +128,15 @@ export function filterUsage(
   { period, model }: UsageFilter,
   now = new Date(),
 ): UsageRecord[] {
+  const since = usageSince(period, now);
+  return records.filter(
+    (record) =>
+      record.startedAt >= since &&
+      (model === "all" || usageModelKey(record) === model),
+  );
+}
+
+export function usageSince(period: string, now = new Date()): number {
   let since = 0;
   if (period !== "all") {
     const date = new Date(now);
@@ -136,11 +146,7 @@ export function filterUsage(
     );
     since = date.getTime();
   }
-  return records.filter(
-    (record) =>
-      record.startedAt >= since &&
-      (model === "all" || usageModelKey(record) === model),
-  );
+  return since;
 }
 
 export function usageByDay(
@@ -158,37 +164,48 @@ export function usageByDay(
     entries.push(record);
     groups.set(key, entries);
   }
-  const today = new Date(now);
-  today.setHours(0, 0, 0, 0);
-  const dates = [...groups.keys()];
-  const start = new Date(today);
-  if (period === "all") start.setTime(Math.min(...dates));
-  else
-    start.setDate(
-      start.getDate() - (period === "today" ? 0 : Number(period) - 1),
-    );
-  const end = Math.max(today.getTime(), ...dates);
-  const days: {
-    date: number;
-    totalTokens: number | null;
-    calls: number;
-    incomplete: boolean;
-  }[] = [];
-  for (
-    const day = start;
-    day.getTime() <= end;
-    day.setDate(day.getDate() + 1)
-  ) {
-    const entries = groups.get(day.getTime()) ?? [];
-    days.push({
-      date: day.getTime(),
-      totalTokens: entries.length ? summarizeUsage(entries).totalTokens : 0,
+  return fillUsageDays(
+    [...groups].map(([date, entries]) => ({
+      date,
+      totalTokens: summarizeUsage(entries).totalTokens,
       calls: entries.length,
       incomplete: entries.some(
         (record) =>
           !record.usageFinal || count(record.tokens?.totalTokens) === null,
       ),
-    });
+    })),
+    period,
+    now,
+  );
+}
+export function fillUsageDays(
+  entries: UsageDay[],
+  period: string,
+  now = new Date(),
+): UsageDay[] {
+  if (!entries.length) return [];
+  const groups = new Map(entries.map((day) => [day.date, day]));
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const dates = [...groups.keys()];
+  const start = new Date(
+    period === "all" ? Math.min(...dates) : usageSince(period, now),
+  );
+  const end = Math.max(today.getTime(), ...dates);
+  const days: UsageDay[] = [];
+  for (
+    const day = start;
+    day.getTime() <= end;
+    day.setDate(day.getDate() + 1)
+  ) {
+    days.push(
+      groups.get(day.getTime()) || {
+        date: day.getTime(),
+        totalTokens: 0,
+        calls: 0,
+        incomplete: false,
+      },
+    );
   }
   return days;
 }

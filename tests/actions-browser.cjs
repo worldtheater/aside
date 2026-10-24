@@ -1,11 +1,6 @@
 const assert = require("node:assert/strict");
 const path = require("node:path");
-module.exports = async ({
-  page,
-  nav,
-  op,
-  artifacts,
-}) => {
+module.exports = async ({ page, nav, op, artifacts }) => {
   const message = (type, payload = {}) =>
     page.evaluate(
       ({ type, payload }) => chrome.runtime.sendMessage({ type, ...payload }),
@@ -40,7 +35,10 @@ module.exports = async ({
     assert.equal(await page.locator("#action-name").inputValue(), "");
     assert.equal(await page.locator("[data-draft=quick]").count(), 0);
     await op("save").click();
-    assert(await page.locator("#editor-error").isVisible(), "Validation keeps the editor open");
+    assert(
+      await page.locator("#editor-error").isVisible(),
+      "Validation keeps the editor open",
+    );
     await op("editor-cancel").click();
     await page.waitForURL(/#actions$/);
     assert.equal(await page.locator("#action-name").count(), 0);
@@ -54,7 +52,11 @@ module.exports = async ({
       ).value.actions.some((a) => a.name === "List-managed quick access"),
     );
     await page.waitForURL(/#actions$/);
-    assert.equal(await page.locator("#action-name").count(), 0, "Successful save exits the editor");
+    assert.equal(
+      await page.locator("#action-name").count(),
+      0,
+      "Successful save exits the editor",
+    );
     const managed = (await snapshot()).actions.find(
       (a) => a.name === "List-managed quick access",
     );
@@ -63,24 +65,43 @@ module.exports = async ({
       false,
       "Creating an action does not add it to the toolbar",
     );
-    await page.locator(`[data-op=edit-action][data-id="${managed.id}"]`).click();
+    await page
+      .locator(`[data-op=edit-action][data-id="${managed.id}"]`)
+      .click();
     await page.locator("#action-name").fill("Discard this edit");
     await op("editor-cancel").click();
     await page.waitForURL(/#actions$/);
-    assert.equal((await snapshot()).actions.find(a => a.id === managed.id).name, managed.name);
-    await page.locator(`[data-op=edit-action][data-id="${managed.id}"]`).click();
+    assert.equal(
+      (await snapshot()).actions.find((a) => a.id === managed.id).name,
+      managed.name,
+    );
+    await page
+      .locator(`[data-op=edit-action][data-id="${managed.id}"]`)
+      .click();
     assert.equal(await page.locator("#action-name").inputValue(), managed.name);
     await page.locator("#action-name").fill("Keep this failed save draft");
     await page.evaluate(() => {
-      window.sendBeforeSaveFailure = chrome.runtime.sendMessage.bind(chrome.runtime);
-      chrome.runtime.sendMessage = async message => message.type === "settings.save"
-        ? {ok:false, error:"storageFailed"} : window.sendBeforeSaveFailure(message);
+      window.sendBeforeSaveFailure = chrome.runtime.sendMessage.bind(
+        chrome.runtime,
+      );
+      chrome.runtime.sendMessage = async (message) =>
+        message.type === "settings.save"
+          ? { ok: false, error: "storageFailed" }
+          : window.sendBeforeSaveFailure(message);
     });
     await op("save").click();
-    await page.locator('#toast[data-kind=error]:popover-open').waitFor();
-    assert.equal(await page.locator("#action-name").inputValue(), "Keep this failed save draft");
-    assert.equal((await snapshot()).actions.find(a => a.id === managed.id).name, managed.name);
-    await page.evaluate(() => { chrome.runtime.sendMessage = window.sendBeforeSaveFailure; });
+    await page.locator("#toast[data-kind=error]:popover-open").waitFor();
+    assert.equal(
+      await page.locator("#action-name").inputValue(),
+      "Keep this failed save draft",
+    );
+    assert.equal(
+      (await snapshot()).actions.find((a) => a.id === managed.id).name,
+      managed.name,
+    );
+    await page.evaluate(() => {
+      chrome.runtime.sendMessage = window.sendBeforeSaveFailure;
+    });
     await op("editor-cancel").click();
     await page.waitForURL(/#actions$/);
     assert(await page.locator("#toast").isHidden());
@@ -200,15 +221,24 @@ module.exports = async ({
     await page.locator(".action-popover [data-op=remove-ask]").click();
     assert((await snapshot()).actions.some((a) => a.id === duplicate.id));
     const confirmation = page.locator("dialog");
-    assert.equal(await confirmation.locator(":scope > .dialog-close").count(), 0);
+    assert.equal(
+      await confirmation.locator(":scope > .dialog-close").count(),
+      0,
+    );
     const cancel = confirmation.locator("[data-op=dialog-close]");
     const remove = confirmation.locator("[data-op=remove-confirm]");
     assert.equal(await confirmation.locator("button").count(), 2);
-    assert(await cancel.evaluate((node) => node === document.activeElement),
-      "Cancel receives initial focus");
-    const left = await cancel.boundingBox(), right = await remove.boundingBox();
+    assert(
+      await cancel.evaluate((node) => node === document.activeElement),
+      "Cancel receives initial focus",
+    );
+    const left = await cancel.boundingBox(),
+      right = await remove.boundingBox();
     assert(left.x + left.width < right.x && Math.abs(left.y - right.y) < 1);
-    await confirmation.screenshot({ path: path.join(artifacts, "delete-action-confirmation.png"), animations: "disabled" });
+    await confirmation.screenshot({
+      path: path.join(artifacts, "delete-action-confirmation.png"),
+      animations: "disabled",
+    });
     await page.locator("dialog .dialog-actions [data-op=dialog-close]").click();
     await page.waitForFunction(() => !document.querySelector("dialog").open);
     assert(
@@ -318,7 +348,9 @@ module.exports = async ({
           .length === 20,
     );
     assert.equal((await snapshot()).actions.filter((a) => a.quick).length, 9);
-    console.log("PASS: 20-action capacity, unlimited toolbar enablement, create/duplicate/save and backend limit validation.");
+    console.log(
+      "PASS: 20-action capacity, unlimited toolbar enablement, create/duplicate/save and backend limit validation.",
+    );
   } finally {
     await patch(original.actions);
     await page.reload();

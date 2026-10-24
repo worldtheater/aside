@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "Aside"
+  },
+  "description": {
+    "message": "แปล อธิบาย และเขียนหน้าเว็บกับข้อความที่เลือกใหม่ด้วยโมเดลภาษาของคุณเอง"
+  },
+  "processSelection": {
+    "message": "ประมวลผลข้อความที่เลือกด้วย Aside"
+  },
+  "switchRecentTab": {
+    "message": "สลับระหว่างสองแท็บที่เปิดดูล่าสุดในหน้าต่างนี้"
+  },
+  "quickQuestion": {
+    "message": "เปิดถามตอบด่วน"
+  }
+}

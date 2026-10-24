@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "Aside"
+  },
+  "description": {
+    "message": "Traduce, explica y reformula páginas web y texto seleccionado con tu propio modelo de lenguaje."
+  },
+  "processSelection": {
+    "message": "Procesar selección con Aside"
+  },
+  "switchRecentTab": {
+    "message": "Alternar entre las dos últimas pestañas visitadas en esta ventana"
+  },
+  "quickQuestion": {
+    "message": "Abrir preguntas rápidas"
+  }
+}

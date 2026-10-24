@@ -10,6 +10,7 @@ import type {
   ModelPurpose,
   UsageUpdate,
   ProviderModel,
+  PublicSettings,
 } from "./types.js";
 
 export class ModelError extends Error {
@@ -75,6 +76,18 @@ export const connectionPurpose = (
   connection.protocol === "typesafe" ? "decision" : "generation";
 export const connectionAvailable = (connection: Pick<Connection, "protocol">) =>
   DECISION_MODELS_ENABLED || connectionPurpose(connection) === "generation";
+export function hasDefaultModel(
+  settings: Pick<PublicSettings, "connections" | "defaultConnection">,
+) {
+  return settings.connections.some(
+    (connection) =>
+      connection.id === settings.defaultConnection &&
+      Boolean(connection.id) &&
+      connection.connected &&
+      Boolean(connection.model.trim()) &&
+      connectionPurpose(connection) === "generation",
+  );
+}
 export const defaultConnectionKey = (
   connection: Pick<Connection, "protocol">,
 ) =>
@@ -378,14 +391,6 @@ export async function readResponse(
         string(object(value.error).message).slice(0, 240),
       );
     const choice = object(array(value.choices)[0]);
-    if (
-      value.status === "incomplete" ||
-      choice.finish_reason === "length" ||
-      value.stop_reason === "max_tokens"
-    )
-      throw new ModelError("outputLimit");
-    if (value.status && value.status !== "completed")
-      throw new ModelError("serviceError");
     const contentText = (content: unknown, type: string) =>
       array(content)
         .filter((item) => object(item).type === type)
@@ -405,8 +410,16 @@ export async function readResponse(
                 .map((step) => contentText(object(step).content, "text"))
                 .join("")
             : string(object(choice.message).content);
+    if (text) onDelta(text);
+    if (
+      value.status === "incomplete" ||
+      choice.finish_reason === "length" ||
+      value.stop_reason === "max_tokens"
+    )
+      throw new ModelError("outputLimit");
+    if (value.status && value.status !== "completed")
+      throw new ModelError("serviceError");
     if (!text.trim()) throw new ModelError("emptyOutput");
-    onDelta(text);
     return text;
   }
   if (!response.body) throw new ModelError("interrupted");

@@ -44,6 +44,12 @@ module.exports = async ({
       actionId,
     );
   const wire = () => calls.at(-1).body.messages[0].content;
+  const noLanguageSearch = async (selector) => {
+    const id = await page.locator(selector).getAttribute("id");
+    await page.locator(`[data-select-for="${id}"]`).click();
+    assert.equal(await page.locator(".option-search").count(), 0);
+    await page.keyboard.press("Escape");
+  };
   const closeDialog = async () => {
     await page.locator("dialog .dialog-actions [data-op=dialog-close]").click();
     await page.waitForFunction(() => !document.querySelector("dialog").open);
@@ -88,8 +94,8 @@ module.exports = async ({
           prompt: C.home.promptDefault,
           outputLanguage: "interface",
           useCollection: false,
-          result: null,
-          date: null,
+          result: "Existing thought.",
+          date: new Date().toLocaleDateString("en-CA"),
         },
       });
       // Simulate initialization of the saved profile before opening its editor.
@@ -99,6 +105,7 @@ module.exports = async ({
     await page.locator("h1").waitFor();
     await nav("actions");
     await page.locator("[data-op=edit-action][data-id=plain]").click();
+    await noLanguageSearch("[data-language=outputLanguage]");
     const currentPlainPrompt = await page.evaluate(
       async () => (await import("./prompts.js")).ACTION_PROMPTS.plain,
     );
@@ -209,9 +216,69 @@ module.exports = async ({
       await page.locator("[data-language=targetLanguage]").count(),
       1,
     );
+    await noLanguageSearch("[data-language=targetLanguage]");
+    assert.equal(
+      await page.locator("[data-language=targetLanguage]").inputValue(),
+      "interface",
+    );
+    const editTranslation = () =>
+      page.locator('[data-op="edit-action"][data-id="translate"]').click();
+    await choose("[data-language=targetLanguage]", "ja");
+    await op("save").click();
+    await editTranslation();
+    await choose("[data-language=targetLanguage]", "interface");
+    await op("save").click();
+    assert.equal(
+      (await snapshot()).actions.find((a) => a.id === "translate")
+        .targetLanguage,
+      "interface",
+    );
+    await language("en");
+    await run("translate");
+    assert(wire().includes("into en."));
+    const beforeJapanese = calls.length;
+    await language("ja");
+    await run("translate");
+    assert.equal(calls.length, beforeJapanese + 1);
+    assert(wire().includes("into ja."));
+    await run("translate");
+    assert.equal(
+      calls.length,
+      beforeJapanese + 1,
+      "Same resolved translation target reuses cache",
+    );
+    await editTranslation();
+    await choose("[data-language=targetLanguage]", "fr");
+    await op("save").click();
+    await language("zh-CN");
+    await run("translate");
+    assert(wire().includes("into fr."));
+    await language("en");
+    await run("translate");
+    assert(wire().includes("into fr."));
+    assert.equal(
+      (await snapshot()).actions.find((a) => a.id === "translate")
+        .targetLanguage,
+      "fr",
+      "Fixed translation language is unchanged by interface language",
+    );
+    await editTranslation();
+    await choose("[data-language=targetLanguage]", "interface");
+    await choose("[data-language=sourceLanguage]", "en");
+    await language("zh-CN");
+    await op("swap-languages").click();
+    assert.equal(
+      await page.locator("[data-language=sourceLanguage]").inputValue(),
+      "zh-Hans",
+    );
+    assert.equal(
+      await page.locator("[data-language=targetLanguage]").inputValue(),
+      "en",
+    );
 
     await language("zh-CN");
     await nav("home");
+    await page.locator(".daily-card").hover();
     await op("daily-settings").click();
     const dailyPrompt = await page.locator("#daily-prompt").inputValue();
     assert(dailyPrompt.trim());
@@ -234,6 +301,7 @@ module.exports = async ({
     assert(saved.result);
     const previousDaily = { result: saved.result, date: saved.date };
     assert.equal(calls.length, beforeSave);
+    await page.locator(".daily-card").hover();
     await op("daily-settings").click();
     await choose("#daily-output-language", "interface");
     assert.equal(await page.locator(".daily-preview-text").count(), 0);
@@ -244,6 +312,7 @@ module.exports = async ({
     assert.equal(saved.result, previousDaily.result);
     assert.equal(saved.date, previousDaily.date);
     await language("en");
+    await page.locator(".daily-card").hover();
     await op("daily-settings").click();
     const presetPrompt = "Write a grounded reflection on patient reading.";
     await page.locator("#daily-prompt").fill(presetPrompt);
@@ -263,6 +332,7 @@ module.exports = async ({
     await page.waitForFunction(() => !document.querySelector("dialog").open);
     assert.equal((await snapshot()).daily.result, previousDaily.result);
     await language("zh-CN");
+    await page.locator(".daily-card").hover();
     await op("daily-settings").click();
     assert.equal(
       await page.locator("#daily-prompt").inputValue(),
@@ -280,6 +350,7 @@ module.exports = async ({
     await closeDialog();
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.reload();
+    await page.locator(".daily-card").hover();
     await op("daily-refresh").click();
     await page
       .locator(".workspace .daily-thought")

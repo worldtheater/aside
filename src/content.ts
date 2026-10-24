@@ -1,3 +1,4 @@
+import { resolveLocale } from "./locale.js";
 import { escapeHtml as escape } from "./html.js";
 import { HoverTips } from "./hover-tips.js";
 import { resultColor } from "./theme.js";
@@ -15,7 +16,7 @@ import {
   selectedPageText,
   selectionResultMarkup,
 } from "./selection-tools.js";
-import { modelError } from "./providers.js";
+import { modelError, hasDefaultModel } from "./providers.js";
 import { renderMarkdown } from "./result-content.js";
 import { hasSameLanguages, isNumericOnly } from "./translation.js";
 import type {
@@ -71,7 +72,6 @@ async function initializePagework() {
     expand: "m9 5 7 7-7 7",
     collapse: "m15 5-7 7 7 7",
     settings: "M4 7h9m4 0h3M4 17h3m4 0h9M13 4v6M7 14v6",
-    home: "m3 10 9-7 9 7v11h-6v-7H9v7H3Z",
     book: "M8 3h8a2 2 0 0 1 2 2v16l-6-4-6 4V5a2 2 0 0 1 2-2Z",
     copy: "M10 8h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2ZM16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3",
     pin: "m16 3 5 5-4 3-.5 4.5-2 2-8-8 2-2L13 7l3-4ZM10.5 13.5 4 20",
@@ -126,7 +126,9 @@ async function initializePagework() {
     selected: () => currentAction,
     icon: (name) => icon(name === "book" ? "read" : name),
     home: async () => {
-      await send("settings.open");
+      await send("settings.open", {
+        route: hasDefaultModel(config) ? "home" : "connections",
+      });
     },
     selection: () => selectedPageText(),
     run: async (id, text) => {
@@ -197,6 +199,7 @@ async function initializePagework() {
       panel.style.maxHeight = `${innerHeight - selectionPanelTop - 10}px`;
     }
     panel.style.left = `${Math.max(10, Math.min(selectionPanelLeft ?? selectedRect?.left ?? 10, innerWidth - panel.offsetWidth - 10))}px`;
+    selectionTools.refreshTips();
   }
   function theme() {
     host.dataset.palette = config.preferences.palette;
@@ -260,7 +263,11 @@ async function initializePagework() {
     positionTools();
     if (focus)
       (show
-        ? $("toolbar").querySelector<HTMLElement>("[data-op=choose]")
+        ? $("toolbar").querySelector<HTMLElement>(
+            hasDefaultModel(config)
+              ? "[data-op=choose]"
+              : "[data-op=open-settings]",
+          )
         : $("dock")
       )?.focus();
   }
@@ -429,15 +436,16 @@ async function initializePagework() {
     radialTips.hide(true);
     const tr = translateAction(),
       qa = questionAction(),
+      configured = hasDefaultModel(config),
       lightsMode = websiteFeatures().lights,
       slots = [
-        button("home", S.openHome, "", "home"),
+        button("open-settings", S.settings, "", "settings"),
         button(
           "page-translate",
           S.translationStates.original,
           "",
           "translate",
-          tr ? "" : "disabled",
+          configured && tr ? "" : "disabled",
         ),
         button(
           "toggle-lights",
@@ -452,21 +460,21 @@ async function initializePagework() {
             : lightsMode === "system"
               ? "contrast"
               : "moon",
-          `aria-pressed="${lightsMode !== "off"}" ${lightsBusy ? "disabled" : ""}`,
+          `aria-pressed="${lightsMode !== "off"}" ${!configured || lightsBusy ? "disabled" : ""}`,
         ),
         button(
           "quick-question",
           qa?.name || S.quickQuestion,
           "",
           "question",
-          qa ? "" : "disabled",
+          configured && qa ? "" : "disabled",
         ),
         button(
           "dock-pin",
           dockPinned ? S.unpin : S.pin,
           dockPinned ? "on" : "",
           "pin",
-          `aria-pressed="${dockPinned}"`,
+          `aria-pressed="${dockPinned}" ${configured ? "" : "disabled"}`,
         ),
       ];
     radialEl.innerHTML = slots
@@ -480,6 +488,17 @@ async function initializePagework() {
     radialEl.append(radialTips.element);
     positionRadial();
     updateTranslationButton();
+    updateRadialHint();
+  }
+  function updateRadialHint() {
+    radialTips.setHint(
+      radialOpen &&
+        radialEl.classList.contains("open") &&
+        !hasDefaultModel(config)
+        ? radialEl.querySelector<HTMLElement>('[data-op="open-settings"]')
+        : null,
+      S.configureModelHint,
+    );
   }
   function positionRadial() {
     const dock = $("dock"),
@@ -513,6 +532,7 @@ async function initializePagework() {
     radialEl.style.left = `${Math.max(inset - Math.min(...xs), Math.min(dock.offsetLeft + dock.offsetWidth / 2, innerWidth - inset - Math.max(...xs)))}px`;
     radialEl.style.top = `${Math.max(inset - Math.min(...ys), Math.min(dock.offsetTop + dock.offsetHeight / 2, innerHeight - inset - Math.max(...ys)))}px`;
     radialEl.dataset.side = dockSide;
+    radialTips.refresh();
   }
   function showRadial(open: boolean, focus = false) {
     radialOpen = open;
@@ -520,6 +540,7 @@ async function initializePagework() {
     radial();
     void radialEl.offsetWidth;
     radialEl.classList.toggle("open", open);
+    updateRadialHint();
     $("dock").classList.toggle("radial-open", open);
     updateDockExpanded();
     if (focus)
@@ -544,7 +565,7 @@ async function initializePagework() {
     )
       .map(
         (field) =>
-          `<label><span>${escape(S[field])}</span><select data-language="${field}" aria-label="${escape(S[field])}" ${run ? "disabled" : ""}>${Object.entries(
+          `<label><span>${escape(S[field])}</span><select data-language="${field}" aria-label="${escape(S[field])}" ${run ? "disabled" : ""}>${field === "targetLanguage" ? `<option value="interface" ${selected[field] === "interface" ? "selected" : ""}>${escape(S.followInterfaceLanguage)}</option>` : ""}${Object.entries(
             S.languages,
           )
             .filter(([value]) => field === "sourceLanguage" || value !== "auto")
@@ -572,20 +593,30 @@ async function initializePagework() {
     }
   }
   function toolbar(status = "") {
+    host.lang = resolveLocale(config.preferences.locale);
     const chosen = action(),
-      same = hasSameLanguages(chosen);
+      same = hasSameLanguages(chosen, resolveLocale(config.preferences.locale));
     const dock = $("dock");
     const busy = Boolean(run || pageTranslation?.busy);
     dock.hidden = !websiteFeatures().floating;
     updateDockExpanded();
     $("toolbar").setAttribute("aria-busy", String(busy));
     $("toolbar").innerHTML =
-      `<div class="header"><span class="tools-brand" role="img" aria-label="${escape(S.brand)}">${brandMark}</span><strong>${escape(S.currentPage)}</strong>${button("home", S.openHome, "icon", "home")}${button("hide-toolbar", S.collapseTools, "icon", "close")}</div><div class="body"><button class="choose" data-op="choose">${escape(chosen?.name || S.noConnection)}${icon("down")}</button><div id="actions" class="menu" hidden>${config.actions.map((a: { id: string; name: string }) => `<button data-action="${escape(a.id)}" class="${a.id === currentAction ? "active" : ""}">${escape(a.name)}</button>`).join("")}</div>${languageFields()}<div class="row scope">${button("scope-body", S.body, scope === "body" ? "primary" : "")}${button("scope-all", S.all, scope === "all" ? "primary" : "")}</div><div class="row">${button("run", run || pageTranslation ? S.stop : S.start, "primary", "", same && !run && !pageTranslation ? "disabled" : "")}${button("restore", S.restore)}${parts.length && !busy ? button("refresh-page", S.regenerate, "icon", "refresh", same ? "disabled" : "") : ""}${parts.length ? button("bookmark", S.bookmark, "icon", "book") : ""}</div><div id="status" class="status" role="status">${escape(same ? S.errors.sameLanguages : status)}</div></div>`;
+      `<div class="header"><button class="icon tools-brand" data-op="open-settings" aria-label="${escape(S.settings)}">${brandMark}</button><strong>${escape(S.currentPage)}</strong>${button("open-settings", S.settings, "icon", "settings")}${button("hide-toolbar", S.collapseTools, "icon", "close")}</div><div class="body"><button class="choose" data-op="choose">${escape(chosen?.name || S.noConnection)}${icon("down")}</button><div id="actions" class="menu" hidden>${config.actions.map((a: { id: string; name: string }) => `<button data-action="${escape(a.id)}" class="${a.id === currentAction ? "active" : ""}">${escape(a.name)}</button>`).join("")}</div>${languageFields()}<div class="row scope">${button("scope-body", S.body, scope === "body" ? "primary" : "")}${button("scope-all", S.all, scope === "all" ? "primary" : "")}</div><div class="row">${button("run", run || pageTranslation ? S.stop : S.start, "primary", "", same && !run && !pageTranslation ? "disabled" : "")}${button("restore", S.restore)}${parts.length && !busy ? button("refresh-page", S.regenerate, "icon", "refresh", same ? "disabled" : "") : ""}${parts.length ? button("bookmark", S.bookmark, "icon", "book") : ""}</div><div id="status" class="status" role="status">${escape(same ? S.errors.sameLanguages : status)}</div></div>`;
+    if (!hasDefaultModel(config))
+      $("toolbar")
+        .querySelectorAll<HTMLButtonElement | HTMLSelectElement>(
+          'button:not([data-op="open-settings"]), select',
+        )
+        .forEach((control) => {
+          control.disabled = true;
+        });
     positionTools();
     updateTranslationButton();
   }
   function translationAllowed() {
-    if (!hasSameLanguages(action())) return true;
+    if (!hasSameLanguages(action(), resolveLocale(config.preferences.locale)))
+      return true;
     toolbar(S.errors.sameLanguages);
     showTools(true);
     return false;
@@ -1378,7 +1409,7 @@ async function initializePagework() {
   });
   shadow.addEventListener("click", async (event) => {
     const target = (event.target as HTMLElement).closest("button");
-    if (!event.isTrusted || !target) return;
+    if (!event.isTrusted || !target || target.disabled) return;
     try {
       if (target.dataset.action) {
         restore();
@@ -1453,7 +1484,8 @@ async function initializePagework() {
         radial();
         radialEl.querySelector<HTMLElement>("[data-op=dock-pin]")?.focus();
       } else if (op === "hide-toolbar") showTools(false, true);
-      else if (op === "home") await send("settings.open");
+      else if (op === "open-settings")
+        await send("settings.open", { route: "connections" });
       else if (op === "scope-body" || op === "scope-all") {
         restore();
         scope = op.slice(6);
@@ -1745,7 +1777,8 @@ async function initializePagework() {
       if (message.type === "settings.updated") {
         const selectionChanged =
           JSON.stringify([config.actions, config.strings]) !==
-          JSON.stringify([message.config.actions, message.config.strings]);
+            JSON.stringify([message.config.actions, message.config.strings]) ||
+          hasDefaultModel(config) !== hasDefaultModel(message.config);
         const oldAction = JSON.stringify(action());
         const oldBase = JSON.stringify(
           config.actions.find((a) => a.id === currentAction),
@@ -1822,6 +1855,8 @@ async function initializePagework() {
     () => {
       lifetime.abort();
       panelResize.disconnect();
+      selectionTools.destroy();
+      radialTips.destroy();
       restore();
       host.remove();
       if (chrome.runtime.id) chrome.runtime.onMessage.removeListener(onMessage);

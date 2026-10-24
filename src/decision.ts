@@ -26,6 +26,7 @@ export async function callDecision(
   input: DecisionInput,
   signal: AbortSignal,
   onUsage: (usage: UsageUpdate) => void,
+  onOutput: (text: string) => void = () => {},
 ): Promise<Record<string, ChoiceAnswer>> {
   if (connection.protocol !== "typesafe")
     throw new ModelError("invalidProtocol");
@@ -51,6 +52,7 @@ export async function callDecision(
     const data = await response.json().catch(() => {
       throw new ModelError("invalidDecision");
     });
+    onOutput(JSON.stringify(data, null, 2));
     if (data?.usage)
       onUsage({ tokens: normalizeUsage(data.usage, "typesafe"), final: true });
     const answers: Record<string, ChoiceAnswer> = {};

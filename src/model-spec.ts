@@ -194,7 +194,7 @@ export const MODEL_SPECS: readonly ModelSpec[] = [
   },
   {
     namespaces: ["zai", "z-ai", "zhipu"],
-    models: ["glm-5.3", "glm-5.3-flash"],
+    models: ["glm-5.3", "glm-5.3-flash", "glm-5.3-flashx"],
     api: { chat: { levels: ["low", "high", "max"], thinking: "enabled" } },
     source: glmSource,
   },

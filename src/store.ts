@@ -6,7 +6,6 @@ import type {
   Settings,
   PublicSettings,
   CollectionInput,
-  UsageRecord,
 } from "./types.js";
 import { getPresets, defaultAppearance } from "./data.js";
 import {
@@ -149,25 +148,6 @@ export async function snapshot(): Promise<Snapshot> {
     collection: data.collection,
     daily: data.daily,
   };
-}
-export async function addUsage(record: UsageRecord) {
-  await ready;
-  await chrome.storage.local.set({ ["usage:" + record.id]: record });
-}
-export async function listUsage(): Promise<UsageRecord[]> {
-  await ready;
-  const stored = await chrome.storage.local.get(null);
-  return Object.entries(stored)
-    .filter(([key]) => key.startsWith("usage:"))
-    .map(([, record]) => record as UsageRecord)
-    .sort((a, b) => b.startedAt - a.startedAt);
-}
-export async function clearUsage() {
-  await ready;
-  const records = await listUsage();
-  await chrome.storage.local.remove(
-    records.map((record) => "usage:" + record.id),
-  );
 }
 export function publicSettings(settings: Settings): PublicSettings {
   return {

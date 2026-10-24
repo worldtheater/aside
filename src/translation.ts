@@ -1,4 +1,5 @@
-import type { ProcessingAction } from "./types.js";
+import type { Locale, ProcessingAction } from "./types.js";
+import { resolveOutputLanguage } from "./prompts.js";
 
 export const UI_CONTEXT_LIMITS = { sourceChars: 100, fieldChars: 160 };
 export function needsUiContext(text: string): boolean {
@@ -14,12 +15,17 @@ export function isNumericOnly(text: string): boolean {
   return /\p{N}/u.test(text) && /^[\p{N}\p{P}\p{S}\s]+$/u.test(text);
 }
 
-export function hasSameLanguages(action?: Partial<ProcessingAction>): boolean {
+export function hasSameLanguages(
+  action?: Partial<ProcessingAction>,
+  locale?: Locale,
+): boolean {
+  const target = locale
+    ? resolveOutputLanguage(action?.targetLanguage, locale)
+    : action?.targetLanguage;
   return Boolean(
     action?.kind === "translate" &&
     action.sourceLanguage &&
     action.sourceLanguage !== "auto" &&
-    action.sourceLanguage.toLowerCase() ===
-      action.targetLanguage?.toLowerCase(),
+    action.sourceLanguage.toLowerCase() === target?.toLowerCase(),
   );
 }

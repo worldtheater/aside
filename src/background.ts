@@ -1,3 +1,4 @@
+import { resolveLocale } from "./locale.js";
 import { trackRecentTabs, switchRecentTab } from "./recent-tabs.js";
 import { RequestScheduler } from "./scheduler.js";
 import { callDecision } from "./decision.js";
@@ -18,12 +19,12 @@ import {
 import type {
   Action,
   Settings,
-  Locale,
   Connection,
   RequestMessage,
   ProcessPayload,
   UsageSource,
   UsageRecord,
+  UsageDetails,
   Tokens,
   UsageUpdate,
 } from "./types.js";
@@ -35,9 +36,6 @@ import {
   mutate,
   publicSettings,
   addCollection,
-  addUsage,
-  listUsage,
-  clearUsage,
 } from "./store.js";
 import {
   endpoint,
@@ -54,6 +52,13 @@ import {
 } from "./providers.js";
 import { createProcessor, processingPolicy } from "./processor.js";
 import { IndexedResultCache } from "./cache.js";
+import {
+  addUsage,
+  listUsage,
+  getUsageDetails,
+  usageOverview,
+  clearUsage,
+} from "./usage-store.js";
 import { actionLimitError, isPresetAction } from "./action-policy.js";
 import { hasSameLanguages } from "./translation.js";
 const resultCache = new IndexedResultCache();
@@ -62,12 +67,8 @@ import { localizeAction, messages, usesPresetDefaults } from "./copy.js";
 const extensionOrigin = chrome.runtime.getURL("");
 const trusted = (sender: chrome.runtime.MessageSender | undefined) =>
   sender?.id === chrome.runtime.id && sender.url?.startsWith(extensionOrigin);
-const localeOf = (settings: Settings): Locale =>
-  settings.preferences.locale === "system"
-    ? navigator.language.startsWith("zh")
-      ? "zh-CN"
-      : "en"
-    : settings.preferences.locale;
+const localeOf = (settings: Settings) =>
+  resolveLocale(settings.preferences.locale);
 const resolveAction = (action: Action | undefined, settings: Settings) =>
   action ? localizeAction(action, localeOf(settings)) : undefined;
 function validateOutputLanguage(value: string | undefined) {
@@ -299,12 +300,16 @@ chrome.commands.onCommand.addListener(async (command, sourceTab) => {
     return;
   }
   if (command !== "quick-question") return;
-  const tab = sourceTab || (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
+  const tab =
+    sourceTab ||
+    (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
   if (tab?.id === undefined || !/^https?:\/\//i.test(tab.url || "")) return;
   try {
     await initialize();
     const { settings } = await readStore();
-    const actionId = settings.actions.find((action) => action.kind === "qa")?.id;
+    const actionId = settings.actions.find(
+      (action) => action.kind === "qa",
+    )?.id;
     if (!actionId) {
       await openSettings(tab.id, "actions");
       return;
@@ -495,12 +500,14 @@ chrome.runtime.onMessage.addListener(
                 !(change.sourceLanguage in languages) ||
                 !change.targetLanguage ||
                 change.targetLanguage === "auto" ||
-                !(change.targetLanguage in languages)
+                (change.targetLanguage !== "interface" &&
+                  !(change.targetLanguage in languages))
               )
                 throw new ModelError("invalidAction");
               next.sourceLanguage = change.sourceLanguage;
               next.targetLanguage = change.targetLanguage;
-              if (hasSameLanguages(next)) throw new ModelError("sameLanguages");
+              if (hasSameLanguages(next, localeOf(settings)))
+                throw new ModelError("sameLanguages");
             }
             if (hasOutputLanguage(next)) {
               validateOutputLanguage(change.outputLanguage);
@@ -528,7 +535,11 @@ chrome.runtime.onMessage.addListener(
         await resultCache.clear();
         return true;
       }
-      if (message.type === "usage.list") return listUsage();
+      if (message.type === "usage.list")
+        return listUsage(message.filter, message.before);
+      if (message.type === "usage.overview")
+        return usageOverview(message.filter);
+      if (message.type === "usage.details") return getUsageDetails(message.id);
       if (message.type === "usage.clear") {
         await clearUsage();
         return true;
@@ -733,10 +744,13 @@ chrome.runtime.onMessage.addListener(
         const settings = (await readStore()).settings;
         const action = settings.actions.find((a) => a.id === message.actionId);
         if (
-          hasSameLanguages({
-            ...action,
-            ...(action?.kind === "translate" ? message.translation : {}),
-          })
+          hasSameLanguages(
+            {
+              ...action,
+              ...(action?.kind === "translate" ? message.translation : {}),
+            },
+            localeOf(settings),
+          )
         )
           throw new ModelError("sameLanguages");
         await inject(message.tabId);
@@ -771,13 +785,26 @@ async function trackedModel(
   ...args: Parameters<ModelCall>
 ) {
   const [connection, key, instructions, input, signal, onDelta] = args;
-  return trackedCall(connection, context, (onUsage) =>
-    callModel(connection, key, instructions, input, signal, onDelta, onUsage),
+  const details: UsageDetails = { instructions, input, output: "" };
+  return trackedCall(connection, context, details, (onUsage) =>
+    callModel(
+      connection,
+      key,
+      instructions,
+      input,
+      signal,
+      (text) => {
+        details.output += text;
+        onDelta?.(text);
+      },
+      onUsage,
+    ),
   );
 }
 async function trackedCall<T>(
   connection: Parameters<ModelCall>[0],
   context: { source: UsageSource; actionName?: string },
+  details: UsageDetails,
   run: (onUsage: (usage: UsageUpdate) => void) => Promise<T>,
 ): Promise<T> {
   const origin = new URL(endpoint(connection)).origin + "/*";
@@ -799,21 +826,28 @@ async function trackedCall<T>(
     errorCode = error.code || "serviceError";
     throw error;
   } finally {
-    await addUsage({
-      id: crypto.randomUUID(),
-      startedAt,
-      durationMs: Date.now() - startedAt,
-      connectionId: connection.id || null,
-      connectionName: connection.name || "",
-      model: connection.model,
-      protocol: connection.protocol,
-      source: context.source,
-      actionName: context.actionName || "",
-      status,
-      errorCode,
-      tokens,
-      usageFinal,
-    });
+    try {
+      await addUsage(
+        {
+          id: crypto.randomUUID(),
+          startedAt,
+          durationMs: Date.now() - startedAt,
+          connectionId: connection.id || null,
+          connectionName: connection.name || "",
+          model: connection.model,
+          protocol: connection.protocol,
+          source: context.source,
+          actionName: context.actionName || "",
+          status,
+          errorCode,
+          tokens,
+          usageFinal,
+        },
+        details,
+      );
+    } catch (error) {
+      console.warn("Aside could not save call history:", error);
+    }
   }
 }
 chrome.runtime.onConnect.addListener((port) => {
@@ -873,6 +907,14 @@ chrome.runtime.onConnect.addListener((port) => {
             ...action,
             sourceLanguage: payload.translation.sourceLanguage,
             targetLanguage: payload.translation.targetLanguage,
+          };
+        if (action.kind === "translate")
+          action = {
+            ...action,
+            targetLanguage: resolveOutputLanguage(
+              action.targetLanguage,
+              localeOf(settings),
+            ),
           };
         if (hasOutputLanguage(action) || payload.daily) {
           validateOutputLanguage(action.outputLanguage);
@@ -1002,16 +1044,26 @@ async function enhanceLights(
         0,
         controller.signal,
         async () => {
+          const input = lightsDecisionInput(missing);
+          const details: UsageDetails = {
+            instructions: "",
+            input: JSON.stringify(input, null, 2),
+            output: "",
+          };
           answers = await trackedCall(
             connection,
             { source: "lightsEnhance" },
+            details,
             (usage) =>
               callDecision(
                 connection,
                 credentials[connection.id!] || "",
-                lightsDecisionInput(missing),
+                input,
                 controller.signal,
                 usage,
+                (text) => {
+                  details.output = text;
+                },
               ),
           );
         },

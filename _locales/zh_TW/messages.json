@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "旁白"
+  },
+  "description": {
+    "message": "使用自己的語言模型，翻譯、解釋與改寫網頁及選取文字。"
+  },
+  "processSelection": {
+    "message": "使用旁白處理選取文字"
+  },
+  "switchRecentTab": {
+    "message": "在目前視窗最近瀏覽的兩個分頁之間切換"
+  },
+  "quickQuestion": {
+    "message": "開啟快問快答"
+  }
+}

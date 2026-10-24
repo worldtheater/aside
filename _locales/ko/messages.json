@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "Aside"
+  },
+  "description": {
+    "message": "자신의 언어 모델로 웹페이지와 선택한 텍스트를 번역하고 설명하고 다듬으세요."
+  },
+  "processSelection": {
+    "message": "Aside로 선택한 텍스트 처리"
+  },
+  "switchRecentTab": {
+    "message": "현재 창에서 마지막으로 본 두 탭 사이를 전환"
+  },
+  "quickQuestion": {
+    "message": "빠른 질문 열기"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "appName": {
+    "message": "Aside"
+  },
+  "description": {
+    "message": "自分の言語モデルで、ウェブページや選択したテキストを翻訳、解説、書き換え。"
+  },
+  "processSelection": {
+    "message": "Aside で選択範囲を処理"
+  },
+  "switchRecentTab": {
+    "message": "このウィンドウで直近に表示した2つのタブを切り替える"
+  },
+  "quickQuestion": {
+    "message": "クイック質問を開く"
+  }
+}

@@ -1,12 +1,13 @@
+import { HoverTips } from "./hover-tips.js";
 import { escapeHtml as escape } from "./html.js";
 import brandMark from "../icons/brand-mark.svg";
 import { applyTheme, rememberTheme } from "./theme.js";
-import { ModelError, modelError } from "./providers.js";
+import { ModelError, modelError, hasDefaultModel } from "./providers.js";
 import { C, locale, setLocale, localizeAction } from "./copy.js";
 import { request } from "./client.js";
 import { enhanceSelects } from "./controls.js";
 import { resolveWebsite, websiteHostname } from "./website.js";
-import type { WebsitePatch } from "./types.js";
+import type { WebsitePatch, PublicSettings } from "./types.js";
 
 const data = await request("snapshot");
 setLocale(data.preferences.locale);
@@ -20,12 +21,12 @@ let featureBusy = false;
 const favicon = new URL(chrome.runtime.getURL("/_favicon/"));
 favicon.searchParams.set("pageUrl", tab?.url || "");
 favicon.searchParams.set("size", "32");
-const homeIcon =
-  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 10 9-7 9 7v11h-6v-7H9v7H3Z"/></svg>';
+const settingsIcon =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9m4 0h3M4 17h3m4 0h9M13 4v6M7 14v6"/></svg>';
 const playIcon =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="m8 5 11 7-11 7Z"/></svg>';
 const root = document.querySelector<HTMLElement>("#popup")!;
-root.innerHTML = `<header class="popup-header"><span class="popup-brand">${brandMark}<strong>${C.brand}</strong></span><button class="selection-button" id="home" data-tooltip="${C.real.openHome}" aria-label="${C.real.openHome}">${homeIcon}</button></header>
+root.innerHTML = `<header class="popup-header"><span class="popup-brand">${brandMark}<strong>${C.brand}</strong></span><button class="selection-button" id="settings" aria-label="${C.settings}">${settingsIcon}</button></header>
   <main class="popup-body">
     <section class="popup-page" aria-label="${P.currentPage}">
       <div class="popup-page-site">${supported ? `<img src="${escape(favicon.href)}" alt="" width="18" height="18">` : ""}<span>${P.currentPage}</span>${supported ? `<strong>${escape(hostname)}</strong>` : ""}</div>
@@ -44,6 +45,23 @@ root.innerHTML = `<header class="popup-header"><span class="popup-brand">${brand
     </section>
     <section class="popup-features" aria-label="${P.features}" aria-describedby="feature-scope"><div id="feature-controls"></div><p class="popup-status" id="feature-scope">${P.siteOnly}</p><p class="popup-status" id="feature-status" role="status"></p></section>
   </main>`;
+const settingsButton = root.querySelector<HTMLElement>("#settings")!;
+const settingsTips = new HoverTips(root, "#settings");
+function updateSetupHint(
+  settings: Pick<PublicSettings, "connections" | "defaultConnection">,
+) {
+  const needsSetup = !hasDefaultModel(settings);
+  settingsButton.classList.toggle("model-setup-needed", needsSetup);
+  settingsTips.setHint(
+    needsSetup ? settingsButton : null,
+    C.real.configureModelHint,
+  );
+}
+updateSetupHint(data);
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === "local" && changes.settings?.newValue)
+    updateSetupHint(changes.settings.newValue as PublicSettings);
+});
 const chosen = () =>
   data.actions.find(
     (action) =>
@@ -57,7 +75,7 @@ function renderLanguages() {
   const action = chosen();
   document.querySelector<HTMLElement>("#languages")!.innerHTML =
     action?.kind === "translate"
-      ? `<label class="field"><span class="field-label">${C.outputLanguage}</span><select data-language="targetLanguage" aria-label="${C.outputLanguage}">${Object.entries(
+      ? `<label class="field"><span class="field-label">${C.outputLanguage}</span><select data-language="targetLanguage" data-search="false" aria-label="${C.outputLanguage}"><option value="interface" ${action.targetLanguage === "interface" ? "selected" : ""}>${escape(C.followInterfaceLanguage)}</option>${Object.entries(
           C.languages,
         )
           .filter(([value]) => value !== "auto")
@@ -80,7 +98,8 @@ function renderFeatures() {
     </label>`,
     )
     .join("");
-  document.querySelector<HTMLElement>("#feature-controls")!.innerHTML = controls;
+  document.querySelector<HTMLElement>("#feature-controls")!.innerHTML =
+    controls;
 }
 async function saveFeatures(patch: Pick<WebsitePatch, "toolbar" | "floating">) {
   if (featureBusy || !supported) return;
@@ -123,10 +142,14 @@ document.addEventListener("change", (event) => {
   }
 });
 document
-  .querySelector<HTMLElement>("#home")!
-  .addEventListener("click", () =>
-    request("settings.open", { tabId: supported ? tab.id : null }),
-  );
+  .querySelector<HTMLElement>("#settings")!
+  .addEventListener("click", async () => {
+    await request("settings.open", {
+      tabId: supported ? tab.id : null,
+      route: "connections",
+    });
+    window.close();
+  });
 document.addEventListener("click", async (event) => {
   const target = event.target as HTMLElement;
   const button = target.closest<HTMLButtonElement>("[data-op]");

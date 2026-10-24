@@ -127,7 +127,9 @@ module.exports = async ({
     await action("translate").hover();
     await bar.locator(".hover-tip:popover-open").waitFor();
     assert.equal(
-      await bar.locator(".hover-tip").evaluate((tip) => getComputedStyle(tip).opacity),
+      await bar
+        .locator(".hover-tip")
+        .evaluate((tip) => getComputedStyle(tip).opacity),
       "1",
       "Available action hints remain opaque",
     );
@@ -144,8 +146,11 @@ module.exports = async ({
     assert(await action("translate").isDisabled());
     await source.mouse.move(1, 1);
     await action("translate").hover();
-    assert.equal(await bar.locator(".hover-tip:popover-open").count(), 0,
-      "An unavailable action does not show a hover hint");
+    assert.equal(
+      await bar.locator(".hover-tip:popover-open").count(),
+      0,
+      "An unavailable action does not show a hover hint",
+    );
     assert.equal(
       calls.length,
       beforeInvalid,
@@ -188,7 +193,10 @@ module.exports = async ({
     );
     assert(await command("add").isHidden());
     await toggleWithFade("expand");
-    assert(await action("summary").isHidden(), "Disabled actions stay hidden after expansion");
+    assert(
+      await action("summary").isHidden(),
+      "Disabled actions stay hidden after expansion",
+    );
     assert.equal(await bar.locator(".selection-menu").count(), 0);
     assert.deepEqual(
       await bar.evaluate((root) =>
@@ -267,7 +275,9 @@ module.exports = async ({
     assert.equal(await command("cancel").textContent(), "Cancel");
     assert.equal(await command("save").textContent(), "Save");
     assert.equal(
-      await bar.locator(".selection-settings-footer [data-selection-command]").count(),
+      await bar
+        .locator(".selection-settings-footer [data-selection-command]")
+        .count(),
       2,
     );
     assert.equal(
@@ -438,7 +448,11 @@ module.exports = async ({
     assert(await action(custom.id).isHidden());
     await command("expand").click();
     const enabledCustom = await snapshot();
-    await patch({actions: enabledCustom.actions.map((item) => item.id === custom.id ? {...item, quick: true} : item)});
+    await patch({
+      actions: enabledCustom.actions.map((item) =>
+        item.id === custom.id ? { ...item, quick: true } : item,
+      ),
+    });
     await action(custom.id).click();
     await host
       .locator("#result-status")
