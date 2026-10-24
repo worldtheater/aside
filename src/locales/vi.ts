@@ -11,6 +11,7 @@ const base = {
     resources: "Dự án và hỗ trợ",
     project: "Trang dự án",
     feedback: "Báo cáo sự cố",
+    privacy: "Chính sách quyền riêng tư",
     openSource: "Ghi nhận nguồn mở",
     licenseName: "giấy phép MIT",
     licenseIntro:

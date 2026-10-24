@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      name="description"
+      content="How Aside handles page content, model requests, API keys, collections, and local history."
+    />
+    <title>Privacy Policy · Aside</title>
+    <link
+      rel="canonical"
+      href="https://worldtheater.github.io/aside/privacy.html"
+    />
+    <link rel="stylesheet" href="privacy.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#policy">Skip to the policy</a>
+    <div class="page">
+      <header class="site-header">
+        <a
+          class="brand"
+          href="https://github.com/worldtheater/aside"
+          aria-label="Aside project on GitHub"
+        >
+          <svg viewBox="2 2 12 12" aria-hidden="true" focusable="false">
+            <rect
+              x="3"
+              y="3"
+              width="2"
+              height="10"
+              rx="1"
+              fill="currentColor"
+            ></rect>
+            <path
+              d="M8 4H11A2 2 0 0 1 13 6V8A2 2 0 0 1 11 10H9L6 12V6A2 2 0 0 1 8 4Z"
+              fill="#D8A36A"
+            ></path>
+          </svg>
+          <span>Aside</span>
+        </a>
+        <a class="project-link" href="https://github.com/worldtheater/aside"
+          >View the project</a
+        >
+      </header>
+      <div class="policy-heading">
+        <h1>Privacy Policy</h1>
+        <p class="updated">
+          Last updated <time datetime="2026-10-25">October 25, 2026</time>
+        </p>
+        <p class="lead">
+          Your reading stays in your browser until a feature sends content to
+          the model service you choose.
+        </p>
+        <p>
+          Aside (旁白) is an open-source browser extension maintained through
+          <a href="https://github.com/worldtheater/aside">worldtheater/aside</a
+          >. This policy covers the extension and this policy page. Aside has no
+          developer-operated relay, analytics service, or cloud sync.
+        </p>
+      </div>
+      <div class="policy-layout">
+        <nav class="contents" aria-label="Policy sections">
+          <span>On this page</span>
+          <ul>
+            <li><a href="#local-data">Data on your device</a></li>
+            <li><a href="#model-requests">Model requests</a></li>
+            <li><a href="#other-connections">Other connections</a></li>
+            <li><a href="#your-controls">Your controls</a></li>
+            <li><a href="#security">Security</a></li>
+            <li><a href="#limited-use">Limited use</a></li>
+            <li><a href="#contact">Changes &amp; contact</a></li>
+          </ul>
+        </nav>
+        <main id="policy" tabindex="-1">
+          <section aria-labelledby="local-data">
+            <h2 id="local-data">Data on your device</h2>
+            <p>
+              Aside uses browser extension storage and local databases to
+              provide its features. The extension does not send these stores to
+              the developer.
+            </p>
+            <dl class="data-list">
+              <div>
+                <dt>Settings and connections</dt>
+                <dd>
+                  Your preferences, custom instructions, per-site settings,
+                  model service addresses, model names, and API keys. Keys are
+                  used to authenticate requests to the service you configure.
+                </dd>
+              </div>
+              <div>
+                <dt>Collections and reflections</dt>
+                <dd>
+                  Passages you save, original and processed text, page titles
+                  and URLs, action names, save dates, and your reflection
+                  settings and latest saved reflection.
+                </dd>
+              </div>
+              <div>
+                <dt>Request history</dt>
+                <dd>
+                  Model and connection names, timestamps, status, token counts,
+                  instructions, submitted content, and received output. Failed
+                  or interrupted calls may retain partial output. Connection
+                  credentials and authorization headers are not added to this
+                  history.
+                </dd>
+              </div>
+              <div>
+                <dt>Result cache</dt>
+                <dd>
+                  Previously generated results and cache identifiers, used to
+                  avoid repeating the same model request. Results can contain
+                  personal information from the source text.
+                </dd>
+              </div>
+              <div>
+                <dt>Recent tabs</dt>
+                <dd>
+                  Tab and window identifiers and their activation order, held in
+                  browser session storage so the shortcut can switch between
+                  recently viewed tabs. This feature does not maintain a
+                  permanent URL history.
+                </dd>
+              </div>
+            </dl>
+          </section>
+          <section aria-labelledby="model-requests">
+            <h2 id="model-requests">Model requests</h2>
+            <p>
+              When you translate, explain, summarize, preview an action, or
+              submit a question, Aside sends the required text and instructions
+              directly to the service URL saved in
+              <strong>Model connections</strong>. Depending on the feature, this
+              may include selected text, extracted page content, your question,
+              a quoted passage, and context such as page titles, section titles,
+              or table headings. That content may contain personal or sensitive
+              information.
+            </p>
+            <p>
+              After you start inline page processing, additional visible or
+              nearby passages may be sent as you scroll or the page changes.
+              Quick Q&amp;A prepares a quote from your selection or the page,
+              but does not send the question until you submit it.
+            </p>
+            <p>
+              <strong>Today's thought can run automatically:</strong> with a
+              model configured and the reflection area visible, the first visit
+              to Collection each local day can generate a reflection. Preview
+              and refresh also send requests. If
+              <strong>Use my collection</strong> is enabled, a request includes
+              titles and excerpts from up to five saved passages, together with
+              your instructions and the date.
+            </p>
+            <p>
+              The recipient is the operator of the model endpoint you choose:
+              for example, OpenAI, Anthropic, Google, xAI, another compatible
+              provider, or a local server you control. The service receives the
+              request content, authentication information, and normal network
+              metadata such as your IP address. Its own terms and privacy policy
+              determine retention, processing location, and any use for model
+              training. Aside does not control those practices.
+            </p>
+            <p>
+              Testing a connection sends an authenticated request to retrieve
+              its model list; it does not submit page text for generation.
+              Requests do not pass through an Aside server.
+            </p>
+          </section>
+          <section aria-labelledby="other-connections">
+            <h2 id="other-connections">Other connections</h2>
+            <p>
+              <strong>Website appearance.</strong> Dark mode uses the bundled
+              Dark Reader engine locally. It may retrieve stylesheets or images
+              referenced by the page from their original hosts, which receive
+              normal network metadata. Dark mode does not send page content to a
+              model. Site icons are requested through Chrome's favicon
+              interface.
+            </p>
+            <p>
+              <strong>This page and support.</strong> This static page is hosted
+              by GitHub Pages. It contains no analytics, advertising,
+              third-party fonts, or scripts. GitHub may process technical visit
+              data, including IP addresses, under the
+              <a
+                href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement"
+                >GitHub Privacy Statement</a
+              >. If you open a project link or submit an issue, GitHub handles
+              that interaction, and information you post in a public issue is
+              visible to the maintainers and others.
+            </p>
+          </section>
+          <section aria-labelledby="your-controls">
+            <h2 id="your-controls">Your controls and retention</h2>
+            <p>
+              Settings, collections, and request history have no scheduled
+              expiry. They remain in your browser until you remove them, clear
+              extension data, or uninstall Aside. The result cache has a size
+              limit and evicts older results as needed. Session tab records are
+              cleared when the browser restarts or the extension is reloaded. A
+              new saved reflection replaces the previous card; its request may
+              still remain in history.
+            </p>
+            <ul>
+              <li>Delete saved passages from <strong>Collection</strong>.</li>
+              <li>
+                Clear request history from <strong>Usage</strong> to remove both
+                summaries and input/output details. Clear the result cache
+                separately on the same page.
+              </li>
+              <li>
+                Delete a connection from <strong>Model connections</strong> to
+                remove its saved API key. Revoke the key with its provider if
+                you want to invalidate it.
+              </li>
+              <li>
+                Disable <strong>Use my collection</strong> to stop including
+                saved passages in future reflections. Hide Today's thought to
+                stop its automatic generation; hiding it does not erase the
+                saved text or history.
+              </li>
+              <li>
+                Stop page processing, restrict site access in Chrome, or disable
+                the extension to stop the corresponding page features.
+                Uninstalling removes the extension's local data.
+              </li>
+            </ul>
+            <p>
+              These stores are independent: deleting a passage or connection
+              does not remove copies already recorded in history or generated
+              results in the cache. Local deletion does not delete requests
+              retained by a model provider. Contact that provider to exercise
+              controls over its copies. The Aside maintainers cannot access or
+              erase data stored only in your browser.
+            </p>
+          </section>
+          <section aria-labelledby="security">
+            <h2 id="security">Security</h2>
+            <p>
+              Remote model endpoints must use HTTPS. HTTP is allowed only for
+              loopback addresses on your own device. API keys are kept in
+              restricted extension storage and are not provided to web page
+              content scripts. Local storage is not an encrypted password vault;
+              protect access to your device and browser profile.
+            </p>
+            <p>
+              Aside uses page access for reading tools and appearance changes,
+              extension storage for local settings and data, and
+              service-specific permissions for model requests. It does not use
+              these permissions to build advertising profiles.
+            </p>
+          </section>
+          <section aria-labelledby="limited-use">
+            <h2 id="limited-use">Limited use</h2>
+            <p>
+              Aside uses user data only for the features described in this
+              policy, consistent with the
+              <a
+                href="https://developer.chrome.com/docs/webstore/program-policies/policies#limited-use"
+                >Chrome Web Store User Data Policy and Limited Use
+                requirements</a
+              >. The developer does not sell user data, use it for advertising
+              or credit decisions, or collect reading content to train models.
+              Aside has no telemetry or behavioral analytics. Your chosen model
+              service's separate practices are described above.
+            </p>
+          </section>
+          <section aria-labelledby="contact">
+            <h2 id="contact">Changes and contact</h2>
+            <p>
+              We will update this page and its date when data practices change.
+              Material changes will also be disclosed through the extension or
+              its release information as appropriate.
+            </p>
+            <p>
+              For questions about this policy, contact the maintainers through
+              the
+              <a href="https://github.com/worldtheater/aside/issues"
+                >Aside issue tracker</a
+              >. Issues are public: do not post API keys, private page content,
+              or other sensitive information.
+            </p>
+          </section>
+        </main>
+      </div>
+      <footer><span>Aside · 旁白</span><a href="#">Back to top</a></footer>
+    </div>
+  </body>
+</html>

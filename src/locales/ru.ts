@@ -11,6 +11,7 @@ const base = {
     resources: "Проект и поддержка",
     project: "Страница проекта",
     feedback: "Сообщить о проблеме",
+    privacy: "Политика конфиденциальности",
     openSource: "Благодарности открытым проектам",
     licenseName: "лицензии MIT",
     licenseIntro:

@@ -10,6 +10,7 @@ const base = {
     resources: "项目与支持",
     project: "项目地址",
     feedback: "反馈问题",
+    privacy: "隐私政策",
     openSource: "开源致谢",
     licenseName: "MIT 许可证",
     licenseIntro: "旁白采用 {license}，感谢以下开源项目。",

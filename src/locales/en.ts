@@ -9,6 +9,7 @@ const base = {
     resources: "Project & support",
     project: "Project page",
     feedback: "Report an issue",
+    privacy: "Privacy policy",
     openSource: "Open-source acknowledgements",
     licenseName: "MIT License",
     licenseIntro:

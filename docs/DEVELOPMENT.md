@@ -123,3 +123,9 @@ node tests/browser.cjs --lights-recovery-only
 调用记录概要和输入输出详情统一保存在 `aside-usage` IndexedDB 数据库中。概要和详情在同一事务中写入、清空。列表通过时间及模型索引每次读取 50 条，用 `(startedAt, id)` 游标处理同时间记录；汇总和每日图表单独扫描筛选范围的概要并累加，不读取详情或把所有记录传入界面。数据库变更通过扩展同源 BroadcastChannel 通知用量页刷新。
 
 页面渲染只负责生成和挂载界面，数据查询由页面进入、筛选、翻页或刷新事件触发。用量页刷新保留已展开的记录范围；调用记录写入失败单独记录诊断，不覆盖模型调用的原始结果或错误。连接列表的滚动恢复由连接页更新函数负责。
+
+## 隐私政策与 GitHub Pages
+
+英文隐私政策源文件为 `docs/privacy.html` 和 `docs/privacy.css`，无构建步骤、脚本或远程字体。GitHub Pages 使用 `main` 分支的 `/docs` 目录发布，`docs/.nojekyll` 禁用 Jekyll 处理。公开地址为 <https://worldtheater.github.io/aside/privacy.html>，供 Chrome Web Store 的 Privacy Policy 字段使用。
+
+数据处理、接收方、自动调用或保留规则发生变化时，同步更新政策及日期，再推送至 `main`。README 与插件「关于」均链接到同一地址；商店隐私披露也需与实际行为保持一致。

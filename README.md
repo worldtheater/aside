@@ -33,7 +33,7 @@ npm run build
 
 After changing code, run `npm run build`, reload the extension in Chrome, and refresh open web pages. Generated JavaScript lives in the repository root and is excluded from Git; edit the source in `src/`.
 
-The **About** page at the bottom of the sidebar includes the current version, project and support links, and open-source acknowledgements. New users can also open model setup directly from the reflection card.
+The **About** page at the bottom of the sidebar includes the current version, project and support links, the privacy policy, and open-source acknowledgements. New users can also open model setup directly from the reflection card.
 
 ### Interface languages
 
@@ -71,6 +71,8 @@ On macOS, Alt is Option. The **Keyboard shortcuts** page in the sidebar shows Ch
 Quick Q&A is unavailable on extension pages, blank pages, browser-internal pages, and pages where Chrome blocks script injection. Recent-tab switching does not require page injection. After restarting the browser or reloading the extension, visit two tabs to establish a new recent-tab history.
 
 ## Data and permissions
+
+Read the [Privacy Policy](https://worldtheater.github.io/aside/privacy.html) for details about local storage, model requests, third parties, and your deletion controls.
 
 - API keys, settings, and collections stay in local extension storage. Usage summaries and request details share the `aside-usage` IndexedDB database; the result cache has its own database. There is no cloud sync. History is read in pages of 50 using time and model indexes, while totals and daily charts are queried separately.
 - Each new usage record has a **Details** view with the model instructions, submitted input (including context or batched passages), and received output. Interrupted calls retain any text already received. Authorization headers and API keys are not included. Clearing usage history also deletes these details; clearing the result cache does not. Older records have no request details.
