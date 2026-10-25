@@ -124,7 +124,9 @@ node tests/browser.cjs --lights-recovery-only
 
 页面渲染只负责生成和挂载界面，数据查询由页面进入、筛选、翻页或刷新事件触发。用量页刷新保留已展开的记录范围；调用记录写入失败单独记录诊断，不覆盖模型调用的原始结果或错误。连接列表的滚动恢复由连接页更新函数负责。
 
-## 隐私政策与 GitHub Pages
+## 产品首页、隐私政策与 GitHub Pages
+
+英文产品首页为 `docs/index.html` 和 `docs/home.css`，地址为 <https://worldtheater.github.io/aside/>。首页素材位于 `docs/assets/`：Logo 来自 `icons/icon.svg`，界面截图和分享图来自 `web-store/assets/`；更新演示图时同步这些副本。商店审核期间，安装入口链接到 README 安装指南；商店页面公开后再替换安装入口及审核中的提示。
 
 英文隐私政策源文件为 `docs/privacy.html` 和 `docs/privacy.css`，无构建步骤、脚本或远程字体。GitHub Pages 使用 `main` 分支的 `/docs` 目录发布，`docs/.nojekyll` 禁用 Jekyll 处理。公开地址为 <https://worldtheater.github.io/aside/privacy.html>，供 Chrome Web Store 的 Privacy Policy 字段使用。
 

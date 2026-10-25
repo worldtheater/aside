@@ -4,6 +4,8 @@
 
 A Chrome extension for translating, understanding, and collecting what you read on the web. Built with TypeScript, native HTML/CSS, and Manifest V3. No companion server required.
 
+[Product website](https://worldtheater.github.io/aside/) · [Installation](#installation) · [Privacy policy](https://worldtheater.github.io/aside/privacy.html)
+
 ## Features
 
 - **Inline translation:** Translate the visible area with a small preload margin, then process more content as you scroll or the page changes. Keep the original text and restore it at any time.

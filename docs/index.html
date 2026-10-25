@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      name="description"
+      content="Aside is an open-source Chrome extension for translating, understanding, and saving what you read. Connect your own model and stay with the page."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Aside" />
+    <meta
+      property="og:title"
+      content="Aside — Understand what you’re reading"
+    />
+    <meta
+      property="og:description"
+      content="Translate, ask questions, and keep useful passages without leaving the page. An open-source reading companion for Chrome."
+    />
+    <meta property="og:url" content="https://worldtheater.github.io/aside/" />
+    <meta
+      property="og:image"
+      content="https://worldtheater.github.io/aside/assets/social-preview.png"
+    />
+    <meta property="og:image:width" content="1400" />
+    <meta property="og:image:height" content="560" />
+    <meta property="og:image:alt" content="Aside. Read. Understand. Keep." />
+    <title>Aside — Understand what you’re reading</title>
+    <link rel="canonical" href="https://worldtheater.github.io/aside/" />
+    <link rel="icon" href="assets/aside.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="home.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header wrap">
+      <a class="brand" href="./" aria-label="Aside home"
+        ><img src="assets/aside.svg" width="38" height="38" alt="" /><span
+          >Aside</span
+        ></a
+      >
+      <nav aria-label="Main navigation">
+        <a class="features-link" href="#features">Features</a>
+        <a href="privacy.html">Privacy</a>
+        <a class="header-install" href="#install">Get Aside</a>
+      </nav>
+    </header>
+    <main id="main">
+      <section class="hero wrap" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <h1 id="hero-title">Understand what you’re reading.</h1>
+          <p class="lead">
+            Translate a passage. Ask a question. Keep a thought. Aside brings
+            your model into the page, so you can stay with what you’re reading.
+          </p>
+          <a
+            class="button primary"
+            href="https://github.com/worldtheater/aside#installation"
+            >Install from GitHub</a
+          >
+          <p class="install-note">
+            For Chrome. Bring your own model service.<br />Chrome Web Store
+            review in progress.
+          </p>
+        </div>
+        <figure class="hero-figure">
+          <div class="image-frame translation-frame">
+            <img
+              src="assets/translation.png"
+              width="1280"
+              height="800"
+              alt="Aside displays English translations beneath the original French paragraphs, keeping both languages visible on the page."
+              fetchpriority="high"
+            />
+          </div>
+          <figcaption>Another language. The same page.</figcaption>
+        </figure>
+      </section>
+
+      <section
+        id="features"
+        class="reading-features wrap"
+        aria-labelledby="features-title"
+      >
+        <div class="section-intro">
+          <h2 id="features-title">A companion for the way you read.</h2>
+          <p>Small tools that are there when you need them.</p>
+        </div>
+        <div class="feature-row question-row">
+          <figure>
+            <div class="image-frame question-frame">
+              <img
+                src="assets/quick-qa.png"
+                width="1280"
+                height="800"
+                alt="A Quick Q&amp;A answer appears in Aside’s selection toolbar, alongside the article being read."
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <figcaption>
+              A real Aside interface, with example content.
+            </figcaption>
+          </figure>
+          <div class="feature-copy">
+            <h3>Follow your curiosity.</h3>
+            <p>
+              Highlight a passage to translate or explain it. When you want to
+              go further, ask a question about the selection or the whole page.
+            </p>
+            <p>
+              Quick Q&amp;A keeps the context close. You can also clear the
+              quote and start a question of your own.
+            </p>
+            <p class="shortcut">
+              <kbd>Alt</kbd><span>+</span><kbd>Q</kbd
+              ><span>opens Quick Q&amp;A</span>
+            </p>
+          </div>
+        </div>
+        <div class="feature-row collection-row">
+          <div class="feature-copy">
+            <h3>Keep more than a highlight.</h3>
+            <p>
+              Save a useful result with its original text and source. Search
+              your collection when you want to pick up the thought again.
+            </p>
+            <p>
+              Today’s thought adds a short reflection to your collection page.
+              Choose whether it draws on your saved passages.
+            </p>
+          </div>
+          <figure>
+            <a
+              class="screenshot-link"
+              href="assets/collection.png"
+              aria-label="View the Collection screenshot at full size"
+              ><img
+                class="collection-image"
+                src="assets/collection.png"
+                width="1280"
+                height="800"
+                alt="Aside’s Collection page shows a daily reflection above three saved reading passages with their source links."
+                loading="lazy"
+                decoding="async"
+            /></a>
+            <figcaption>
+              Your passages, ready for another read. Select the image for a
+              closer look.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="comfort-section" aria-labelledby="comfort-title">
+        <div class="wrap comfort-layout">
+          <div class="comfort-copy">
+            <h2 id="comfort-title">Make yourself comfortable.</h2>
+            <p>
+              Give each website a darker setting with the built-in
+              <a href="https://github.com/darkreader/darkreader">Dark Reader</a>
+              engine. Keep your choice per site, or follow your system.
+            </p>
+            <p>
+              Adjust result colors, type size, and spacing to make room for a
+              longer read.
+            </p>
+          </div>
+          <figure class="dark-figure">
+            <div class="image-frame dark-frame">
+              <img
+                src="assets/dark-reading.png"
+                width="1280"
+                height="800"
+                alt="An article in dark mode with Aside’s floating reading menu open at the right edge."
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+          </figure>
+        </div>
+      </section>
+
+      <section class="your-tools wrap" aria-label="Make Aside your own">
+        <div>
+          <h3>Your way with words.</h3>
+          <p>
+            Explain a concept, pull out key points, or create a reusable action
+            with your own instructions. Try it on a passage before saving.
+          </p>
+        </div>
+        <div>
+          <h3>Your language.</h3>
+          <p>
+            Choose from 15 interface languages. Output follows your interface
+            language by default, or you can set it separately for each action.
+          </p>
+        </div>
+        <div>
+          <h3>A shortcut back.</h3>
+          <p>
+            Switch between the last two tabs in your window with
+            <kbd>Alt</kbd> + <kbd>W</kbd>. Keep your reference close while you
+            read.
+          </p>
+        </div>
+        <p class="shortcut-note">
+          On macOS, use Option in place of Alt. Shortcuts can be changed in
+          Chrome.
+        </p>
+      </section>
+
+      <section class="data-section wrap" aria-labelledby="data-title">
+        <div class="data-heading">
+          <h2 id="data-title">
+            Your model.<br />
+            Your reading.
+          </h2>
+          <a class="text-link" href="privacy.html">Read the privacy policy</a>
+        </div>
+        <div class="data-details">
+          <div>
+            <h3>Connect a service you choose.</h3>
+            <p>
+              Use your own model endpoint and API key. Requests go directly to
+              that service, with no Aside relay. Model access is required for AI
+              features; provider charges and terms apply.
+            </p>
+          </div>
+          <div>
+            <h3>Know where your words go.</h3>
+            <p>
+              Settings, API keys, collections, and request history are stored in
+              your browser. Model features send the required content to your
+              chosen service. With a model configured, Today’s thought can
+              generate on your first Collection visit each day; hide it to stop
+              automatic generation.
+            </p>
+          </div>
+          <p class="data-footnote">
+            No Aside account, analytics, or cloud sync. The model provider’s own
+            privacy policy applies to requests it receives.
+          </p>
+        </div>
+      </section>
+
+      <section
+        id="install"
+        class="install-section wrap"
+        aria-labelledby="install-title"
+      >
+        <div class="install-heading">
+          <img
+            src="assets/aside.svg"
+            width="64"
+            height="64"
+            alt=""
+            loading="lazy"
+          />
+          <div>
+            <h2 id="install-title">Bring Aside to your next read.</h2>
+            <p>
+              Open source. Available to install from GitHub while the Chrome Web
+              Store submission is under review.
+            </p>
+          </div>
+        </div>
+        <ol class="install-steps">
+          <li>
+            <h3>Install the extension.</h3>
+            <p>
+              Follow the GitHub guide to build Aside and load it into Chrome.
+              You’ll need Node.js 22 or later and Chrome 120 or later.
+            </p>
+          </li>
+          <li>
+            <h3>Connect your model.</h3>
+            <p>
+              Open Settings, add your service address and API key, test the
+              connection, and select a model.
+            </p>
+          </li>
+          <li>
+            <h3>Open a page and read.</h3>
+            <p>
+              Select some text or open the floating menu to get started. Page
+              tools work on regular websites where Chrome allows extensions.
+            </p>
+          </li>
+        </ol>
+        <div class="install-actions">
+          <a
+            class="button primary"
+            href="https://github.com/worldtheater/aside#installation"
+            >Install from GitHub</a
+          ><a
+            class="text-link"
+            href="https://github.com/worldtheater/aside/issues"
+            >Questions or feedback?</a
+          >
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer wrap">
+      <a class="brand" href="./" aria-label="Aside home"
+        ><img src="assets/aside.svg" width="28" height="28" alt="" /><span
+          >Aside</span
+        ></a
+      >
+      <p>A little help, beside your reading.</p>
+      <nav aria-label="Footer navigation">
+        <a href="privacy.html">Privacy policy</a
+        ><a href="https://github.com/worldtheater/aside">GitHub</a
+        ><a href="https://github.com/worldtheater/aside/blob/main/LICENSE"
+          >MIT License</a
+        >
+      </nav>
+    </footer>
+  </body>
+</html>
