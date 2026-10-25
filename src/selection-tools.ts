@@ -1,7 +1,11 @@
 import { escapeHtml as escape } from "./html.js";
 import { HoverTips } from "./hover-tips.js";
 import brandMark from "../icons/brand-mark.svg";
-import { hasOutputLanguage, DEFAULT_OUTPUT_LENGTH } from "./prompts.js";
+import {
+  hasOutputLanguage,
+  hasDefaultInstructions,
+  DEFAULT_OUTPUT_LENGTH,
+} from "./prompts.js";
 import { MAX_ACTIONS, toolbarActions } from "./action-policy.js";
 import { ModelError, hasDefaultModel } from "./providers.js";
 import { request } from "./client.js";
@@ -467,7 +471,8 @@ export class SelectionTools {
     );
     for (const action of changes) {
       const error =
-        !action.name.trim() || !action.instruction.trim()
+        !action.name.trim() ||
+        (!hasDefaultInstructions(action) && !action.instruction.trim())
           ? S.requiredAction
           : hasSameLanguages(
                 action,
@@ -619,6 +624,12 @@ export class SelectionTools {
 
   private editor(a: Action, config: PublicConfig) {
     const S = config.strings;
+    const instructionLabel = hasDefaultInstructions(a)
+      ? S.additionalInstructions
+      : S.instruction;
+    const instructionPlaceholder = hasDefaultInstructions(a)
+      ? S.additionalInstructionsPlaceholder
+      : "";
     const options = (entries: [string, string][], value: string | undefined) =>
       entries
         .map(
@@ -665,7 +676,7 @@ export class SelectionTools {
       }
       ${a.kind === "qa" ? select("outputLength", S.outputLength, Object.entries(S.outputLengths), a.outputLength || DEFAULT_OUTPUT_LENGTH) : ""}
       ${select("model", S.model, [["default", `${S.defaultModel}${defaultModel ? ` · ${defaultModel}` : ""}`], ...config.connections.filter((c) => c.connected && c.protocol !== "typesafe").map((c) => [c.id!, `${c.name} · ${c.model}`] as [string, string])], a.model)}
-      <label><span class="field-label">${escape(S.instruction)}</span><textarea rows="4" data-selection-field="instruction" aria-label="${escape(S.instruction)}" ${this.busy ? "disabled" : ""}>${escape(a.instruction)}</textarea></label>
+      <label><span class="field-label">${escape(instructionLabel)}</span><textarea rows="4" data-selection-field="instruction" aria-label="${escape(instructionLabel)}" placeholder="${escape(instructionPlaceholder)}" ${this.busy ? "disabled" : ""}>${escape(a.instruction)}</textarea></label>
     </div>`;
   }
 }

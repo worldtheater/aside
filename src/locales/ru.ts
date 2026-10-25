@@ -1,4 +1,4 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 
@@ -64,6 +64,9 @@ const base = {
   actionName: "Название",
   actionPlaceholder: "Например: Объяснить технические термины",
   instruction: "Как обработать содержимое?",
+  additionalInstructions: "Дополнительные инструкции (необязательно)",
+  additionalInstructionsPlaceholder:
+    "Оставьте поле пустым для стандартной обработки или укажите особые требования.",
   instructionPlaceholder:
     "Опишите цель, что нужно сохранить и каким должен быть результат.",
   actionCount: (n: number) => `Всего: ${n}`,
@@ -110,7 +113,7 @@ const base = {
   save: "Сохранить",
   cancel: "Отмена",
   back: "Назад",
-  required: "Введите название и инструкции по обработке.",
+  required: "Заполните обязательные поля.",
   saved: (name: string) => `«${name}» сохранено`,
   duplicated: "Копия создана. Её можно изменить.",
   discardTitle: "Несохранённые изменения",
@@ -305,31 +308,25 @@ const base = {
       name: "Перевести",
       description:
         "Выберите исходный язык и язык перевода. Сохраните структуру оригинала.",
-      instruction:
-        "Переведите точно, сохраняя тон, структуру абзацев и имена собственные. Используйте естественные формулировки и верните только перевод.",
     },
     plain: {
       name: "Объяснить классический текст",
       description:
         "Объясните классические тексты на любом языке понятным современным языком.",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "Объяснить содержимое",
       description:
         "Объясните основную мысль, термины и контекст; добавьте произношение редких слов.",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "Главные мысли",
       description: "Выделите наиболее полезные мысли из всего содержимого.",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "Быстрый вопрос",
       description:
         "Дайте прямой ответ на вопрос на выбранном языке и с нужной подробностью.",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -341,6 +338,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

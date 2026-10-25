@@ -512,7 +512,7 @@ assert(
     sourceLanguage: "ja",
     targetLanguage: "en",
     instruction: "Keep structure.",
-  }).includes("ja into en"),
+  }).includes("Japanese (ja) into English (en)"),
 );
 let calls = 0;
 const signal = new AbortController().signal;
@@ -989,7 +989,7 @@ for (const kind of Object.keys(messages.en.presets)) {
   );
   assert.equal(
     localizeAction({ ...action, builtin: true }, "zh-CN").instruction,
-    messages["zh-CN"].presets[kind].instruction,
+    "",
   );
 }
 console.log(

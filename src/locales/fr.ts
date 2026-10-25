@@ -1,4 +1,4 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
@@ -63,6 +63,9 @@ const base = {
   actionName: "Nom",
   actionPlaceholder: "Exemple : expliquer les termes techniques",
   instruction: "Comment traiter le contenu ?",
+  additionalInstructions: "Consignes supplémentaires (facultatif)",
+  additionalInstructionsPlaceholder:
+    "Laissez vide pour le traitement par défaut, ou ajoutez des consignes spécifiques.",
   instructionPlaceholder:
     "Décrivez l’objectif, les informations à conserver et le style souhaité.",
   actionCount: (n: number) => `Éléments : ${n}`,
@@ -109,7 +112,7 @@ const base = {
   save: "Enregistrer",
   cancel: "Annuler",
   back: "Retour",
-  required: "Saisissez un nom et des instructions de traitement.",
+  required: "Renseignez les champs obligatoires.",
   saved: (name: string) => `« ${name} » enregistré`,
   duplicated: "Copie créée. Vous pouvez la modifier.",
   discardTitle: "Modifications non enregistrées",
@@ -304,31 +307,25 @@ const base = {
       name: "Traduire",
       description:
         "Choisir les langues source et cible en conservant la structure d’origine.",
-      instruction:
-        "Traduisez fidèlement. Préservez le ton, la structure des paragraphes et les noms propres. Utilisez une formulation naturelle et renvoyez uniquement la traduction.",
     },
     plain: {
       name: "Explication de textes anciens",
       description:
         "Expliquer les textes anciens de toute langue dans un langage moderne et clair.",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "Expliquer le contenu",
       description:
         "Expliquer l’idée principale, les termes et le contexte, avec la prononciation des mots rares.",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "Points essentiels",
       description: "Synthétiser le contenu en ses points les plus utiles.",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "Questions rapides",
       description:
         "Répondre directement, dans la langue et la longueur souhaitées.",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -340,6 +337,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

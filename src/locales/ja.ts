@@ -1,4 +1,4 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
@@ -61,6 +61,9 @@ const base = {
   actionName: "名前",
   actionPlaceholder: "例：専門用語を説明",
   instruction: "どのように処理しますか？",
+  additionalInstructions: "追加の指示（任意）",
+  additionalInstructionsPlaceholder:
+    "空欄の場合は標準の処理を使用します。必要に応じて指示を追加してください。",
   instructionPlaceholder:
     "目的、残したい情報、望ましい表現を説明してください。",
   actionCount: (n: number) => `${n} 件`,
@@ -103,7 +106,7 @@ const base = {
   save: "保存",
   cancel: "キャンセル",
   back: "戻る",
-  required: "名前と処理の指示を入力してください。",
+  required: "必須項目を入力してください。",
   saved: (name: string) => `「${name}」を保存しました`,
   duplicated: "複製しました。新しいコピーを編集できます。",
   discardTitle: "未保存の変更",
@@ -290,29 +293,23 @@ const base = {
     translate: {
       name: "翻訳",
       description: "原文と翻訳先の言語を選び、原文の構成を保ちます。",
-      instruction:
-        "原文の意味を正確に伝え、語調、段落構成、固有名詞を保ってください。自然な表現を使い、翻訳文のみを返してください。",
     },
     plain: {
       name: "古典文の解説",
       description:
         "さまざまな言語の古典文を、わかりやすい現代の言葉で説明します。",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "内容を解説",
       description: "要点、用語、背景を説明し、難しい語には発音を添えます。",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "要点を抽出",
       description: "内容をまとめ、最も重要なポイントを抽出します。",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "クイック質問",
       description: "指定した言語と長さで、質問に直接答えます。",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -324,6 +321,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

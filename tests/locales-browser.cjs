@@ -211,7 +211,7 @@ module.exports = async ({
       assert.equal(calls.length, beforeSwitch + 1);
       assert(
         JSON.stringify(calls.at(-1).body).includes(
-          `Output language: ${LOCALES[locale].output}.`,
+          `Output language: ${messages.en.languages[LOCALES[locale].output]} (${LOCALES[locale].output}).`,
         ),
         `${locale}: provider output language`,
       );

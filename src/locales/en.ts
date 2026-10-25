@@ -1,6 +1,7 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
+import { LANGUAGE_NAMES } from "../locale.js";
 
 const base = {
   brand: "Aside",
@@ -60,6 +61,9 @@ const base = {
   actionName: "Name",
   actionPlaceholder: "For example: Explain technical terms",
   instruction: "How should the content be processed?",
+  additionalInstructions: "Additional instructions (optional)",
+  additionalInstructionsPlaceholder:
+    "Leave blank to use the default behavior, or add specific requirements.",
   instructionPlaceholder:
     "Describe the goal, what to preserve, and how the result should read.",
   actionCount: (n: number) => `${n} items`,
@@ -104,7 +108,7 @@ const base = {
   save: "Save",
   cancel: "Cancel",
   back: "Back",
-  required: "Enter a name and processing instructions.",
+  required: "Complete the required fields.",
   saved: (name: string) => `“${name}” saved`,
   duplicated: "Duplicated. You can edit the new copy.",
   discardTitle: "Unsaved changes",
@@ -201,26 +205,7 @@ const base = {
   translationHint:
     "The target language can follow the interface language or be set separately.",
   translationInstructions: "Translation instructions",
-  languages: {
-    auto: "Detect automatically",
-    "zh-Hans": "Simplified Chinese",
-    "zh-Hant": "Traditional Chinese",
-    en: "English",
-    ja: "Japanese",
-    ko: "Korean",
-    fr: "French",
-    de: "German",
-    es: "Spanish",
-    pt: "Portuguese",
-    ar: "Arabic",
-    ru: "Russian",
-    "pt-BR": "Portuguese (Brazil)",
-    id: "Indonesian",
-    it: "Italian",
-    tr: "Turkish",
-    th: "Thai",
-    vi: "Vietnamese",
-  },
+  languages: { auto: "Detect automatically", ...LANGUAGE_NAMES },
   defaultTextColor: "Default text color",
   themeColor: "Follow theme color",
   searchOptions: "Find an option",
@@ -294,31 +279,25 @@ const base = {
       name: "Translate",
       description:
         "Choose source and target languages. Preserve the original structure.",
-      instruction:
-        "Translate faithfully. Preserve tone, paragraph structure, and proper names. Use natural phrasing and return only the translation.",
     },
     plain: {
       name: "Classical text gloss",
       description:
         "Explain classical texts from any language in clear, modern language.",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "Explain the content",
       description:
         "Explain the main idea, terms, and background, with pronunciation notes for uncommon words.",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "Key takeaways",
       description: "Combine the content into its most useful points.",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "Quick Q&A",
       description:
         "Answer questions directly, in your preferred language and length.",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -330,6 +309,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

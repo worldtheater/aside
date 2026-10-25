@@ -2431,7 +2431,7 @@ hr {
     border-color 0.16s;
 }
 .collection-card:hover,
-.collection-card:focus-within {
+.collection-card:has(:focus-visible) {
   background: var(--hover);
   border-color: var(--line-strong);
   --muted: var(--ink);
@@ -2544,7 +2544,7 @@ hr {
     opacity: 0;
   }
   .collection-card:hover .collection-card-footer > .btn,
-  .collection-card:focus-within .collection-card-footer > .btn {
+  .collection-card:has(:focus-visible) .collection-card-footer > .btn {
     opacity: 1;
   }
 }
@@ -2591,11 +2591,14 @@ hr {
   margin-bottom: 12px;
 }
 .collection-detail-text {
-  white-space: pre-wrap;
   font-size: 15px;
   line-height: 1.9;
   margin: 13px 0 24px;
   color: var(--ink);
+}
+.collection-detail-text p {
+  font: inherit;
+  color: inherit;
 }
 .collection-original {
   border-top: 1px solid var(--line);

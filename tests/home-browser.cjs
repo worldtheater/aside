@@ -9,7 +9,17 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
     {
       id: "first",
       sourceText: "异史氏曰：乡人之愚可笑也。诸如此类，不足为怪。",
-      text: "乡下人的糊涂确实可笑。这样的事情，并不值得大惊小怪。",
+      text: [
+        "乡下人的糊涂确实可笑。这样的事情，并不值得大惊小怪。",
+        "### 核心含义",
+        "- **重点**：保留原意。",
+        "---",
+        "> 必要的注释。",
+        "```text\n示例 <tag>\n```",
+        "| 词语 | 释义 |\n| --- | --- |\n| 愚 | 糊涂 |",
+        "[参考](https://example.com/reference)",
+        '<script>window.collectionMarkdownExecuted = true</script><img src="https://invalid.example/leak" onerror="window.collectionMarkdownExecuted=true">',
+      ].join("\n\n"),
       actionName: "Classical to modern Chinese",
       createdAt: "2026-10-19T10:00:00Z",
       url: "https://zh.wikisource.org/wiki/example",
@@ -502,19 +512,97 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
     assert.equal(await page.locator(".collection-card").count(), 0);
     await page.locator(".collection-empty [data-op=collection-reset]").click();
     assert.equal(await page.locator(".collection-card").count(), 4);
-    await page.locator("[data-op=collection-open][data-id=first]").click();
+    const firstCard = page.locator(".collection-card").first();
+    const firstOpen = firstCard.locator("[data-op=collection-open]");
+    await page.mouse.move(0, 0);
+    await settle(firstCard);
+    const idleCardColor = await firstCard.evaluate(
+      (node) => getComputedStyle(node).backgroundColor,
+    );
+    await firstOpen.click();
     assert(
       (await page.locator(".collection-source").textContent()).includes(
         pageTitle,
       ),
+    );
+    const rendered = page.locator(".collection-detail-text.result-markdown");
+    assert.equal(await rendered.locator("h3").textContent(), "核心含义");
+    assert.equal(await rendered.locator("ul li strong").textContent(), "重点");
+    assert.equal(await rendered.locator("hr").count(), 1);
+    assert.equal(await rendered.locator("blockquote").count(), 1);
+    assert.equal(await rendered.locator("table tbody tr").count(), 1);
+    assert(
+      (await rendered.locator("pre code").textContent()).includes("示例 <tag>"),
+    );
+    assert.equal(await rendered.locator("a").getAttribute("target"), "_blank");
+    assert.equal(await rendered.locator("script,img").count(), 0);
+    assert.equal(
+      await page.evaluate(() => window.collectionMarkdownExecuted),
+      undefined,
+    );
+    assert(
+      await rendered
+        .locator(":scope > p")
+        .first()
+        .evaluate((node) => {
+          const text = getComputedStyle(node),
+            container = getComputedStyle(node.parentElement);
+          return (
+            text.color === container.color &&
+            text.fontSize === container.fontSize
+          );
+        }),
+      "Markdown paragraphs keep the collection's reading style",
     );
     await assertNoTip(page.locator("dialog > .dialog-close"));
     await page.locator("dialog").screenshot({
       path: path.join(artifacts, "collection-detail.png"),
       animations: "disabled",
     });
-    await page.locator("dialog > .dialog-close").click();
+    await page.mouse.click(4, 4);
     await page.waitForFunction(() => !document.querySelector("dialog").open);
+    await settle(firstCard);
+    assert(await firstOpen.evaluate((node) => node === document.activeElement));
+    assert.equal(
+      await firstCard.evaluate(
+        (node) => getComputedStyle(node).backgroundColor,
+      ),
+      idleCardColor,
+      "Backdrop dismissal restores focus without leaving the card highlighted",
+    );
+    assert.equal(
+      await firstCard
+        .locator("[data-op=collection-menu]")
+        .evaluate((node) => getComputedStyle(node).opacity),
+      "0",
+      "Pointer-restored focus does not reveal the options button",
+    );
+    await page.keyboard.press("Tab");
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Enter");
+    await page.waitForFunction(() => document.querySelector("dialog").open);
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(() => !document.querySelector("dialog").open);
+    await settle(firstCard);
+    assert(
+      await firstOpen.evaluate(
+        (node) =>
+          node === document.activeElement && node.matches(":focus-visible"),
+      ),
+    );
+    assert.notEqual(
+      await firstCard.evaluate(
+        (node) => getComputedStyle(node).backgroundColor,
+      ),
+      idleCardColor,
+      "Keyboard dismissal keeps the restored focus visible",
+    );
+    assert.equal(
+      await firstCard
+        .locator("[data-op=collection-menu]")
+        .evaluate((node) => getComputedStyle(node).opacity),
+      "1",
+    );
 
     // A long passage and expanded source must share one bounded scroll area.
     await page.evaluate(

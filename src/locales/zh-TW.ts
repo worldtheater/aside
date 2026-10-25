@@ -1,4 +1,4 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
@@ -60,6 +60,9 @@ const base = {
   actionName: "名稱",
   actionPlaceholder: "例如：解釋專業術語",
   instruction: "你希望如何處理內容？",
+  additionalInstructions: "補充要求（選填）",
+  additionalInstructionsPlaceholder:
+    "留空使用預設處理方式；有特殊要求時再填寫。",
   instructionPlaceholder: "說明目標、需要保留的資訊，以及希望的表達方式。",
   actionCount: (n: number) => `${n} 項`,
   quick: "快速使用",
@@ -101,7 +104,7 @@ const base = {
   save: "儲存",
   cancel: "取消",
   back: "返回",
-  required: "請填寫名稱與處理要求。",
+  required: "請填寫必填欄位。",
   saved: (name: string) => `「${name}」已儲存`,
   duplicated: "已建立副本，可以直接編輯。",
   discardTitle: "尚未儲存的變更",
@@ -284,28 +287,22 @@ const base = {
     translate: {
       name: "翻譯",
       description: "選擇來源與目標語言，保留原文結構。",
-      instruction:
-        "準確傳達原意，保留語氣、段落結構及專有名詞。使用自然通順的表達，只輸出譯文。",
     },
     plain: {
       name: "古文釋義",
       description: "用清楚的現代語言解釋各語種古文。",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "解釋內容",
       description: "解釋主旨、詞語與背景，並為生僻字詞補充發音。",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "提煉重點",
       description: "整合內容，整理出最有用的重點。",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "快問快答",
       description: "直接回答問題，可選擇輸出語言與回答長度。",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -317,6 +314,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

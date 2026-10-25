@@ -53,7 +53,7 @@ module.exports = async ({
     await op("test-run").click();
     await page.locator(".result-paper").waitFor();
     assert(wire().includes(OUTPUT_LENGTH_PROMPTS.detailed));
-    assert(wire().includes("Output language: en."));
+    assert(wire().includes("Output language: English (en)."));
     await op("save").click();
     await page.waitForFunction(
       async () =>
@@ -256,7 +256,7 @@ module.exports = async ({
     );
     assert(Math.abs(answerPosition.width - composedPosition.width) < 1);
     assert(wire().includes(OUTPUT_LENGTH_PROMPTS.balanced));
-    assert(wire().includes("Output language: en."));
+    assert(wire().includes("Output language: English (en)."));
     await select();
     await bar.locator("[data-selection-action=qa]").click();
     await question.waitFor();
@@ -339,7 +339,7 @@ module.exports = async ({
       .filter({ hasText: "处理完成" })
       .waitFor();
     assert(wire().includes(OUTPUT_LENGTH_PROMPTS.brief));
-    assert(wire().includes("Output language: ja."));
+    assert(wire().includes("Output language: Japanese (ja)."));
     const malformed = { ...(await saved()), outputLength: "invalid" };
     for (const request of [
       { type: "actions.save", changes: [malformed] },
@@ -469,7 +469,7 @@ module.exports = async ({
       .waitFor();
     assert.equal(calls.length, beforeQuestion + 1);
     assert(wire().includes(OUTPUT_LENGTH_PROMPTS.brief));
-    assert(wire().includes("Output language: ja."));
+    assert(wire().includes("Output language: Japanese (ja)."));
     await dock.click();
     await assertDockCollapsed();
     assert.equal(

@@ -12,6 +12,7 @@ import { escapeHtml as e } from "./html.js";
 import {
   DAILY_PROMPT,
   hasOutputLanguage,
+  hasDefaultInstructions,
   resolveOutputLanguage,
   DEFAULT_OUTPUT_LENGTH,
 } from "./prompts.js";
@@ -930,8 +931,12 @@ function openCollection(id: string | undefined) {
   if (!item) return;
   const source = collectionSource(item);
   showDialog(
-    `<div class="collection-dialog-meta">${e(localizeActionName(item.actionName, locale))} · ${C.output}</div><h2>${e(collectionTitle(item))}</h2><div class="collection-detail-body"><div class="collection-detail-text">${e(item.text)}</div><details class="collection-original"><summary>${C.home.original}</summary><p>${e(item.sourceText)}</p></details><p class="collection-source">${C.home.source} · ${source ? `<a href="${e(source.href)}" target="_blank" rel="noopener noreferrer">${e(item.sourceTitle || source.hostname)}</a>` : e(item.sourceTitle)}</p></div><div class="dialog-actions">${button(C.remove, "collection-remove-ask", "danger dialog-delete")}${button(C.copy, "collection-copy", "", "copy")}</div>`,
+    `<div class="collection-dialog-meta">${e(localizeActionName(item.actionName, locale))} · ${C.output}</div><h2>${e(collectionTitle(item))}</h2><div class="collection-detail-body"><div class="collection-detail-text"></div><details class="collection-original"><summary>${C.home.original}</summary><p>${e(item.sourceText)}</p></details><p class="collection-source">${C.home.source} · ${source ? `<a href="${e(source.href)}" target="_blank" rel="noopener noreferrer">${e(item.sourceTitle || source.hostname)}</a>` : e(item.sourceTitle)}</p></div><div class="dialog-actions">${button(C.remove, "collection-remove-ask", "danger dialog-delete")}${button(C.copy, "collection-copy", "", "copy")}</div>`,
     { wide: true },
+  );
+  renderMarkdown(
+    dialog.querySelector<HTMLElement>(".collection-detail-text")!,
+    item.text,
   );
 }
 function showDailyError(message: string, field: string) {
@@ -1089,7 +1094,7 @@ function renderEditor() {
             )}</select><span class="field-note">${C.outputLengthHint}</span></label>`
         : ""
     }
-    <label class="field"><span class="field-label">${a.kind === "translate" ? C.translationInstructions : C.instruction}</span><textarea id="instruction" data-draft="instruction" rows="6" placeholder="${C.instructionPlaceholder}">${e(a.instruction)}</textarea></label>
+    <label class="field"><span class="field-label">${hasDefaultInstructions(a) ? C.additionalInstructions : C.instruction}</span><textarea id="instruction" data-draft="instruction" rows="6" placeholder="${e(hasDefaultInstructions(a) ? C.additionalInstructionsPlaceholder : C.instructionPlaceholder)}">${e(a.instruction)}</textarea></label>
     <div class="field"><div class="field-label" id="mode-label">${C.mode}</div><div class="mode-options" role="radiogroup" aria-labelledby="mode-label">${["paragraph", "whole"].map((mode) => `<label class="mode-option"><div class="row"><input type="radio" name="process-mode" value="${mode}"${checked(a.mode === mode)}><span>${C.modes[mode as keyof typeof C.modes]}</span></div><p>${C.modeHints[mode as keyof typeof C.modeHints]}</p></label>`).join("")}</div></div>
   </section><div class="editor-advanced"><details class="advanced"><summary>${C.advanced}</summary><div class="advanced-body">
       <label class="field"><span class="field-label">${C.model}</span><select data-draft="model">${modelOptions(a.model)}</select></label>
@@ -1163,8 +1168,15 @@ async function runTrial() {
     renderTrialResult();
     return;
   }
-  if (!state.editor.instruction.trim() || !state.trial.text.trim()) {
-    notify(C.inputRequired, "error");
+  if (
+    !hasDefaultInstructions(state.editor) &&
+    !state.editor.instruction.trim()
+  ) {
+    notify(C.required, "error");
+    return;
+  }
+  if (!state.trial.text.trim()) {
+    notify(C.real.errors.invalidInput, "error");
     return;
   }
   const refresh = Boolean(state.trial.result);
@@ -1200,7 +1212,7 @@ async function runTrial() {
 async function saveAction() {
   const a = state.editor;
   if (!a) return;
-  if (!a.name.trim() || !a.instruction.trim()) {
+  if (!a.name.trim() || (!hasDefaultInstructions(a) && !a.instruction.trim())) {
     const error = document.querySelector<HTMLElement>("#editor-error")!;
     error.textContent = C.required;
     error.hidden = false;

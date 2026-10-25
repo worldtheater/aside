@@ -1,4 +1,4 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
@@ -63,6 +63,9 @@ const base = {
   actionName: "Name",
   actionPlaceholder: "Zum Beispiel: Fachbegriffe erklären",
   instruction: "Wie soll der Inhalt verarbeitet werden?",
+  additionalInstructions: "Zusätzliche Anweisungen (optional)",
+  additionalInstructionsPlaceholder:
+    "Für die Standardverarbeitung leer lassen oder besondere Anforderungen ergänzen.",
   instructionPlaceholder:
     "Beschreibe das Ziel, welche Informationen erhalten bleiben sollen und den gewünschten Stil.",
   actionCount: (n: number) => `${n} Einträge`,
@@ -109,7 +112,7 @@ const base = {
   save: "Speichern",
   cancel: "Abbrechen",
   back: "Zurück",
-  required: "Namen und Verarbeitungsanweisungen eingeben.",
+  required: "Füllen Sie die Pflichtfelder aus.",
   saved: (name: string) => `„${name}“ gespeichert`,
   duplicated: "Dupliziert. Die neue Kopie kann bearbeitet werden.",
   discardTitle: "Ungespeicherte Änderungen",
@@ -305,31 +308,25 @@ const base = {
       name: "Übersetzen",
       description:
         "Ausgangs- und Zielsprache wählen. Die ursprüngliche Struktur bleibt erhalten.",
-      instruction:
-        "Übersetze sinngenau. Behalte Ton, Absatzstruktur und Eigennamen bei. Formuliere natürlich und gib nur die Übersetzung zurück.",
     },
     plain: {
       name: "Klassische Texte erklären",
       description:
         "Klassische Texte jeder Sprache in klarer, moderner Sprache erklären.",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "Inhalt erklären",
       description:
         "Hauptaussage, Begriffe und Hintergrund erklären, mit Aussprachehinweisen für seltene Wörter.",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "Kernaussagen",
       description: "Den Inhalt auf die nützlichsten Punkte zusammenfassen.",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "Schnellfrage",
       description:
         "Fragen direkt beantworten, in der gewünschten Sprache und Länge.",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -341,6 +338,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

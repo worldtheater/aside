@@ -40,10 +40,7 @@ export const messages: Record<Locale, Copy> = {
 export function usesPresetDefaults(action: Action, language: Locale): boolean {
   if (action.kind === "custom" || action.id !== action.kind) return false;
   const preset = messages[language].presets[action.kind];
-  return (
-    action.name.trim() === preset.name &&
-    action.instruction.trim() === preset.instruction
-  );
+  return action.name.trim() === preset.name && !action.instruction.trim();
 }
 
 const formerPlainNames = [
@@ -59,7 +56,7 @@ export function localizeAction(action: Action, language: Locale): Action {
   if (kind === "explain") action = { ...action, icon: "explain" };
   if (kind === "custom") return action;
   const preset = messages[language].presets[kind];
-  if (action.builtin) return { ...action, ...preset };
+  if (action.builtin) return { ...action, ...preset, instruction: "" };
   if (action.id !== kind) return action;
   const defaults = Object.values(messages).map((copy) => copy.presets[kind]);
   return {

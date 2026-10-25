@@ -1,4 +1,4 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 
@@ -63,6 +63,9 @@ const base = {
   actionName: "Tên",
   actionPlaceholder: "Ví dụ: Giải thích thuật ngữ kỹ thuật",
   instruction: "Bạn muốn xử lý nội dung như thế nào?",
+  additionalInstructions: "Hướng dẫn bổ sung (không bắt buộc)",
+  additionalInstructionsPlaceholder:
+    "Để trống để dùng cách xử lý mặc định, hoặc thêm yêu cầu cụ thể.",
   instructionPlaceholder:
     "Mô tả mục tiêu, những gì cần giữ lại và cách trình bày kết quả.",
   actionCount: (n: number) => `${n} mục`,
@@ -107,7 +110,7 @@ const base = {
   save: "Lưu",
   cancel: "Hủy",
   back: "Quay lại",
-  required: "Nhập tên và chỉ dẫn xử lý.",
+  required: "Vui lòng điền các trường bắt buộc.",
   saved: (name: string) => `Đã lưu “${name}”`,
   duplicated: "Đã tạo bản sao. Bạn có thể chỉnh sửa bản sao mới.",
   discardTitle: "Thay đổi chưa lưu",
@@ -298,30 +301,24 @@ const base = {
     translate: {
       name: "Dịch",
       description: "Chọn ngôn ngữ nguồn và đích. Giữ cấu trúc bản gốc.",
-      instruction:
-        "Dịch trung thực. Giữ giọng điệu, cấu trúc đoạn văn và tên riêng. Diễn đạt tự nhiên và chỉ trả về bản dịch.",
     },
     plain: {
       name: "Giải nghĩa văn bản cổ",
       description:
         "Giải thích văn bản cổ từ mọi ngôn ngữ bằng ngôn ngữ hiện đại, dễ hiểu.",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "Giải thích nội dung",
       description:
         "Giải thích ý chính, thuật ngữ và bối cảnh, kèm cách phát âm những từ ít gặp.",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "Ý chính",
       description: "Tổng hợp nội dung thành những điểm hữu ích nhất.",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "Hỏi đáp nhanh",
       description: "Trả lời thẳng vào câu hỏi với ngôn ngữ và độ dài bạn chọn.",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -333,6 +330,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

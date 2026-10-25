@@ -1,4 +1,4 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
@@ -60,6 +60,9 @@ const base = {
   actionName: "名称",
   actionPlaceholder: "例如：解释专业术语",
   instruction: "你希望怎样处理内容？",
+  additionalInstructions: "补充要求（可选）",
+  additionalInstructionsPlaceholder:
+    "留空使用默认处理方式；有特殊要求时再填写。",
   instructionPlaceholder:
     "用日常语言说清楚目标、需要保留的信息，以及希望的表达方式。",
   actionCount: (n: number) => `${n} 项`,
@@ -102,7 +105,7 @@ const base = {
   save: "保存",
   cancel: "取消",
   back: "返回",
-  required: "请填写名称和处理要求。",
+  required: "请填写必填项。",
   saved: (name: string) => `“${name}”已保存`,
   duplicated: "已复制，可以直接修改。",
   discardTitle: "还有未保存的修改",
@@ -283,28 +286,22 @@ const base = {
     translate: {
       name: "翻译",
       description: "选择源语言和目标语言，保留原文结构。",
-      instruction:
-        "准确传达原意，保留语气、段落结构及专有名词。使用自然通顺的表达，只输出译文。",
     },
     plain: {
       name: "古文释义",
       description: "用现代语言解释各语种古文，必要时补充古词和典故。",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "解释内容",
       description: "说明核心意思、专业概念与背景，并标注生僻字词的读音。",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "提炼要点",
       description: "综合内容，整理成值得记住的重点。",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "快问快答",
       description: "直接回答问题，可选择输出语言和回复长度。",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -316,6 +313,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

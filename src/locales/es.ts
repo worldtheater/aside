@@ -1,4 +1,4 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
@@ -63,6 +63,9 @@ const base = {
   actionName: "Nombre",
   actionPlaceholder: "Por ejemplo: explicar términos técnicos",
   instruction: "¿Cómo quieres procesar el contenido?",
+  additionalInstructions: "Instrucciones adicionales (opcional)",
+  additionalInstructionsPlaceholder:
+    "Deja este campo vacío para el comportamiento predeterminado o añade requisitos específicos.",
   instructionPlaceholder:
     "Describe el objetivo, qué información conservar y el estilo deseado.",
   actionCount: (n: number) => `Elementos: ${n}`,
@@ -108,7 +111,7 @@ const base = {
   save: "Guardar",
   cancel: "Cancelar",
   back: "Volver",
-  required: "Introduce un nombre y las instrucciones de procesamiento.",
+  required: "Completa los campos obligatorios.",
   saved: (name: string) => `«${name}» guardado`,
   duplicated: "Se ha creado una copia. Ya puedes editarla.",
   discardTitle: "Cambios sin guardar",
@@ -303,31 +306,25 @@ const base = {
       name: "Traducir",
       description:
         "Elige los idiomas de origen y destino. Conserva la estructura original.",
-      instruction:
-        "Traduce fielmente. Conserva el tono, la estructura de los párrafos y los nombres propios. Usa expresiones naturales y devuelve solo la traducción.",
     },
     plain: {
       name: "Explicación de textos clásicos",
       description:
         "Explica textos clásicos de cualquier idioma con lenguaje moderno y claro.",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "Explicar contenido",
       description:
         "Explica la idea principal, los términos y el contexto, con notas de pronunciación para palabras poco comunes.",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "Puntos clave",
       description: "Resume el contenido en sus puntos más útiles.",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "Preguntas rápidas",
       description:
         "Responde directamente en el idioma y con la extensión que prefieras.",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -340,6 +337,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

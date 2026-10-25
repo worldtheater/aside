@@ -173,7 +173,7 @@ module.exports = async ({
     assert(instructions.includes(prompt));
     assert(instructions.includes("compact daily card on a reading homepage"));
     assert(instructions.includes("Do not use Markdown formatting"));
-    assert(instructions.includes("Output language: en."));
+    assert(instructions.includes("Output language: English (en)."));
     assert.equal(
       JSON.parse(call.body.messages.at(-1).content).collection.length,
       5,
@@ -242,7 +242,9 @@ module.exports = async ({
       "Homepage generation reuses the saved model",
     );
     assert(
-      calls.at(-1).body.messages[0].content.includes("Output language: fr."),
+      calls
+        .at(-1)
+        .body.messages[0].content.includes("Output language: French (fr)."),
     );
     await openSettings();
     await choose("#daily-model", "default");

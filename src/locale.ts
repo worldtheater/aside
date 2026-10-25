@@ -37,3 +37,24 @@ export function resolveLocale(
     ) || "en"
   );
 }
+
+// Shared English names for output-language menus and model instructions.
+export const LANGUAGE_NAMES = {
+  "zh-Hans": "Simplified Chinese",
+  "zh-Hant": "Traditional Chinese",
+  en: "English",
+  ja: "Japanese",
+  ko: "Korean",
+  fr: "French",
+  de: "German",
+  es: "Spanish",
+  pt: "Portuguese",
+  ar: "Arabic",
+  ru: "Russian",
+  "pt-BR": "Portuguese (Brazil)",
+  id: "Indonesian",
+  it: "Italian",
+  tr: "Turkish",
+  th: "Thai",
+  vi: "Vietnamese",
+};

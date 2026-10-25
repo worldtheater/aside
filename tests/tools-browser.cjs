@@ -94,7 +94,9 @@ module.exports = async ({
     calls
       .slice(before)
       .every((call) =>
-        call.body.messages[0].content.includes("from en into ja"),
+        call.body.messages[0].content.includes(
+          "from English (en) into Japanese (ja)",
+        ),
       ),
   );
   await source.screenshot({ path: path.join(artifacts, "floating-tools.png") });
@@ -356,7 +358,7 @@ module.exports = async ({
       .slice(popupCount)
       .every((call) =>
         call.body.messages[0].content.includes(
-          "from the detected source language into fr",
+          "from the detected source language into French (fr)",
         ),
       ),
   );

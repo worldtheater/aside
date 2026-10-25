@@ -109,10 +109,7 @@ module.exports = async ({
     const currentPlainPrompt = await page.evaluate(
       async () => (await import("./prompts.js")).ACTION_PROMPTS.plain,
     );
-    assert.equal(
-      await page.locator("#instruction").inputValue(),
-      currentPlainPrompt,
-    );
+    assert.equal(await page.locator("#instruction").inputValue(), "");
     assert.equal(
       await page.locator("[data-language=outputLanguage]").inputValue(),
       "zh-Hans",
@@ -122,8 +119,8 @@ module.exports = async ({
     );
     assert.equal(
       repairedPlain.instruction,
-      currentPlainPrompt,
-      "Updated text is persisted",
+      "",
+      "The saved default leaves additional instructions empty",
     );
     assert.equal(repairedPlain.builtin, true);
     assert.notEqual(
@@ -152,7 +149,11 @@ module.exports = async ({
     await nav("actions");
     await page.locator("[data-op=edit-action][data-id=explain]").click();
     const englishPrompt = await page.locator("#instruction").inputValue();
-    assert(!/[\u3400-\u9fff]/.test(englishPrompt));
+    assert.equal(englishPrompt, "");
+    assert(
+      (await page.locator("#instruction").getAttribute("placeholder")).length >
+        0,
+    );
     assert.equal(
       await page.locator("[data-language=outputLanguage]").inputValue(),
       "interface",
@@ -166,7 +167,7 @@ module.exports = async ({
         ).outputLanguage === "ja",
     );
     await run("explain");
-    assert(wire().includes("Output language: ja."));
+    assert(wire().includes("Output language: Japanese (ja)."));
     const fixedCalls = calls.length;
     await nav("actions");
     await page.locator("[data-op=edit-action][data-id=explain]").click();
@@ -190,10 +191,10 @@ module.exports = async ({
         ).outputLanguage === "interface",
     );
     await run("explain");
-    assert(wire().includes("Output language: en."));
+    assert(wire().includes("Output language: English (en)."));
     await language("zh-CN");
     await run("explain");
-    assert(wire().includes("Output language: zh-Hans."));
+    assert(wire().includes("Output language: Simplified Chinese (zh-Hans)."));
     const interfaceCalls = calls.length;
     await language("en");
     assert.equal((await run("explain")).stats.hits, 1);
@@ -201,10 +202,10 @@ module.exports = async ({
     await run("plain");
     assert(
       wire().includes(currentPlainPrompt),
-      "The actual model request uses the editor's new prompt",
+      "The actual model request includes base instructions even with an empty editor",
     );
     assert(!wire().includes("Rewrite classical Chinese"));
-    assert(wire().includes("Output language: en."));
+    assert(wire().includes("Output language: English (en)."));
     assert(!wire().includes("modern Chinese rendition"));
     await nav("actions");
     await page.locator("[data-op=edit-action][data-id=translate]").click();
@@ -235,12 +236,12 @@ module.exports = async ({
     );
     await language("en");
     await run("translate");
-    assert(wire().includes("into en."));
+    assert(wire().includes("into English (en)."));
     const beforeJapanese = calls.length;
     await language("ja");
     await run("translate");
     assert.equal(calls.length, beforeJapanese + 1);
-    assert(wire().includes("into ja."));
+    assert(wire().includes("into Japanese (ja)."));
     await run("translate");
     assert.equal(
       calls.length,
@@ -252,10 +253,10 @@ module.exports = async ({
     await op("save").click();
     await language("zh-CN");
     await run("translate");
-    assert(wire().includes("into fr."));
+    assert(wire().includes("into French (fr)."));
     await language("en");
     await run("translate");
-    assert(wire().includes("into fr."));
+    assert(wire().includes("into French (fr)."));
     assert.equal(
       (await snapshot()).actions.find((a) => a.id === "translate")
         .targetLanguage,
@@ -288,7 +289,7 @@ module.exports = async ({
       .locator(".daily-preview-text")
       .filter({ hasText: "A thought generated" })
       .waitFor();
-    assert(wire().includes("Output language: de."));
+    assert(wire().includes("Output language: German (de)."));
     assert.equal(
       JSON.parse(calls.at(-1).body.messages.at(-1).content).language,
       undefined,
@@ -321,7 +322,7 @@ module.exports = async ({
       .locator(".daily-preview-text")
       .filter({ hasText: "A thought generated" })
       .waitFor();
-    assert(wire().includes("Output language: en."));
+    assert(wire().includes("Output language: English (en)."));
     await choose("#daily-output-language", "fr");
     assert.equal(
       await page.locator(".daily-preview-text").count(),
@@ -356,7 +357,7 @@ module.exports = async ({
       .locator(".workspace .daily-thought")
       .filter({ hasText: "A thought generated" })
       .waitFor();
-    assert(wire().includes("Output language: fr."));
+    assert(wire().includes("Output language: French (fr)."));
 
     await page.evaluate(async () => {
       const { value } = await chrome.runtime.sendMessage({ type: "snapshot" });
@@ -415,7 +416,7 @@ module.exports = async ({
       .locator("#result-status")
       .filter({ hasText: "处理完成" })
       .waitFor();
-    assert(wire().includes("Output language: ru."));
+    assert(wire().includes("Output language: Russian (ru)."));
     await command("settings").click();
     await action("summary").click();
     assert.equal(
@@ -426,6 +427,37 @@ module.exports = async ({
       path: path.join(artifacts, "selection-output-language.png"),
       animations: "disabled",
     });
+    const customResult = await page.evaluate(async () => {
+      const action = {
+        id: "empty-custom-fixture",
+        name: "Custom fixture",
+        kind: "custom",
+        instruction: " ",
+        mode: "whole",
+        model: "default",
+        create: true,
+      };
+      const saved = await chrome.runtime.sendMessage({
+        type: "actions.save",
+        changes: [action],
+      });
+      let error;
+      try {
+        await (
+          await import("./client.js")
+        ).processRequest({
+          action,
+          blocks: [{ id: "one", text: "Custom source" }],
+          source: "trial",
+        }).promise;
+      } catch (caught) {
+        error = caught.code;
+      }
+      return { saved, error };
+    });
+    assert.equal(customResult.saved.ok, false);
+    assert.equal(customResult.saved.error, "invalidAction");
+    assert.equal(customResult.error, "invalidInput");
     const rejected = await page.evaluate(async () => {
       const snapshot = (await chrome.runtime.sendMessage({ type: "snapshot" }))
         .value;
@@ -441,7 +473,7 @@ module.exports = async ({
       "ru",
     );
     console.log(
-      "PASS: saved old prompt upgraded in storage/editor/request; default text remains linked after settings saves; output language UI/save/reload, live interface defaults, fixed-language cache reuse, daily preview invalidation, actual provider instructions and native selection settings.",
+      "PASS: empty built-in instructions save and run in both editors; empty custom actions are rejected; output language UI/save/reload, live interface defaults, fixed-language cache reuse, daily preview invalidation, actual provider instructions and native selection settings.",
     );
   } finally {
     if (source) await source.close();

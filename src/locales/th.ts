@@ -1,4 +1,4 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 
@@ -61,6 +61,9 @@ const base = {
   actionName: "ชื่อ",
   actionPlaceholder: "เช่น อธิบายศัพท์เทคนิค",
   instruction: "ต้องการให้ประมวลผลเนื้อหาอย่างไร?",
+  additionalInstructions: "คำสั่งเพิ่มเติม (ไม่บังคับ)",
+  additionalInstructionsPlaceholder:
+    "เว้นว่างเพื่อใช้การประมวลผลเริ่มต้น หรือเพิ่มข้อกำหนดเฉพาะตามต้องการ",
   instructionPlaceholder:
     "อธิบายเป้าหมาย สิ่งที่ต้องคงไว้ และรูปแบบการเขียนผลลัพธ์",
   actionCount: (n: number) => `${n} รายการ`,
@@ -103,7 +106,7 @@ const base = {
   save: "บันทึก",
   cancel: "ยกเลิก",
   back: "กลับ",
-  required: "ระบุชื่อและคำแนะนำในการประมวลผล",
+  required: "กรุณากรอกช่องที่จำเป็น",
   saved: (name: string) => `บันทึก “${name}” แล้ว`,
   duplicated: "สร้างสำเนาแล้ว คุณสามารถแก้ไขสำเนาใหม่ได้",
   discardTitle: "การเปลี่ยนแปลงที่ยังไม่บันทึก",
@@ -291,29 +294,23 @@ const base = {
     translate: {
       name: "แปล",
       description: "เลือกภาษาต้นทางและปลายทาง โดยคงโครงสร้างต้นฉบับ",
-      instruction:
-        "แปลอย่างถูกต้องและซื่อตรง รักษาน้ำเสียง โครงสร้างย่อหน้า และชื่อเฉพาะ ใช้สำนวนที่เป็นธรรมชาติและส่งกลับเฉพาะคำแปล",
     },
     plain: {
       name: "อธิบายข้อความโบราณ",
       description: "อธิบายข้อความโบราณจากทุกภาษาด้วยภาษาปัจจุบันที่เข้าใจง่าย",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "อธิบายเนื้อหา",
       description:
         "อธิบายใจความสำคัญ คำศัพท์ และบริบท พร้อมคำอ่านสำหรับคำที่ไม่คุ้นเคย",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "ประเด็นสำคัญ",
       description: "สรุปเนื้อหาทั้งหมดเป็นประเด็นที่มีประโยชน์ที่สุด",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "ถามตอบด่วน",
       description: "ตอบคำถามตรงประเด็นด้วยภาษาและความยาวที่คุณเลือก",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -325,6 +322,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

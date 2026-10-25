@@ -1,4 +1,4 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
@@ -61,6 +61,9 @@ const base = {
   actionName: "이름",
   actionPlaceholder: "예: 전문 용어 설명",
   instruction: "내용을 어떻게 처리할까요?",
+  additionalInstructions: "추가 지침 (선택 사항)",
+  additionalInstructionsPlaceholder:
+    "비워 두면 기본 방식으로 처리합니다. 필요한 경우에만 추가 지침을 입력하세요.",
   instructionPlaceholder: "목표, 유지할 정보, 원하는 표현 방식을 설명하세요.",
   actionCount: (n: number) => `${n}개`,
   quick: "빠른 사용",
@@ -103,7 +106,7 @@ const base = {
   save: "저장",
   cancel: "취소",
   back: "뒤로",
-  required: "이름과 처리 지침을 입력하세요.",
+  required: "필수 항목을 입력해 주세요.",
   saved: (name: string) => `‘${name}’ 저장됨`,
   duplicated: "복제했습니다. 새 사본을 편집할 수 있습니다.",
   discardTitle: "저장하지 않은 변경 사항",
@@ -290,29 +293,23 @@ const base = {
     translate: {
       name: "번역",
       description: "원문 언어와 번역 언어를 선택하고 원문의 구조를 유지합니다.",
-      instruction:
-        "원문의 뜻을 정확히 전달하고 어조, 문단 구조, 고유명사를 유지하세요. 자연스러운 표현을 사용하며 번역문만 출력하세요.",
     },
     plain: {
       name: "고전 풀이",
       description: "다양한 언어의 고전을 알기 쉬운 현대 언어로 풀이합니다.",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "내용 설명",
       description:
         "핵심 내용, 용어, 배경을 설명하고 어려운 단어에는 발음 안내를 덧붙입니다.",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "핵심 요약",
       description: "전체 내용을 가장 유용한 핵심 사항으로 정리합니다.",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "빠른 질문",
       description: "원하는 언어와 길이로 질문에 바로 답합니다.",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -324,6 +321,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

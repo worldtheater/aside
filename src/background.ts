@@ -12,6 +12,7 @@ import type { LightCandidate, LightDecision } from "./lights-decision.js";
 import { resolveWebsite, updateWebsite, websiteHostname } from "./website.js";
 import {
   hasOutputLanguage,
+  hasDefaultInstructions,
   resolveOutputLanguage,
   DEFAULT_OUTPUT_LENGTH,
   OUTPUT_LENGTH_PROMPTS,
@@ -460,7 +461,7 @@ chrome.runtime.onMessage.addListener(
             const index = settings.actions.findIndex((a) => a.id === change.id);
             if ((change.create && index >= 0) || (!change.create && index < 0))
               throw new ModelError("notAllowed");
-            if (!change.name?.trim() || !change.instruction?.trim())
+            if (!change.name?.trim() || typeof change.instruction !== "string")
               throw new ModelError("invalidAction");
             if (
               change.model !== "default" &&
@@ -492,6 +493,8 @@ chrome.runtime.onMessage.addListener(
               instruction: change.instruction.trim(),
               model: change.model,
             };
+            if (!hasDefaultInstructions(next) && !next.instruction)
+              throw new ModelError("invalidAction");
             next.builtin = usesPresetDefaults(next, localeOf(settings));
             if (next.kind === "translate") {
               const languages = messages[localeOf(settings)].languages;
@@ -900,7 +903,12 @@ chrome.runtime.onConnect.addListener((port) => {
             },
           ];
         }
-        if (!action?.instruction?.trim() || !blocks)
+        if (
+          !action ||
+          typeof action.instruction !== "string" ||
+          (!hasDefaultInstructions(action) && !action.instruction.trim()) ||
+          !blocks
+        )
           throw new ModelError("invalidInput");
         if (action.kind === "translate" && payload.translation)
           action = {

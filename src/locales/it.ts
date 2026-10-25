@@ -1,4 +1,4 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 
@@ -65,6 +65,9 @@ const base = {
   actionName: "Nome",
   actionPlaceholder: "Ad esempio: Spiega i termini tecnici",
   instruction: "Come elaborare il contenuto?",
+  additionalInstructions: "Istruzioni aggiuntive (facoltativo)",
+  additionalInstructionsPlaceholder:
+    "Lascia vuoto per usare il comportamento predefinito o aggiungi requisiti specifici.",
   instructionPlaceholder:
     "Descrivi l’obiettivo, cosa preservare e come deve essere scritto il risultato.",
   actionCount: (n: number) => `${n} elementi`,
@@ -111,7 +114,7 @@ const base = {
   save: "Salva",
   cancel: "Annulla",
   back: "Indietro",
-  required: "Inserisci un nome e le istruzioni di elaborazione.",
+  required: "Compila i campi obbligatori.",
   saved: (name: string) => `“${name}” salvato`,
   duplicated: "Copia creata. Puoi modificarla.",
   discardTitle: "Modifiche non salvate",
@@ -307,31 +310,25 @@ const base = {
       name: "Traduci",
       description:
         "Scegli le lingue di origine e destinazione. Conserva la struttura originale.",
-      instruction:
-        "Traduci fedelmente. Conserva tono, struttura dei paragrafi e nomi propri. Usa una formulazione naturale e restituisci solo la traduzione.",
     },
     plain: {
       name: "Spiega testi classici",
       description:
         "Spiega testi classici di qualsiasi lingua in un linguaggio moderno e chiaro.",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "Spiega il contenuto",
       description:
         "Spiega l’idea principale, i termini e il contesto, con note di pronuncia per le parole poco comuni.",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "Punti chiave",
       description: "Riassumi il contenuto nei suoi punti più utili.",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "Domanda rapida",
       description:
         "Rispondi direttamente alle domande nella lingua e con la lunghezza preferite.",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -344,6 +341,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

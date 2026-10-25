@@ -25,9 +25,32 @@ for (const kind of Object.keys(ACTION_PROMPTS)) {
   const en = english.find((a) => a.kind === kind),
     zh = chinese.find((a) => a.kind === kind);
   assert.equal(en.instruction, zh.instruction);
-  assert.equal(en.instruction, ACTION_PROMPTS[kind]);
-  assert.equal(en.outputLanguage, "interface");
-  assert(hasOutputLanguage(en));
+  assert.equal(en.instruction, "");
+  if (kind !== "translate") {
+    assert.equal(en.outputLanguage, "interface");
+    assert(hasOutputLanguage(en));
+  }
+  const action = {
+    ...en,
+    targetLanguage: "zh-Hans",
+    outputLanguage: "zh-Hans",
+  };
+  const instructions = actionInstructions(action);
+  assert(instructions.includes(ACTION_PROMPTS[kind]));
+  assert.equal(
+    actionInstructions({ ...action, instruction: "  " }),
+    instructions,
+  );
+  const custom = actionInstructions({
+    ...action,
+    instruction: "Keep special terms.",
+  });
+  assert.equal(custom.split(ACTION_PROMPTS[kind]).length, 2);
+  assert.equal(custom.split("Keep special terms.").length, 2);
+  assert(
+    custom.indexOf(ACTION_PROMPTS[kind]) <
+      custom.indexOf("Keep special terms."),
+  );
   assert.equal(
     localizeAction({ ...en, outputLanguage: "ja" }, "zh-CN").outputLanguage,
     "ja",
@@ -40,6 +63,20 @@ for (const kind of Object.keys(ACTION_PROMPTS)) {
     "My saved prompt",
   );
 }
+for (const instruction of ["", "  "]) {
+  assert.throws(
+    () => actionInstructions({ kind: "custom", mode: "whole", instruction }),
+    (error) => error.code === "invalidAction",
+    "A custom action must describe its task",
+  );
+}
+assert(
+  actionInstructions({
+    kind: "custom",
+    mode: "whole",
+    instruction: "Extract dates.",
+  }).startsWith("Extract dates."),
+);
 const { hasSameLanguages } = await import("../translation.js");
 for (const presets of [english, chinese])
   assert.equal(
@@ -59,7 +96,9 @@ const resolvedTranslation = (locale) => ({
   sourceLanguage: "auto",
   targetLanguage: resolveOutputLanguage(following.targetLanguage, locale),
 });
-assert(actionInstructions(resolvedTranslation("ja")).includes("into ja."));
+assert(
+  actionInstructions(resolvedTranslation("ja")).includes("into Japanese (ja)."),
+);
 assert.equal(localizeAction(following, "ja").targetLanguage, "interface");
 assert(!hasOutputLanguage({ kind: "translate" }));
 assert(!hasOutputLanguage({ kind: "custom" }));
@@ -72,7 +111,7 @@ assert.equal(resolveOutputLanguage("interface", "en"), "en");
 assert.equal(resolveOutputLanguage("ja", "en"), "ja");
 assert.equal(resolveOutputLanguage("ja", "zh-CN"), "ja");
 const base = english.find((a) => a.kind === "summary");
-const translated = { ...english[0], outputLanguage: "de" };
+const translated = { ...resolvedTranslation("en"), outputLanguage: "de" };
 assert(
   !actionInstructions(translated).includes("Output language:"),
   "Translation retains its own target language",
@@ -88,6 +127,15 @@ assert.notEqual(
   await resultKey(connection, resolvedTranslation("en"), "same"),
   await resultKey(connection, resolvedTranslation("ja"), "same"),
   "Translation cache keys follow the resolved target language",
+);
+assert.notEqual(
+  await resultKey(connection, { ...base, outputLanguage: "en" }, "same"),
+  await resultKey(
+    connection,
+    { ...base, instruction: "Use a numbered list.", outputLanguage: "en" },
+    "same",
+  ),
+  "Adding custom instructions invalidates the cached default result",
 );
 const cache = {
   generation: 0,
@@ -115,7 +163,11 @@ const run = async (language) =>
     signal: new AbortController().signal,
     invoke: async (c, k, instructions) => {
       calls++;
-      assert(instructions.includes(`Output language: ${language}.`));
+      assert(
+        instructions.includes(
+          `Output language: ${messages.en.languages[language]} (${language}).`,
+        ),
+      );
       return language;
     },
   });
@@ -131,16 +183,18 @@ const gloss = actionInstructions({
   ...english.find((a) => a.kind === "plain"),
   outputLanguage: "en",
 });
-assert(gloss.includes("Output language: en."));
+assert(gloss.includes("Output language: English (en)."));
 assert(!gloss.includes("modern Chinese rendition"));
-assert(gloss.includes("without addressing the reader"));
 console.log(
   "PASS: shared English presets, independent output language, interface defaults, fixed-language preservation, translation isolation and language-specific cache reuse.",
 );
 
 const { DEFAULT_OUTPUT_LENGTH, OUTPUT_LENGTH_PROMPTS } =
   await import("../prompts.js");
-const qa = english.find((action) => action.kind === "qa");
+const qa = {
+  ...english.find((action) => action.kind === "qa"),
+  outputLanguage: resolveOutputLanguage("interface", "en"),
+};
 assert.equal(qa.outputLength, DEFAULT_OUTPUT_LENGTH);
 assert.equal(qa.mode, "whole");
 assert.equal(qa.quick, true);
@@ -162,7 +216,7 @@ for (const outputLength of Object.keys(OUTPUT_LENGTH_PROMPTS)) {
     invoke: async (c, k, instructions) => {
       calls++;
       assert(instructions.includes(OUTPUT_LENGTH_PROMPTS[outputLength]));
-      assert(instructions.includes("Output language: ja."));
+      assert(instructions.includes("Output language: Japanese (ja)."));
       return outputLength;
     },
   });

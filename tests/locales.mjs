@@ -126,12 +126,11 @@ for (const [locale, metadata] of Object.entries(LOCALES)) {
   );
   assert.equal(copy.home.promptDefault, DAILY_PROMPT[locale]);
   for (const action of getPresets()) {
-    if (action.kind !== "translate")
-      assert.equal(
-        action.instruction,
-        messages.en.presets[action.kind].instruction,
-        "Non-translation model instructions stay shared",
-      );
+    assert.equal(
+      action.instruction,
+      "",
+      "Built-in additions default to empty in every locale",
+    );
     const custom = {
       ...action,
       builtin: false,

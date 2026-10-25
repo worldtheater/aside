@@ -5,6 +5,10 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
   const source = await context.newPage(),
     errors = [];
   source.on("pageerror", (error) => errors.push(error.message));
+  const appearance = await page.evaluate(
+    async () =>
+      (await chrome.runtime.sendMessage({ type: "snapshot" })).value.appearance,
+  );
   const url = origin + "/viewport-translation";
   await source.route(url, (route) =>
     route.fulfill({
@@ -27,6 +31,21 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
     }),
   );
   try {
+    // This fixture checks inherited page colors; the product defaults to theme color.
+    const configured = await page.evaluate(
+      (appearance) =>
+        chrome.runtime.sendMessage({
+          type: "settings.save",
+          patch: {
+            appearance: {
+              ...appearance,
+              page: { ...appearance.page, color: "auto" },
+            },
+          },
+        }),
+      appearance,
+    );
+    assert(configured.ok, JSON.stringify(configured));
     await source.goto(url);
     const host = source.locator("[data-pagework=ui]");
     await host.waitFor({ state: "attached" });
@@ -748,5 +767,13 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
     );
   } finally {
     await source.close();
+    await page.evaluate(
+      (appearance) =>
+        chrome.runtime.sendMessage({
+          type: "settings.save",
+          patch: { appearance },
+        }),
+      appearance,
+    );
   }
 };

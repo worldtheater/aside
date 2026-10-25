@@ -1,4 +1,4 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 
@@ -64,6 +64,9 @@ const base = {
   actionName: "Nama",
   actionPlaceholder: "Contoh: Jelaskan istilah teknis",
   instruction: "Bagaimana konten harus diproses?",
+  additionalInstructions: "Instruksi tambahan (opsional)",
+  additionalInstructionsPlaceholder:
+    "Biarkan kosong untuk pemrosesan bawaan, atau tambahkan persyaratan khusus.",
   instructionPlaceholder:
     "Jelaskan tujuan, hal yang perlu dipertahankan, dan gaya hasil yang diinginkan.",
   actionCount: (n: number) => `${n} item`,
@@ -109,7 +112,7 @@ const base = {
   save: "Simpan",
   cancel: "Batal",
   back: "Kembali",
-  required: "Masukkan nama dan instruksi pemrosesan.",
+  required: "Lengkapi kolom yang wajib diisi.",
   saved: (name: string) => `“${name}” disimpan`,
   duplicated: "Berhasil diduplikasi. Anda dapat mengedit salinan baru.",
   discardTitle: "Perubahan belum disimpan",
@@ -304,31 +307,25 @@ const base = {
     translate: {
       name: "Terjemahkan",
       description: "Pilih bahasa sumber dan tujuan. Pertahankan struktur asli.",
-      instruction:
-        "Terjemahkan secara akurat. Pertahankan nada, struktur paragraf, dan nama diri. Gunakan bahasa yang alami dan tampilkan hanya terjemahannya.",
     },
     plain: {
       name: "Penjelasan teks klasik",
       description:
         "Jelaskan teks klasik dari bahasa apa pun dengan bahasa modern yang jelas.",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "Jelaskan konten",
       description:
         "Jelaskan gagasan utama, istilah, dan latar belakang, dengan catatan pelafalan kata yang jarang digunakan.",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "Poin utama",
       description: "Rangkum seluruh konten menjadi poin yang paling berguna.",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "Tanya jawab cepat",
       description:
         "Jawab pertanyaan secara langsung dalam bahasa dan panjang yang Anda pilih.",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -340,6 +337,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

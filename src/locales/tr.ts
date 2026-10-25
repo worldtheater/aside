@@ -1,4 +1,4 @@
-import { ACTION_PROMPTS, DAILY_PROMPT } from "../prompts.js";
+import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 
@@ -64,6 +64,9 @@ const base = {
   actionName: "Ad",
   actionPlaceholder: "Örneğin: Teknik terimleri açıkla",
   instruction: "İçerik nasıl işlenmeli?",
+  additionalInstructions: "Ek talimatlar (isteğe bağlı)",
+  additionalInstructionsPlaceholder:
+    "Varsayılan işlem için boş bırakın veya özel gereksinimlerinizi ekleyin.",
   instructionPlaceholder:
     "Amacı, korunması gerekenleri ve sonucun nasıl yazılacağını belirtin.",
   actionCount: (n: number) => `${n} öğe`,
@@ -111,7 +114,7 @@ const base = {
   save: "Kaydet",
   cancel: "İptal",
   back: "Geri",
-  required: "Bir ad ve işleme talimatları girin.",
+  required: "Zorunlu alanları doldurun.",
   saved: (name: string) => `“${name}” kaydedildi`,
   duplicated: "Kopya oluşturuldu. Yeni kopyayı düzenleyebilirsiniz.",
   discardTitle: "Kaydedilmemiş değişiklikler",
@@ -299,31 +302,25 @@ const base = {
     translate: {
       name: "Çevir",
       description: "Kaynak ve hedef dilleri seçin. Özgün yapıyı koruyun.",
-      instruction:
-        "Aslına sadık çevirin. Üslubu, paragraf yapısını ve özel adları koruyun. Doğal ifadeler kullanın ve yalnızca çeviriyi döndürün.",
     },
     plain: {
       name: "Klasik metin açıklaması",
       description:
         "Herhangi bir dildeki klasik metinleri açık, güncel bir dille açıklayın.",
-      instruction: ACTION_PROMPTS.plain,
     },
     explain: {
       name: "İçeriği açıkla",
       description:
         "Ana fikri, terimleri ve arka planı açıklayın; az kullanılan kelimeler için telaffuz notları ekleyin.",
-      instruction: ACTION_PROMPTS.explain,
     },
     summary: {
       name: "Önemli noktalar",
       description: "İçeriği en yararlı noktalarıyla özetleyin.",
-      instruction: ACTION_PROMPTS.summary,
     },
     qa: {
       name: "Hızlı soru-cevap",
       description:
         "Soruları tercih ettiğiniz dilde ve uzunlukta doğrudan yanıtlayın.",
-      instruction: ACTION_PROMPTS.qa,
     },
   },
 };
@@ -335,6 +332,8 @@ const full = {
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
+    additionalInstructions: base.additionalInstructions,
+    additionalInstructionsPlaceholder: base.additionalInstructionsPlaceholder,
     model: base.model,
     defaultModel: base.defaultModel,
     addAction: base.newAction,

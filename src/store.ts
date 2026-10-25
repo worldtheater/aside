@@ -47,11 +47,11 @@ async function initializeStore() {
       if (
         action.id !== "plain" ||
         action.kind !== "plain" ||
-        (action.instruction.trim() !== C.presets.plain.instruction &&
+        (action.instruction.trim() !== "" &&
           !previousPlainInstructions.has(action.instruction.trim()))
       )
         return action;
-      const next = { ...action, instruction: C.presets.plain.instruction };
+      const next = { ...action, instruction: "" };
       next.builtin = usesPresetDefaults(
         localizeAction({ ...next, builtin: false }, locale),
         locale,

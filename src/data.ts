@@ -57,6 +57,7 @@ export function getPresets(): Action[] {
   ).map((p) => ({
     ...p,
     ...C.presets[p.kind as keyof typeof C.presets],
+    instruction: "",
     model: "default",
     ...(p.kind === "translate" ? {} : { outputLanguage: "interface" }),
     builtin: true,
