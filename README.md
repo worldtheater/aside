@@ -4,7 +4,7 @@
 
 A Chrome extension for translating, understanding, and collecting what you read on the web. Built with TypeScript, native HTML/CSS, and Manifest V3. No companion server required.
 
-[Product website](https://worldtheater.github.io/aside/) · [Installation](#installation) · [Privacy policy](https://worldtheater.github.io/aside/privacy.html)
+[Product website](https://worldtheater.github.io/aside/) · [中文介绍](https://worldtheater.github.io/aside/zh/) · [Installation](#installation) · [Privacy policy](https://worldtheater.github.io/aside/privacy.html)
 
 ## Features
 
@@ -18,7 +18,19 @@ A Chrome extension for translating, understanding, and collecting what you read 
 
 ## Installation
 
-Requires Node.js 22+, npm, and Chrome 120+. The repository's `.nvmrc` specifies Node.js 24.
+Requires **Chrome 120+**. The packaged extension does not require Node.js.
+
+1. [Download Aside 0.1.0](https://github.com/worldtheater/aside/releases/download/v0.1.0/aside-0.1.0.zip) from GitHub Releases. Use the extension ZIP, not the automatically generated “Source code” archive.
+2. Extract the ZIP to a permanent folder.
+3. Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the extracted folder containing `manifest.json`.
+4. Open Aside’s **Settings**, add your service URL, API key, and protocol in **Model connections**, test the connection, choose a model, and save.
+5. Open a regular HTTP/HTTPS page and use the selection toolbar, floating menu, or extension popup.
+
+Keep the extracted folder while using the extension. Chrome Web Store review is in progress; the release ZIP is the current installation option.
+
+### Build from source
+
+For development, use Node.js 22+ and npm. `.nvmrc` selects Node.js 24.
 
 ```sh
 git clone https://github.com/worldtheater/aside.git
@@ -27,15 +39,9 @@ npm ci
 npm run build
 ```
 
-1. Open `chrome://extensions` and enable **Developer mode**.
-2. Click **Load unpacked** and select the **aside repository root**, which contains `manifest.json`.
-3. Open the extension popup and click **Settings** in the top-right corner to open **Model connections**.
-4. Enter your service URL, API key, and protocol. Test the connection, select a model from the returned list, and save.
-5. Open a regular HTTP/HTTPS page and use the selection toolbar, floating menu, or extension popup.
+Load the **repository root** as the unpacked extension. After changing code, run `npm run build`, reload the extension in Chrome, and refresh open web pages. Generated JavaScript lives in the repository root and is excluded from Git; edit `src/`.
 
-After changing code, run `npm run build`, reload the extension in Chrome, and refresh open web pages. Generated JavaScript lives in the repository root and is excluded from Git; edit the source in `src/`.
-
-The **About** page at the bottom of the sidebar includes the current version, project and support links, the privacy policy, and open-source acknowledgements. New users can also open model setup directly from the reflection card.
+The **About** page includes the version, project and support links, privacy policy, and open-source acknowledgements. Model setup is also available from the reflection card.
 
 ### Interface languages
 

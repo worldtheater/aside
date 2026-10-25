@@ -131,3 +131,11 @@ node tests/browser.cjs --lights-recovery-only
 英文隐私政策源文件为 `docs/privacy.html` 和 `docs/privacy.css`，无构建步骤、脚本或远程字体。GitHub Pages 使用 `main` 分支的 `/docs` 目录发布，`docs/.nojekyll` 禁用 Jekyll 处理。公开地址为 <https://worldtheater.github.io/aside/privacy.html>，供 Chrome Web Store 的 Privacy Policy 字段使用。
 
 数据处理、接收方、自动调用或保留规则发生变化时，同步更新政策及日期，再推送至 `main`。README 与插件「关于」均链接到同一地址；商店隐私披露也需与实际行为保持一致。
+
+## 产品介绍页
+
+GitHub Pages 从 `main` 分支的 `docs/` 提供静态页面：`index.html` 为英文首页，`zh/index.html` 为简体中文首页，两者共享 `home.css`。隐私政策仍位于 `privacy.html`。修改产品介绍时同步两种语言；更新发布版本时，同步首页与 README 中的版本号及下载链接。
+
+首页下载入口指向 GitHub Release 的 `aside-<version>.zip`，不是自动生成的源码包。发布前运行 `npm run package`，将 `artifacts/aside-<version>.zip` 上传为对应版本的 Release 附件。
+
+使用 `node scripts/store-assets.mjs --website` 重新生成首页截图。它复用商店素材的隔离浏览器与本地模拟服务，以 2 倍像素密度直接截取真实插件界面，并为首屏提供移动端和暗色版本。无参数运行仍只生成商店素材。首页图片按自然比例显示，不再依赖 CSS 放大与负偏移裁切。

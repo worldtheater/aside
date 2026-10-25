@@ -10,7 +10,8 @@ import { fileURLToPath } from "node:url";
 // The installed extension renders them unchanged in an isolated, disposable profile.
 // No real account, API key, browsing history or external model service is used.
 const root = fileURLToPath(new URL("../", import.meta.url));
-const output = path.join(root, "web-store", "assets");
+const website = process.argv.includes("--website");
+const output = path.join(root, website ? "docs" : "web-store", "assets");
 const require = createRequire(import.meta.url);
 const { watchUI } = require("../tests/inspect-ui.cjs");
 const paragraph =
@@ -40,7 +41,7 @@ function article(language) {
   const lines = language === "fr" ? french : english;
   return `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Reading is a conversation — Fieldnotes</title><style>
   *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#fafafa;color:#292e30;font:18px/1.8 Georgia,serif}header{height:82px;border-bottom:1px solid #dedbd3;display:flex;align-items:center;justify-content:space-between;padding:0 68px;font:14px system-ui;letter-spacing:.04em}header strong{font-size:20px}main{max-width:760px;margin:54px auto 90px}aside{font:12px system-ui;letter-spacing:.16em;color:#85765f;text-transform:uppercase;margin-bottom:20px}h1{font-weight:500;font-size:42px;line-height:1.18;letter-spacing:-.025em;margin:0 0 28px}p{margin:0 0 24px}footer{border-top:1px solid #dedbd3;padding-top:20px;margin-top:34px;color:#6d7376;font:13px system-ui}::selection{background:#d7e4ed}
-  </style></head><body><header><strong>Fieldnotes</strong><span>Essays on reading & learning</span></header><main><aside>Reading practice / 004</aside><h1>${lines[0]}</h1><p id="first">${lines[1]}</p><p>${lines[2]}</p><p>${lines[3]}</p><footer>An original sample article for Aside.</footer></main></body></html>`;
+  ${website ? "main{width:calc(100% - 48px);max-width:660px}@media(max-width:600px){header{padding:0 24px}header span{display:none}main{margin-top:30px}h1{font-size:30px}body{font-size:18px}}" : ""}</style></head><body><header><strong>Fieldnotes</strong><span>Essays on reading & learning</span></header><main><aside>Reading practice / 004</aside><h1>${lines[0]}</h1><p id="first">${lines[1]}</p><p>${lines[2]}</p><p>${lines[3]}</p><footer>An original sample article for Aside.</footer></main></body></html>`;
 }
 const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url.endsWith("/models")) {
@@ -96,7 +97,7 @@ const context = await chromium.launchPersistentContext(profile, {
     : { channel: "chrome" }),
   headless: true,
   viewport: { width: 1280, height: 800 },
-  deviceScaleFactor: 1,
+  deviceScaleFactor: website ? 2 : 1,
   locale: "en-US",
   ignoreDefaultArgs: ["--disable-extensions"],
   args: ["--enable-unsafe-extension-debugging"],
@@ -160,8 +161,51 @@ try {
     await page.mouse.move(5, 5);
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(500);
+    let clip;
+    if (website) {
+      if (filename.startsWith("01-")) {
+        const main = await page.locator("main").boundingBox();
+        const first = await page.locator("#first").boundingBox();
+        clip = {
+          x: main.x - 24,
+          y: main.y - 20,
+          width: main.width + 48,
+          height: first.y + first.height - main.y + 44,
+        };
+        filename = filename.replace("01-inline-translation", "translation");
+      } else if (filename === "02-quick-qa.png") {
+        const panel = await page
+          .locator("[data-pagework=ui] #output")
+          .evaluate((node) =>
+            node
+              .closest("#question, #selection, #result")
+              .getBoundingClientRect()
+              .toJSON(),
+          );
+        clip = {
+          x: panel.x - 24,
+          y: panel.y - 24,
+          width: panel.width + 48,
+          height: panel.height + 48,
+        };
+        filename = "quick-qa.png";
+      } else if (filename === "03-collection.png") {
+        const workspace = await page.locator(".workspace").boundingBox();
+        const cards = await page.locator(".collection-grid").boundingBox();
+        clip = {
+          x: workspace.x,
+          y: workspace.y,
+          width: workspace.width,
+          height: cards.y + cards.height - workspace.y + 32,
+        };
+        filename = "collection.png";
+      } else if (filename === "05-dark-reading.png") {
+        filename = "dark-reading.png";
+      } else return;
+    }
     await page.screenshot({
       path: path.join(output, filename),
+      clip,
       animations: "disabled",
     });
     console.log(filename);
@@ -190,6 +234,43 @@ try {
     .locator("[data-pagework=ui] #toolbar[aria-busy=false]")
     .waitFor({ state: "attached" });
   await capture(source, "01-inline-translation.png");
+  if (website) {
+    await send({
+      type: "settings.save",
+      patch: {
+        preferences: {
+          ...snapshot.preferences,
+          locale: "en",
+          theme: "dark",
+          palette: "graphite",
+        },
+      },
+    });
+    await send({ type: "website.update", tabId, patch: { lights: "on" } });
+    await source.waitForFunction(
+      () => document.documentElement.dataset.darkreaderMode === "dynamic",
+    );
+    await capture(source, "01-inline-translation-dark.png");
+    await source.setViewportSize({ width: 390, height: 1000 });
+    await capture(source, "01-inline-translation-mobile-dark.png");
+    await send({ type: "website.update", tabId, patch: { lights: "off" } });
+    await send({
+      type: "settings.save",
+      patch: {
+        preferences: {
+          ...snapshot.preferences,
+          locale: "en",
+          theme: "light",
+          palette: "graphite",
+        },
+      },
+    });
+    await source.waitForFunction(
+      () => !document.documentElement.dataset.darkreaderMode,
+    );
+    await capture(source, "01-inline-translation-mobile.png");
+    await source.setViewportSize({ width: 1280, height: 800 });
+  }
 
   await source.goto(origin + "/en/reading");
   const ui = source.locator("[data-pagework=ui]");
@@ -287,24 +368,26 @@ try {
   await ui.locator("#dock").click();
   await capture(source, "05-dark-reading.png");
 
-  // Promotional artwork uses the repository's vector logo and native HTML/CSS.
-  const promo = await context.newPage();
-  const logo = await readFile(path.join(root, "icons/icon.svg"), "utf8");
-  for (const [width, height, filename] of [
-    [440, 280, "promo-small-440x280.png"],
-    [1400, 560, "promo-marquee-1400x560.png"],
-  ]) {
-    await promo.setViewportSize({ width, height });
-    const large = width > 500;
-    await promo.setContent(
-      `<html><style>*{box-sizing:border-box}body{margin:0;background:#222629;color:#f0ece4;font-family:system-ui;display:flex;align-items:center;height:100vh;padding:${large ? 104 : 32}px;gap:${large ? 90 : 25}px}svg{width:${large ? 210 : 76}px;height:auto;flex:none}.brand{font-size:${large ? 100 : 43}px;font-weight:600;letter-spacing:-.055em;line-height:1.1}.tag{color:#d8a36a;font-size:${large ? 28 : 15}px;margin-top:${large ? 22 : 14}px;letter-spacing:.01em}.lines{position:absolute;right:-80px;top:60px;width:230px;opacity:.13;transform:rotate(-12deg)}.lines i{height:2px;display:block;background:#d8a36a;margin-bottom:28px}.lines i:nth-child(2n){width:70%}</style><body>${logo}<div><div class="brand">Aside</div><div class="tag">Read. Understand. Keep.</div></div>${large ? '<div class="lines"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>' : ""}</body></html>`,
+  if (!website) {
+    // Promotional artwork uses the repository's vector logo and native HTML/CSS.
+    const promo = await context.newPage();
+    const logo = await readFile(path.join(root, "icons/icon.svg"), "utf8");
+    for (const [width, height, filename] of [
+      [440, 280, "promo-small-440x280.png"],
+      [1400, 560, "promo-marquee-1400x560.png"],
+    ]) {
+      await promo.setViewportSize({ width, height });
+      const large = width > 500;
+      await promo.setContent(
+        `<html><style>*{box-sizing:border-box}body{margin:0;background:#222629;color:#f0ece4;font-family:system-ui;display:flex;align-items:center;height:100vh;padding:${large ? 104 : 32}px;gap:${large ? 90 : 25}px}svg{width:${large ? 210 : 76}px;height:auto;flex:none}.brand{font-size:${large ? 100 : 43}px;font-weight:600;letter-spacing:-.055em;line-height:1.1}.tag{color:#d8a36a;font-size:${large ? 28 : 15}px;margin-top:${large ? 22 : 14}px;letter-spacing:.01em}.lines{position:absolute;right:-80px;top:60px;width:230px;opacity:.13;transform:rotate(-12deg)}.lines i{height:2px;display:block;background:#d8a36a;margin-bottom:28px}.lines i:nth-child(2n){width:70%}</style><body>${logo}<div><div class="brand">Aside</div><div class="tag">Read. Understand. Keep.</div></div>${large ? '<div class="lines"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>' : ""}</body></html>`,
+      );
+      await capture(promo, filename);
+    }
+    await copyFile(
+      path.join(root, "icons/icon-128.png"),
+      path.join(output, "store-icon-128.png"),
     );
-    await capture(promo, filename);
   }
-  await copyFile(
-    path.join(root, "icons/icon-128.png"),
-    path.join(output, "store-icon-128.png"),
-  );
   if (errors.length) throw new Error(errors.join("\n"));
 } finally {
   await context.close();
