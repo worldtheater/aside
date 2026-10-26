@@ -7,9 +7,9 @@
     <meta name="referrer" content="no-referrer" />
     <meta
       name="description"
-      content="An open-source Chrome extension for inline bilingual translation, questions, and saved passages. Use your own model service or a compatible local endpoint."
+      content="Use AI to translate pages, explain difficult passages, pull out key points, and answer questions about what you’re reading. Translations stay beside the original, so you can keep reading without switching to a separate chat window."
     />
-    <title>Aside — Translate pages. Stay with your reading.</title>
+    <title>Aside — Read with clarity. Think more deeply.</title>
     <link rel="canonical" href="https://worldtheater.github.io/aside/" />
     <link
       rel="alternate"
@@ -23,6 +23,71 @@
     />
     <link
       rel="alternate"
+      hreflang="zh-TW"
+      href="https://worldtheater.github.io/aside/zh-tw/"
+    />
+    <link
+      rel="alternate"
+      hreflang="ja"
+      href="https://worldtheater.github.io/aside/ja/"
+    />
+    <link
+      rel="alternate"
+      hreflang="ko"
+      href="https://worldtheater.github.io/aside/ko/"
+    />
+    <link
+      rel="alternate"
+      hreflang="fr"
+      href="https://worldtheater.github.io/aside/fr/"
+    />
+    <link
+      rel="alternate"
+      hreflang="de"
+      href="https://worldtheater.github.io/aside/de/"
+    />
+    <link
+      rel="alternate"
+      hreflang="es"
+      href="https://worldtheater.github.io/aside/es/"
+    />
+    <link
+      rel="alternate"
+      hreflang="pt-BR"
+      href="https://worldtheater.github.io/aside/pt-br/"
+    />
+    <link
+      rel="alternate"
+      hreflang="ru"
+      href="https://worldtheater.github.io/aside/ru/"
+    />
+    <link
+      rel="alternate"
+      hreflang="id"
+      href="https://worldtheater.github.io/aside/id/"
+    />
+    <link
+      rel="alternate"
+      hreflang="it"
+      href="https://worldtheater.github.io/aside/it/"
+    />
+    <link
+      rel="alternate"
+      hreflang="tr"
+      href="https://worldtheater.github.io/aside/tr/"
+    />
+    <link
+      rel="alternate"
+      hreflang="th"
+      href="https://worldtheater.github.io/aside/th/"
+    />
+    <link
+      rel="alternate"
+      hreflang="vi"
+      href="https://worldtheater.github.io/aside/vi/"
+    />
+    <link
+      rel="alternate"
       hreflang="x-default"
       href="https://worldtheater.github.io/aside/"
     />
@@ -30,51 +95,114 @@
     <meta property="og:site_name" content="Aside / 旁白" />
     <meta
       property="og:title"
-      content="Aside — Translate pages. Stay with your reading."
+      content="Aside — Read with clarity. Think more deeply."
     />
     <meta
       property="og:description"
-      content="An open-source Chrome extension for inline bilingual translation, questions, and saved passages. Use your own model service or a compatible local endpoint."
+      content="Use AI to translate pages, explain difficult passages, pull out key points, and answer questions about what you’re reading. Translations stay beside the original, so you can keep reading without switching to a separate chat window."
     />
     <meta property="og:url" content="https://worldtheater.github.io/aside/" />
     <meta property="og:locale" content="en_US" />
-    <meta property="og:locale:alternate" content="zh_CN" />
     <meta
       property="og:image"
       content="https://worldtheater.github.io/aside/assets/social-preview.png"
     />
     <meta property="og:image:width" content="1400" />
     <meta property="og:image:height" content="560" />
-    <meta property="og:image:alt" content="Aside. Read. Understand. Keep." />
+    <meta
+      property="og:image:alt"
+      content="Aside. Read with clarity. Think more deeply."
+    />
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content="Aside — Translate pages. Stay with your reading."
+      content="Aside — Read with clarity. Think more deeply."
     />
     <meta
       name="twitter:description"
-      content="An open-source Chrome extension for inline bilingual translation, questions, and saved passages. Use your own model service or a compatible local endpoint."
+      content="Use AI to translate pages, explain difficult passages, pull out key points, and answer questions about what you’re reading. Translations stay beside the original, so you can keep reading without switching to a separate chat window."
     />
     <meta
       name="twitter:image"
       content="https://worldtheater.github.io/aside/assets/social-preview.png"
     />
-    <meta name="twitter:image:alt" content="Aside. Read. Understand. Keep." />
-    <link rel="icon" href="assets/aside.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="home.css" />
+    <meta
+      name="twitter:image:alt"
+      content="Aside. Read with clarity. Think more deeply."
+    />
+    <link rel="icon" href="./assets/aside.svg" type="image/svg+xml" />
+    <script src="./home.js?v=551126cf82a1"></script>
+    <link rel="stylesheet" href="./home.css?v=62ead60eb4fe" />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header wrap">
-      <a class="brand" href="./" aria-label="Aside home"
-        ><img src="assets/aside.svg" width="36" height="36" alt="" /><span
+      <a class="brand" href="./" aria-label="Aside"
+        ><img src="./assets/aside.svg" width="36" height="36" alt="" /><span
           >Aside<small>旁白</small></span
         ></a
       >
-      <nav aria-label="Main navigation">
-        <a class="features-link" href="#features">Features</a
-        ><a href="zh/" lang="zh-CN" hreflang="zh-CN">简体中文</a
-        ><a
+      <nav aria-label="Navigation">
+        <details class="language-menu">
+          <summary aria-label="Language">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M3 5h11M8 3v2M5 8c1 4 4 7 8 9M11 5c-1 5-4 9-8 11M13 21l4-10 4 10M14.5 17h5"
+              /></svg
+            ><span>EN</span>
+          </summary>
+          <div class="language-options" role="navigation" aria-label="Language">
+            <a href="./" lang="en" hreflang="en" aria-current="page"
+              ><span>English</span
+              ><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m5 12 4 4L19 6" /></svg></a
+            ><a href="./zh/" lang="zh-CN" hreflang="zh-CN"
+              ><span>简体中文</span></a
+            ><a href="./zh-tw/" lang="zh-TW" hreflang="zh-TW"
+              ><span>繁體中文</span></a
+            ><a href="./ja/" lang="ja" hreflang="ja"><span>日本語</span></a
+            ><a href="./ko/" lang="ko" hreflang="ko"><span>한국어</span></a
+            ><a href="./fr/" lang="fr" hreflang="fr"><span>Français</span></a
+            ><a href="./de/" lang="de" hreflang="de"><span>Deutsch</span></a
+            ><a href="./es/" lang="es" hreflang="es"><span>Español</span></a
+            ><a href="./pt-br/" lang="pt-BR" hreflang="pt-BR"
+              ><span>Português (Brasil)</span></a
+            ><a href="./ru/" lang="ru" hreflang="ru"><span>Русский</span></a
+            ><a href="./id/" lang="id" hreflang="id"
+              ><span>Bahasa Indonesia</span></a
+            ><a href="./it/" lang="it" hreflang="it"><span>Italiano</span></a
+            ><a href="./tr/" lang="tr" hreflang="tr"><span>Türkçe</span></a
+            ><a href="./th/" lang="th" hreflang="th"><span>ไทย</span></a
+            ><a href="./vi/" lang="vi" hreflang="vi"><span>Tiếng Việt</span></a>
+          </div>
+        </details>
+        <button
+          class="theme-toggle"
+          type="button"
+          data-mode="system"
+          data-system-label="Theme: System. Switch to light."
+          data-light-label="Theme: Light. Switch to dark."
+          data-dark-label="Theme: Dark. Follow system."
+          aria-label="Theme: System. Switch to light."
+          title="Theme: System. Switch to light."
+        >
+          <svg data-theme-icon="system" viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="13" rx="2" />
+            <path d="M12 17v4M8 21h8" />
+          </svg>
+          <svg data-theme-icon="light" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5 19 19M5 19l1.5-1.5M17.5 6.5 19 5"
+            />
+          </svg>
+          <svg data-theme-icon="dark" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M20.5 13.1A8.5 8.5 0 0 1 10.9 3.5a8.5 8.5 0 1 0 9.6 9.6Z"
+            />
+          </svg>
+        </button>
+        <a
           class="github-link"
           href="https://github.com/worldtheater/aside"
           aria-label="GitHub"
@@ -82,18 +210,22 @@
             <path
               fill="currentColor"
               d="M12 .8a11.2 11.2 0 0 0-3.54 21.83c.56.1.76-.24.76-.54v-2.08c-3.1.67-3.76-1.32-3.76-1.32-.5-1.29-1.24-1.63-1.24-1.63-1.02-.7.08-.69.08-.69 1.12.08 1.71 1.15 1.71 1.15 1 1.71 2.62 1.22 3.26.93.1-.72.39-1.22.71-1.5-2.48-.28-5.09-1.24-5.09-5.52 0-1.22.44-2.22 1.15-3-.12-.28-.5-1.42.11-2.96 0 0 .94-.3 3.08 1.15a10.7 10.7 0 0 1 5.6 0c2.14-1.45 3.08-1.15 3.08-1.15.61 1.54.23 2.68.11 2.96.72.78 1.15 1.78 1.15 3.01 0 4.29-2.61 5.23-5.1 5.51.4.35.76 1.03.76 2.07v3.07c0 .3.2.65.77.54A11.2 11.2 0 0 0 12 .8Z"
-            /></svg></a
-        ><a class="header-install" href="#install">Get Aside</a>
+            /></svg
+        ></a>
       </nav>
     </header>
     <main id="main">
       <section class="hero wrap" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <p class="product-type">Open-source Chrome extension</p>
-          <h1 id="hero-title">Understand what you’re reading.</h1>
+          <p class="product-type">
+            AI reading assistant · Open-source Chrome extension
+          </p>
+          <h1 id="hero-title">Read with clarity. Think more deeply.</h1>
           <p class="lead">
-            Translate pages in place, ask about any passage, and save what
-            matters—with the model you choose.
+            Use AI to translate pages, explain difficult passages, pull out key
+            points, and answer questions about what you’re reading. Translations
+            stay beside the original, so you can keep reading without switching
+            to a separate chat window.
           </p>
           <div class="hero-actions">
             <a
@@ -103,7 +235,8 @@
             ><a class="text-link" href="#install">How to install</a>
           </div>
           <p class="install-note">
-            For Chrome 120+. Connect your own model to use AI features.
+            For Chrome 120+. No sign-up, free to use. Connect to your choice of
+            cloud or local models (model services may charge fees).
           </p>
           <div class="project-meta">
             <a href="https://github.com/worldtheater/aside/blob/main/LICENSE"
@@ -116,23 +249,27 @@
         <figure class="hero-figure">
           <a
             class="screenshot-link"
-            href="assets/translation.png"
-            aria-label="View image at full resolution"
+            aria-haspopup="dialog"
+            href="./assets/translation.png"
+            aria-label="Image preview"
             ><picture>
               <source
+                data-theme="dark"
+                data-media="(max-width: 600px)"
                 media="(max-width: 600px) and (prefers-color-scheme: dark)"
-                srcset="assets/translation-mobile-dark.png"
+                srcset="./assets/translation-mobile-dark.png"
               />
               <source
                 media="(max-width: 600px)"
-                srcset="assets/translation-mobile.png"
+                srcset="./assets/translation-mobile.png"
               />
               <source
+                data-theme="dark"
                 media="(prefers-color-scheme: dark)"
-                srcset="assets/translation-dark.png"
+                srcset="./assets/translation-dark.png"
               />
               <img
-                src="assets/translation.png"
+                src="./assets/translation.png"
                 alt="French paragraphs with English translations directly below them, rendered by Aside."
                 fetchpriority="high"
                 width="1416"
@@ -180,31 +317,37 @@
           <figure>
             <a
               class="screenshot-link"
-              href="assets/quick-qa.png"
-              aria-label="View image at full resolution"
-              ><img
-                src="assets/quick-qa.png"
-                alt="A Quick Q&A answer with a useful note about reading, in Aside’s floating panel."
-                loading="lazy"
-                decoding="async"
-                width="856"
-                height="600"
-            /></a>
+              aria-haspopup="dialog"
+              href="./assets/quick-qa.png"
+              aria-label="Image preview"
+              ><picture
+                ><source
+                  data-theme="dark"
+                  media="(prefers-color-scheme: dark)"
+                  srcset="./assets/quick-qa-dark.png" />
+                <img
+                  src="./assets/quick-qa.png"
+                  alt="A selected passage about explaining and justifying beliefs, with Aside clarifying the distinction."
+                  loading="lazy"
+                  decoding="async"
+                  width="1416"
+                  height="816" /></picture
+            ></a>
             <figcaption>
               Real extension interface with example content. Select an image to
-              view it at full resolution.
+              enlarge it.
             </figcaption>
           </figure>
           <div class="feature-copy">
             <h3>Ask without leaving the page.</h3>
             <p>
               Select a passage to translate or explain it in a floating panel.
-              Ask a follow-up question with Quick Q&A, using the selection or
-              the page as context.
+              Ask a follow-up question with Quick Q&amp;A, using the selection
+              or the page as context.
             </p>
             <p>Clear the quote when you want to ask something on its own.</p>
             <p class="shortcut">
-              <kbd>Alt</kbd> + <kbd>Q</kbd> <span>opens Quick Q&A</span>
+              <kbd>Alt</kbd> + <kbd>Q</kbd> opens Quick Q&amp;A
             </p>
           </div>
         </div>
@@ -223,28 +366,37 @@
           <figure>
             <a
               class="screenshot-link"
-              href="assets/collection.png"
-              aria-label="View image at full resolution"
-              ><img
-                src="assets/collection.png"
-                alt="Aside’s Collection page with a daily reflection and three saved passages."
-                loading="lazy"
-                decoding="async"
-                width="2144"
-                height="1322"
-            /></a>
+              aria-haspopup="dialog"
+              href="./assets/collection.png"
+              aria-label="Image preview"
+              ><picture
+                ><source
+                  data-theme="dark"
+                  media="(prefers-color-scheme: dark)"
+                  srcset="./assets/collection-dark.png" />
+                <img
+                  src="./assets/collection.png"
+                  alt="Aside’s Collection page with a daily reflection and three saved passages."
+                  loading="lazy"
+                  decoding="async"
+                  width="2144"
+                  height="1322" /></picture
+            ></a>
           </figure>
         </div>
       </section>
       <section class="comfort-section" aria-labelledby="comfort-title">
         <div class="wrap comfort-layout">
           <div class="comfort-copy">
-            <h2 id="comfort-title">Make room for a longer read.</h2>
+            <h2 id="comfort-title">Lights out. Keep going.</h2>
             <p>
-              A built-in
+              <svg class="eye-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z" />
+                <circle cx="12" cy="12" r="3" /></svg
+              >A built-in
               <a href="https://github.com/darkreader/darkreader">Dark Reader</a>
-              engine adapts websites to dark mode. Set it per site, or follow
-              your system.
+              engine brings dark mode to websites for reading in dim light.
+              Enable it per site, or follow your system.
             </p>
             <p>
               Adjust result colors, type size, and spacing to suit the way you
@@ -254,10 +406,11 @@
           <figure>
             <a
               class="screenshot-link"
-              href="assets/dark-reading.png"
-              aria-label="View image at full resolution"
+              aria-haspopup="dialog"
+              href="./assets/dark-reading.png"
+              aria-label="Image preview"
               ><img
-                src="assets/dark-reading.png"
+                src="./assets/dark-reading.png"
                 alt="An article in dark mode with Aside’s floating menu open."
                 loading="lazy"
                 decoding="async"
@@ -281,10 +434,8 @@
           <div>
             <h3>Choose your language.</h3>
             <p>
-              15 interface languages, including English, 简体中文, 繁體中文,
-              日本語, 한국어, Français, Deutsch, Español, Português, Русский,
-              Bahasa Indonesia, Italiano, Türkçe, ไทย, and Tiếng Việt. Set
-              output languages separately for each action.
+              Choose from 15 interface languages. Set the output language
+              separately for each action.
             </p>
           </div>
           <div>
@@ -305,10 +456,50 @@
             Aside supports these interfaces:
           </p>
           <ul class="protocols">
-            <li>OpenAI Responses</li>
-            <li>OpenAI-compatible Chat Completions</li>
-            <li>Anthropic Messages</li>
-            <li>Gemini Interactions</li>
+            <li>
+              <svg
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M11.248 18.25q-.825 0-1.568-.314a4.3 4.3 0 0 1-1.32-.874 4 4 0 0 1-1.304.214 4 4 0 0 1-2.046-.544 4.27 4.27 0 0 1-1.518-1.485 4 4 0 0 1-.56-2.095q0-.48.131-1.04A4.4 4.4 0 0 1 2.04 10.71a4.07 4.07 0 0 1 .017-3.4 4.2 4.2 0 0 1 1.056-1.418 3.8 3.8 0 0 1 1.6-.842 3.9 3.9 0 0 1 .76-1.683q.593-.759 1.451-1.188a4.04 4.04 0 0 1 1.832-.429q.825 0 1.567.313.742.314 1.32.875a4 4 0 0 1 1.304-.215q1.106 0 2.046.545a4.14 4.14 0 0 1 1.501 1.485q.578.941.578 2.095 0 .48-.132 1.04.66.61 1.023 1.419.363.792.363 1.666 0 .892-.38 1.717a4.3 4.3 0 0 1-1.072 1.435 3.8 3.8 0 0 1-1.584.825 3.8 3.8 0 0 1-.775 1.683 4.06 4.06 0 0 1-1.436 1.188 4.04 4.04 0 0 1-1.832.429m-4.076-2.062q.825 0 1.435-.347l3.103-1.782a.36.36 0 0 0 .164-.313v-1.42L7.881 14.62a.67.67 0 0 1-.726 0l-3.118-1.798a.5.5 0 0 1-.017.115v.198q0 .841.396 1.551.413.693 1.139 1.089a3.2 3.2 0 0 0 1.617.412m.165-2.69a.4.4 0 0 0 .181.05q.083 0 .165-.05l1.238-.71-3.977-2.31a.7.7 0 0 1-.363-.643v-3.58q-.825.362-1.32 1.122a2.9 2.9 0 0 0-.495 1.65q0 .809.413 1.55.412.743 1.072 1.123zm3.91 3.663q.875 0 1.585-.396a2.96 2.96 0 0 0 1.534-2.64v-3.564a.32.32 0 0 0-.165-.297l-1.254-.726v4.604a.7.7 0 0 1-.363.643l-3.119 1.799a3 3 0 0 0 1.783.577m.627-6.039V8.878L10.01 7.822 8.129 8.878v2.244l1.881 1.056zM7.057 5.859a.7.7 0 0 1 .363-.644l3.119-1.798a3 3 0 0 0-1.782-.578q-.874 0-1.584.396A2.96 2.96 0 0 0 6.05 4.324a3.07 3.07 0 0 0-.396 1.551v3.547q0 .199.165.314l1.237.726zm8.383 7.887q.825-.364 1.303-1.123.495-.758.495-1.65a3.15 3.15 0 0 0-.412-1.55q-.413-.743-1.073-1.123l-3.086-1.782q-.099-.065-.181-.049a.3.3 0 0 0-.165.05l-1.238.692 3.993 2.327a.6.6 0 0 1 .264.264.64.64 0 0 1 .1.363zm-3.317-8.382a.63.63 0 0 1 .726 0l3.135 1.831v-.297q0-.792-.396-1.501a2.86 2.86 0 0 0-1.105-1.155q-.71-.43-1.65-.43-.825 0-1.436.347L8.294 5.941a.36.36 0 0 0-.165.314v1.418z"
+                /></svg
+              ><span>OpenAI Responses</span>
+            </li>
+            <li>
+              <svg
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  d="M11.248 18.25q-.825 0-1.568-.314a4.3 4.3 0 0 1-1.32-.874 4 4 0 0 1-1.304.214 4 4 0 0 1-2.046-.544 4.27 4.27 0 0 1-1.518-1.485 4 4 0 0 1-.56-2.095q0-.48.131-1.04A4.4 4.4 0 0 1 2.04 10.71a4.07 4.07 0 0 1 .017-3.4 4.2 4.2 0 0 1 1.056-1.418 3.8 3.8 0 0 1 1.6-.842 3.9 3.9 0 0 1 .76-1.683q.593-.759 1.451-1.188a4.04 4.04 0 0 1 1.832-.429q.825 0 1.567.313.742.314 1.32.875a4 4 0 0 1 1.304-.215q1.106 0 2.046.545a4.14 4.14 0 0 1 1.501 1.485q.578.941.578 2.095 0 .48-.132 1.04.66.61 1.023 1.419.363.792.363 1.666 0 .892-.38 1.717a4.3 4.3 0 0 1-1.072 1.435 3.8 3.8 0 0 1-1.584.825 3.8 3.8 0 0 1-.775 1.683 4.06 4.06 0 0 1-1.436 1.188 4.04 4.04 0 0 1-1.832.429m-4.076-2.062q.825 0 1.435-.347l3.103-1.782a.36.36 0 0 0 .164-.313v-1.42L7.881 14.62a.67.67 0 0 1-.726 0l-3.118-1.798a.5.5 0 0 1-.017.115v.198q0 .841.396 1.551.413.693 1.139 1.089a3.2 3.2 0 0 0 1.617.412m.165-2.69a.4.4 0 0 0 .181.05q.083 0 .165-.05l1.238-.71-3.977-2.31a.7.7 0 0 1-.363-.643v-3.58q-.825.362-1.32 1.122a2.9 2.9 0 0 0-.495 1.65q0 .809.413 1.55.412.743 1.072 1.123zm3.91 3.663q.875 0 1.585-.396a2.96 2.96 0 0 0 1.534-2.64v-3.564a.32.32 0 0 0-.165-.297l-1.254-.726v4.604a.7.7 0 0 1-.363.643l-3.119 1.799a3 3 0 0 0 1.783.577m.627-6.039V8.878L10.01 7.822 8.129 8.878v2.244l1.881 1.056zM7.057 5.859a.7.7 0 0 1 .363-.644l3.119-1.798a3 3 0 0 0-1.782-.578q-.874 0-1.584.396A2.96 2.96 0 0 0 6.05 4.324a3.07 3.07 0 0 0-.396 1.551v3.547q0 .199.165.314l1.237.726zm8.383 7.887q.825-.364 1.303-1.123.495-.758.495-1.65a3.15 3.15 0 0 0-.412-1.55q-.413-.743-1.073-1.123l-3.086-1.782q-.099-.065-.181-.049a.3.3 0 0 0-.165.05l-1.238.692 3.993 2.327a.6.6 0 0 1 .264.264.64.64 0 0 1 .1.363zm-3.317-8.382a.63.63 0 0 1 .726 0l3.135 1.831v-.297q0-.792-.396-1.501a2.86 2.86 0 0 0-1.105-1.155q-.71-.43-1.65-.43-.825 0-1.436.347L8.294 5.941a.36.36 0 0 0-.165.314v1.418z"
+                /></svg
+              ><span>OpenAI-compatible Chat Completions</span>
+            </li>
+            <li>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M17.3041 3.541h-3.6718l6.696 16.918H24Zm-10.6082 0L0 20.459h3.7442l1.3693-3.5527h7.0052l1.3693 3.5528h3.7442L10.5363 3.5409Zm-.3712 10.2232 2.2914-5.9456 2.2914 5.9456Z"
+                /></svg
+              ><span>Anthropic Messages</span>
+            </li>
+            <li>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"
+                /></svg
+              ><span>Gemini Interactions</span>
+            </li>
           </ul>
           <p>
             Compatible local model endpoints on localhost are supported too.
@@ -321,7 +512,7 @@
             account to create, no relay server, and no analytics. Settings,
             keys, collections, and request history are kept in your browser.
           </p>
-          <a class="text-link" href="privacy.html">Read the privacy policy</a>
+          <a class="text-link" href="./privacy.html">Read the privacy policy</a>
         </div>
       </section>
       <section id="faq" class="faq-section wrap" aria-labelledby="faq-title">
@@ -347,13 +538,13 @@
           <details>
             <summary>Can I use a local model?</summary>
             <p>
-              Yes, with a local service that exposes a compatible API. Select
-              OpenAI-compatible Chat Completions for that interface and use its
-              localhost address. For example,
+              Yes, with a local service that exposes a compatible API, such as
               <a href="https://docs.ollama.com/api/openai-compatibility"
-                >Ollama provides an OpenAI-compatible API</a
-              >; the service and model must support the requests you use. Local
-              HTTP connections are limited to localhost, 127.0.0.1, or [::1].
+                >Ollama</a
+              >. Select OpenAI-compatible Chat Completions and use its localhost
+              address. The service and model must support the requests you use.
+              Local HTTP connections are limited to localhost, 127.0.0.1, or
+              [::1].
             </p>
           </details>
           <details>
@@ -365,7 +556,7 @@
               configured, Today’s thought can generate on the first Collection
               visit each day and optionally reference saved passages; hide it to
               stop automatic generation. The provider’s own data policy applies.
-              <a href="privacy.html">Read the privacy policy.</a>
+              <a href="./privacy.html">Read the privacy policy</a>
             </p>
           </details>
         </div>
@@ -429,18 +620,30 @@
     </main>
     <footer class="site-footer wrap">
       <a class="brand" href="./"
-        ><img src="assets/aside.svg" width="28" height="28" alt="" /><span
+        ><img src="./assets/aside.svg" width="28" height="28" alt="" /><span
           >Aside</span
         ></a
       >
       <p>A little help, beside your reading.</p>
-      <nav aria-label="Footer navigation">
-        <a href="privacy.html">Privacy policy</a
-        ><a href="https://github.com/worldtheater/aside">GitHub</a
+      <nav aria-label="Navigation">
+        <a href="./privacy.html">Privacy policy</a
         ><a href="https://github.com/worldtheater/aside/issues"
           >Questions or feedback?</a
         >
       </nav>
     </footer>
+    <dialog class="image-dialog" aria-label="Image preview">
+      <form method="dialog">
+        <button class="image-close" autofocus aria-label="Close preview">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m6 6 12 12M6 18 18 6" />
+          </svg>
+        </button>
+      </form>
+      <figure>
+        <img alt="" />
+        <figcaption></figcaption>
+      </figure>
+    </dialog>
   </body>
 </html>

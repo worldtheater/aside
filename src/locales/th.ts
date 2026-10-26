@@ -198,6 +198,10 @@ const base = {
   outputLengths: { brief: "สั้น", balanced: "ปานกลาง", detailed: "ละเอียด" },
   outputLengthHint:
     "ประมาณ 1–3 ประโยค หนึ่งย่อหน้า หรือ 2–3 ย่อหน้า เป็นแนวทาง ไม่ใช่ข้อจำกัดตายตัว",
+  followInstructionLanguage: "ใช้ภาษาของคำแนะนำ",
+  additionalInstructionsRequired: "ข้อกำหนดเพิ่มเติม (จำเป็น)",
+  instructionLanguageHint:
+    "เขียนข้อกำหนดเพิ่มเติมด้วยภาษาที่ต้องการให้แสดงผลลัพธ์",
   followInterfaceLanguage: "ตามภาษาอินเทอร์เฟซ",
   swapLanguages: "สลับภาษา",
   translationHint:
@@ -338,6 +342,9 @@ const full = {
     outputLengths: base.outputLengths,
     outputLengthHint: base.outputLengthHint,
     followInterfaceLanguage: base.followInterfaceLanguage,
+    followInstructionLanguage: base.followInstructionLanguage,
+    additionalInstructionsRequired: base.additionalInstructionsRequired,
+    instructionLanguageHint: base.instructionLanguageHint,
     languages: base.languages,
     openTools: "เปิดเครื่องมือ Aside",
     collapseTools: "ย่อเครื่องมือ",

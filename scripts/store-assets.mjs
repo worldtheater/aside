@@ -31,17 +31,27 @@ const english = [
   "Before highlighting a paragraph, pause and ask: what changed in my understanding? Write that change in your own words.",
 ];
 const translations = new Map(french.map((text, i) => [text, english[i]]));
+const philosophy = [
+  "Explaining a belief, justifying a belief",
+  "A genealogy of belief accounts for its emergence without thereby establishing its warrant. The conditions under which an idea becomes persuasive are not necessarily the reasons that make it defensible.",
+  "This distinction is easily lost when a familiar explanation feels satisfying. Understanding the history of a judgment is one task; assessing its reasons is another.",
+  "Inquiry therefore asks us to examine both how we acquired a conviction and what could count as evidence for or against it.",
+];
 const answer =
-  "Start with one question: **What changed in my understanding?**\n\nWrite a short answer in your own words, then connect it to something you already know. For example:\n\n> A useful note is a connection, not just a quotation.\n\nSave the passage alongside your note so you can return to its context.";
+  "**An explanation tells us how a belief arose; a justification gives reasons to accept it.**\n\nYou may believe a claim because a respected teacher said it. That explains your confidence. Evidence and a sound argument would help justify the claim.\n\nIts origin alone neither proves nor disproves it.";
 const summary =
   "- **Read actively.** Connect new ideas to what you already know.\n- **Write in your own words.** Capture the change in your understanding.\n- **Keep the context.** Save useful passages so you can revisit them.";
 const reflection =
   "The best note is not the sentence you kept, but the thought it helped you find.";
-function article(language) {
-  const lines = language === "fr" ? french : english;
-  return `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Reading is a conversation — Fieldnotes</title><style>
+function article(language, isPhilosophy = false) {
+  const lines = isPhilosophy
+    ? philosophy
+    : language === "fr"
+      ? french
+      : english;
+  return `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${lines[0]} — Fieldnotes</title><style>
   *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#fafafa;color:#292e30;font:18px/1.8 Georgia,serif}header{height:82px;border-bottom:1px solid #dedbd3;display:flex;align-items:center;justify-content:space-between;padding:0 68px;font:14px system-ui;letter-spacing:.04em}header strong{font-size:20px}main{max-width:760px;margin:54px auto 90px}aside{font:12px system-ui;letter-spacing:.16em;color:#85765f;text-transform:uppercase;margin-bottom:20px}h1{font-weight:500;font-size:42px;line-height:1.18;letter-spacing:-.025em;margin:0 0 28px}p{margin:0 0 24px}footer{border-top:1px solid #dedbd3;padding-top:20px;margin-top:34px;color:#6d7376;font:13px system-ui}::selection{background:#d7e4ed}
-  ${website ? "main{width:calc(100% - 48px);max-width:660px}@media(max-width:600px){header{padding:0 24px}header span{display:none}main{margin-top:30px}h1{font-size:30px}body{font-size:18px}}" : ""}</style></head><body><header><strong>Fieldnotes</strong><span>Essays on reading & learning</span></header><main><aside>Reading practice / 004</aside><h1>${lines[0]}</h1><p id="first">${lines[1]}</p><p>${lines[2]}</p><p>${lines[3]}</p><footer>An original sample article for Aside.</footer></main></body></html>`;
+  ${website ? "main{width:calc(100% - 48px);max-width:660px}@media(max-width:600px){header{padding:0 24px}header span{display:none}main{margin-top:30px}h1{font-size:30px}body{font-size:18px}}" : ""}</style></head><body><header><strong>Fieldnotes</strong><span>${isPhilosophy ? "Essays on knowledge & belief" : "Essays on reading & learning"}</span></header><main><aside>${isPhilosophy ? "Philosophy notes / 004" : "Reading practice / 004"}</aside><h1>${lines[0]}</h1><p id="first">${lines[1]}</p><p>${lines[2]}</p><p>${lines[3]}</p><footer>An original sample article for Aside.</footer></main></body></html>`;
 }
 const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url.endsWith("/models")) {
@@ -85,7 +95,12 @@ const server = http.createServer(async (req, res) => {
     return;
   }
   res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-  res.end(article(req.url.startsWith("/fr") ? "fr" : "en"));
+  res.end(
+    article(
+      req.url.startsWith("/fr") ? "fr" : "en",
+      req.url === "/en/belief-and-reasons",
+    ),
+  );
 });
 await mkdir(output, { recursive: true });
 await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
@@ -173,23 +188,29 @@ try {
           height: first.y + first.height - main.y + 44,
         };
         filename = filename.replace("01-inline-translation", "translation");
-      } else if (filename === "02-quick-qa.png") {
+      } else if (filename.startsWith("02-quick-qa")) {
         const panel = await page
           .locator("[data-pagework=ui] #output")
           .evaluate((node) =>
-            node
-              .closest("#question, #selection, #result")
-              .getBoundingClientRect()
-              .toJSON(),
+            node.closest("#selection").getBoundingClientRect().toJSON(),
           );
+        const passage = await page.locator("#first").boundingBox();
+        const left = Math.min(passage.x, panel.x);
+        const top = Math.min(passage.y, panel.y);
         clip = {
-          x: panel.x - 24,
-          y: panel.y - 24,
-          width: panel.width + 48,
-          height: panel.height + 48,
+          x: left - 24,
+          y: top - 24,
+          width:
+            Math.max(passage.x + passage.width, panel.x + panel.width) -
+            left +
+            48,
+          height:
+            Math.max(passage.y + passage.height, panel.y + panel.height) -
+            top +
+            48,
         };
-        filename = "quick-qa.png";
-      } else if (filename === "03-collection.png") {
+        filename = filename.replace("02-", "");
+      } else if (filename.startsWith("03-collection")) {
         const workspace = await page.locator(".workspace").boundingBox();
         const cards = await page.locator(".collection-grid").boundingBox();
         clip = {
@@ -198,7 +219,7 @@ try {
           width: workspace.width,
           height: cards.y + cards.height - workspace.y + 32,
         };
-        filename = "collection.png";
+        filename = filename.replace("03-", "");
       } else if (filename === "05-dark-reading.png") {
         filename = "dark-reading.png";
       } else return;
@@ -272,7 +293,7 @@ try {
     await source.setViewportSize({ width: 1280, height: 800 });
   }
 
-  await source.goto(origin + "/en/reading");
+  await source.goto(origin + "/en/belief-and-reasons");
   const ui = source.locator("[data-pagework=ui]");
   await ui.locator("#dock").waitFor();
   await source.locator("#first").evaluate((node) => {
@@ -289,10 +310,61 @@ try {
   await ui.locator("#selection [data-selection-action=qa]").click();
   await ui
     .locator("#question-input")
-    .fill("How can I take a useful note from this passage?");
+    .fill("Why doesn’t explaining the origin of a belief justify it?");
   await ui.locator("[data-op=question-run]").click();
   await ui.locator("#output[aria-busy=false]").waitFor();
+  if (website) {
+    const passage = await source.locator("#first").boundingBox();
+    const bar = await ui.locator(".selection-toolbar-row").boundingBox();
+    const panel = await ui.locator("#selection").boundingBox();
+    // Use the real panel drag behavior to leave the selected passage unobscured.
+    const start = { x: bar.x + bar.width / 2, y: bar.y + 2 };
+    await source.mouse.move(start.x, start.y);
+    await source.mouse.down();
+    await source.mouse.move(
+      start.x + passage.x + (passage.width - panel.width) / 2 - panel.x,
+      start.y + passage.y + passage.height + 22 - panel.y,
+      { steps: 8 },
+    );
+    await source.mouse.up();
+    await source.locator("#first").evaluate((node) => {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const selection = getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+    });
+  }
   await capture(source, "02-quick-qa.png");
+  if (website) {
+    await send({
+      type: "settings.save",
+      patch: {
+        preferences: {
+          ...snapshot.preferences,
+          locale: "en",
+          theme: "dark",
+          palette: "graphite",
+        },
+      },
+    });
+    await send({ type: "website.update", tabId, patch: { lights: "on" } });
+    await source.waitForFunction(
+      () => document.documentElement.dataset.darkreaderMode === "dynamic",
+    );
+    await capture(source, "02-quick-qa-dark.png");
+    await send({
+      type: "settings.save",
+      patch: {
+        preferences: {
+          ...snapshot.preferences,
+          locale: "en",
+          theme: "light",
+          palette: "graphite",
+        },
+      },
+    });
+  }
 
   const date = new Date().toLocaleDateString("en-CA");
   await send({
@@ -338,6 +410,37 @@ try {
   await app.locator(".sidebar [data-route=home]").click();
   await app.locator(".collection-card").first().waitFor();
   await capture(app, "03-collection.png");
+  if (website) {
+    await send({
+      type: "settings.save",
+      patch: {
+        preferences: {
+          ...snapshot.preferences,
+          locale: "en",
+          theme: "dark",
+          palette: "graphite",
+        },
+      },
+    });
+    await app.reload();
+    await app.locator(".collection-card").first().waitFor();
+    await app.waitForFunction(
+      () => document.documentElement.dataset.theme === "dark",
+    );
+    await capture(app, "03-collection-dark.png");
+    await send({
+      type: "settings.save",
+      patch: {
+        preferences: {
+          ...snapshot.preferences,
+          locale: "en",
+          theme: "light",
+          palette: "graphite",
+        },
+      },
+    });
+  }
+  if (website) await app.reload();
   await app.locator(".sidebar [data-route=actions]").click();
   await app.locator("[data-op=edit-action][data-id=summary]").click();
   await app.locator("#test-input").fill(paragraph + "\n\n" + note);

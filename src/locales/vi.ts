@@ -206,6 +206,10 @@ const base = {
   },
   outputLengthHint:
     "Khoảng 1–3 câu, một đoạn hoặc 2–3 đoạn; đây là định hướng, không phải giới hạn cứng.",
+  followInstructionLanguage: "Theo ngôn ngữ hướng dẫn",
+  additionalInstructionsRequired: "Yêu cầu bổ sung (bắt buộc)",
+  instructionLanguageHint:
+    "Viết yêu cầu bổ sung bằng ngôn ngữ đầu ra mong muốn.",
   followInterfaceLanguage: "Theo ngôn ngữ giao diện",
   swapLanguages: "Đổi ngôn ngữ",
   translationHint:
@@ -346,6 +350,9 @@ const full = {
     outputLengths: base.outputLengths,
     outputLengthHint: base.outputLengthHint,
     followInterfaceLanguage: base.followInterfaceLanguage,
+    followInstructionLanguage: base.followInstructionLanguage,
+    additionalInstructionsRequired: base.additionalInstructionsRequired,
+    instructionLanguageHint: base.instructionLanguageHint,
     languages: base.languages,
     openTools: "Mở công cụ Aside",
     collapseTools: "Thu gọn công cụ",

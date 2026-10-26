@@ -13,6 +13,8 @@ import {
   DAILY_PROMPT,
   hasOutputLanguage,
   hasDefaultInstructions,
+  followsInstructionLanguage,
+  requiresInstructions,
   resolveOutputLanguage,
   DEFAULT_OUTPUT_LENGTH,
 } from "./prompts.js";
@@ -1016,7 +1018,7 @@ function renderActionRows() {
         .map(
           (a) => `<div class="action-row">
     <button class="action-open" data-op="edit-action" data-id="${e(a.id)}"><span class="icon-tile tone-${e(a.kind)}">${icon(a.icon)}</span><div class="grow"><div class="action-title">${e(a.name)}</div><div class="action-description">${e(a.description || a.instruction.slice(0, 55) + (a.instruction.length > 55 ? "…" : ""))}</div></div></button>
-    <div class="row-meta">${a.kind === "translate" ? e(C.languages[a.sourceLanguage as keyof typeof C.languages] + " → " + (a.targetLanguage === "interface" ? C.followInterfaceLanguage : C.languages[a.targetLanguage as keyof typeof C.languages])) : C.modeShort[a.mode]}<small>${C.placements[a.placement]}</small></div>
+    <div class="row-meta">${a.kind === "translate" ? e(C.languages[a.sourceLanguage as keyof typeof C.languages] + " → " + (a.targetLanguage === "interface" ? C.followInterfaceLanguage : a.targetLanguage === "instruction" ? C.followInstructionLanguage : C.languages[a.targetLanguage as keyof typeof C.languages])) : C.modeShort[a.mode]}<small>${C.placements[a.placement]}</small></div>
     <label class="toggle-label" data-tooltip="${e(C.quickHelp)}"><input class="switch" type="checkbox" data-quick="${e(a.id)}" aria-label="${e(C.quickToggle(a.name))}"${checked(a.quick)}><span>${C.quick}</span></label>
     ${iconButton(C.actionOptions, "action-menu", "more", `data-id="${e(a.id)}"`)}
     </div>`,
@@ -1079,7 +1081,7 @@ function renderEditor() {
   return `<div class="page-heading editor-heading"><div><h1>${a.id ? C.editTitle : C.createTitle}</h1><p>${C.editorIntro}</p></div><div class="row editor-actions"><span id="save-state" class="save-state"${dirty() ? "" : " hidden"}>${C.unsaved}</span>${button(C.cancel, "editor-cancel", "ghost")}${button(C.save, "save", "primary", "check")}</div></div>
   <div class="editor-grid"><section aria-label="${C.editTitle}">
     <label class="field"><span class="field-label">${C.actionName}</span><input id="action-name" data-draft="name" value="${e(a.name)}" placeholder="${C.actionPlaceholder}" maxlength="48"></label>
-    ${a.kind === "translate" ? renderTranslationFields(a) : hasOutputLanguage(a) ? renderOutputLanguageField(a.outputLanguage, 'data-language="outputLanguage"') : ""}
+    ${a.kind === "translate" ? renderTranslationFields(a) : hasOutputLanguage(a) ? renderOutputLanguageField(a.outputLanguage, 'data-language="outputLanguage"', true) : ""}
     ${
       a.kind === "qa"
         ? `<label class="field"><span class="field-label">${C.outputLength}</span><select data-draft="outputLength" aria-label="${C.outputLength}">${Object.entries(
@@ -1094,7 +1096,7 @@ function renderEditor() {
             )}</select><span class="field-note">${C.outputLengthHint}</span></label>`
         : ""
     }
-    <label class="field"><span class="field-label">${hasDefaultInstructions(a) ? C.additionalInstructions : C.instruction}</span><textarea id="instruction" data-draft="instruction" rows="6" placeholder="${e(hasDefaultInstructions(a) ? C.additionalInstructionsPlaceholder : C.instructionPlaceholder)}">${e(a.instruction)}</textarea></label>
+    <label class="field"><span class="field-label">${followsInstructionLanguage(a) ? C.additionalInstructionsRequired : hasDefaultInstructions(a) ? C.additionalInstructions : C.instruction}</span><textarea id="instruction" data-draft="instruction" rows="6" placeholder="${e(followsInstructionLanguage(a) ? C.instructionLanguageHint : hasDefaultInstructions(a) ? C.additionalInstructionsPlaceholder : C.instructionPlaceholder)}">${e(a.instruction)}</textarea></label>
     <div class="field"><div class="field-label" id="mode-label">${C.mode}</div><div class="mode-options" role="radiogroup" aria-labelledby="mode-label">${["paragraph", "whole"].map((mode) => `<label class="mode-option"><div class="row"><input type="radio" name="process-mode" value="${mode}"${checked(a.mode === mode)}><span>${C.modes[mode as keyof typeof C.modes]}</span></div><p>${C.modeHints[mode as keyof typeof C.modeHints]}</p></label>`).join("")}</div></div>
   </section><div class="editor-advanced"><details class="advanced"><summary>${C.advanced}</summary><div class="advanced-body">
       <label class="field"><span class="field-label">${C.model}</span><select data-draft="model">${modelOptions(a.model)}</select></label>
@@ -1124,13 +1126,17 @@ function languageOptions(current: unknown, allowAuto: boolean) {
     )
     .join("");
 }
-function renderOutputLanguageField(value: string | undefined, attrs: string) {
-  return `<label class="field"><span class="field-label">${C.outputLanguage}</span><select ${attrs} data-search="false" aria-label="${C.outputLanguage}"><option value="interface"${selected(value || "interface", "interface")}>${C.followInterfaceLanguage}</option>${languageOptions(value, false)}</select></label>`;
+function renderOutputLanguageField(
+  value: string | undefined,
+  attrs: string,
+  allowInstruction = false,
+) {
+  return `<label class="field"><span class="field-label">${C.outputLanguage}</span><select ${attrs} data-search="false" aria-label="${C.outputLanguage}"><option value="interface"${selected(value || "interface", "interface")}>${C.followInterfaceLanguage}</option>${allowInstruction ? `<option value="instruction"${selected(value, "instruction")}>${C.followInstructionLanguage}</option>` : ""}${languageOptions(value, false)}</select></label>`;
 }
 function renderTranslationFields(a: Action) {
   return `<div class="translation-fields"><label class="field"><span class="field-label">${C.sourceLanguage}</span><select data-language="sourceLanguage" data-search="false" aria-label="${C.sourceLanguage}">${languageOptions(a.sourceLanguage, true)}</select></label>
-    ${iconButton(C.swapLanguages, "swap-languages", "swap", a.sourceLanguage === "auto" ? "disabled" : "")}
-    <label class="field"><span class="field-label">${C.targetLanguage}</span><select data-language="targetLanguage" data-search="false" aria-label="${C.targetLanguage}"><option value="interface"${selected(a.targetLanguage, "interface")}>${C.followInterfaceLanguage}</option>${languageOptions(a.targetLanguage, false)}</select></label></div><p class="field-note translation-hint">${C.translationHint}</p>`;
+    ${iconButton(C.swapLanguages, "swap-languages", "swap", a.sourceLanguage === "auto" || followsInstructionLanguage(a) ? "disabled" : "")}
+    <label class="field"><span class="field-label">${C.targetLanguage}</span><select data-language="targetLanguage" data-search="false" aria-label="${C.targetLanguage}"><option value="interface"${selected(a.targetLanguage, "interface")}>${C.followInterfaceLanguage}</option><option value="instruction"${selected(a.targetLanguage, "instruction")}>${C.followInstructionLanguage}</option>${languageOptions(a.targetLanguage, false)}</select></label></div><p class="field-note translation-hint">${C.translationHint}</p>`;
 }
 function renderTrialResult() {
   if (state.route !== "editor") return;
@@ -1168,10 +1174,7 @@ async function runTrial() {
     renderTrialResult();
     return;
   }
-  if (
-    !hasDefaultInstructions(state.editor) &&
-    !state.editor.instruction.trim()
-  ) {
+  if (requiresInstructions(state.editor) && !state.editor.instruction.trim()) {
     notify(C.required, "error");
     return;
   }
@@ -1212,7 +1215,7 @@ async function runTrial() {
 async function saveAction() {
   const a = state.editor;
   if (!a) return;
-  if (!a.name.trim() || (!hasDefaultInstructions(a) && !a.instruction.trim())) {
+  if (!a.name.trim() || (requiresInstructions(a) && !a.instruction.trim())) {
     const error = document.querySelector<HTMLElement>("#editor-error")!;
     error.textContent = C.required;
     error.hidden = false;
@@ -1987,7 +1990,7 @@ document.addEventListener("click", async (event) => {
       notify(C.defaultChanged);
     } else if (op === "swap-languages") {
       const action = state.editor;
-      if (!action) return;
+      if (!action || followsInstructionLanguage(action)) return;
       [action.sourceLanguage, action.targetLanguage] = [
         resolveOutputLanguage(action.targetLanguage, locale),
         action.sourceLanguage,

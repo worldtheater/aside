@@ -21,6 +21,17 @@ export function hasDefaultInstructions(
   );
 }
 
+export const followsInstructionLanguage = (
+  action: Pick<ProcessingAction, "kind" | "targetLanguage" | "outputLanguage">,
+) =>
+  (action.kind === "translate"
+    ? action.targetLanguage
+    : action.outputLanguage) === "instruction";
+
+export const requiresInstructions = (
+  action: Pick<ProcessingAction, "kind" | "targetLanguage" | "outputLanguage">,
+) => !hasDefaultInstructions(action) || followsInstructionLanguage(action);
+
 export const DEFAULT_OUTPUT_LENGTH: OutputLength = "brief";
 export const OUTPUT_LENGTH_PROMPTS: Record<OutputLength, string> = {
   brief:

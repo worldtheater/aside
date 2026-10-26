@@ -12,7 +12,7 @@ import type { LightCandidate, LightDecision } from "./lights-decision.js";
 import { resolveWebsite, updateWebsite, websiteHostname } from "./website.js";
 import {
   hasOutputLanguage,
-  hasDefaultInstructions,
+  requiresInstructions,
   resolveOutputLanguage,
   DEFAULT_OUTPUT_LENGTH,
   OUTPUT_LENGTH_PROMPTS,
@@ -72,10 +72,14 @@ const localeOf = (settings: Settings) =>
   resolveLocale(settings.preferences.locale);
 const resolveAction = (action: Action | undefined, settings: Settings) =>
   action ? localizeAction(action, localeOf(settings)) : undefined;
-function validateOutputLanguage(value: string | undefined) {
+function validateOutputLanguage(
+  value: string | undefined,
+  allowInstruction = false,
+) {
   if (
     value !== undefined &&
     value !== "interface" &&
+    !(allowInstruction && value === "instruction") &&
     (value === "auto" || !Object.hasOwn(messages.en.languages, value))
   )
     throw new ModelError("invalidAction");
@@ -493,8 +497,6 @@ chrome.runtime.onMessage.addListener(
               instruction: change.instruction.trim(),
               model: change.model,
             };
-            if (!hasDefaultInstructions(next) && !next.instruction)
-              throw new ModelError("invalidAction");
             next.builtin = usesPresetDefaults(next, localeOf(settings));
             if (next.kind === "translate") {
               const languages = messages[localeOf(settings)].languages;
@@ -504,6 +506,7 @@ chrome.runtime.onMessage.addListener(
                 !change.targetLanguage ||
                 change.targetLanguage === "auto" ||
                 (change.targetLanguage !== "interface" &&
+                  change.targetLanguage !== "instruction" &&
                   !(change.targetLanguage in languages))
               )
                 throw new ModelError("invalidAction");
@@ -513,13 +516,15 @@ chrome.runtime.onMessage.addListener(
                 throw new ModelError("sameLanguages");
             }
             if (hasOutputLanguage(next)) {
-              validateOutputLanguage(change.outputLanguage);
+              validateOutputLanguage(change.outputLanguage, true);
               next.outputLanguage = change.outputLanguage || "interface";
             }
             if (next.kind === "qa") {
               validateOutputLength(change.outputLength);
               next.outputLength = change.outputLength || DEFAULT_OUTPUT_LENGTH;
             }
+            if (requiresInstructions(next) && !next.instruction)
+              throw new ModelError("invalidAction");
             if (next.instruction !== original.instruction)
               delete next.description;
             if (index < 0) settings.actions.push(next);
@@ -550,8 +555,10 @@ chrome.runtime.onMessage.addListener(
       if (message.type === "settings.save") {
         if (message.patch?.actions) {
           for (const action of message.patch.actions) {
+            if (requiresInstructions(action) && !action.instruction.trim())
+              throw new ModelError("invalidAction");
             if (hasOutputLanguage(action))
-              validateOutputLanguage(action.outputLanguage);
+              validateOutputLanguage(action.outputLanguage, true);
             if (action.kind === "qa") validateOutputLength(action.outputLength);
           }
           const limit = actionLimitError(message.patch.actions);
@@ -906,7 +913,7 @@ chrome.runtime.onConnect.addListener((port) => {
         if (
           !action ||
           typeof action.instruction !== "string" ||
-          (!hasDefaultInstructions(action) && !action.instruction.trim()) ||
+          (requiresInstructions(action) && !action.instruction.trim()) ||
           !blocks
         )
           throw new ModelError("invalidInput");
@@ -925,7 +932,10 @@ chrome.runtime.onConnect.addListener((port) => {
             ),
           };
         if (hasOutputLanguage(action) || payload.daily) {
-          validateOutputLanguage(action.outputLanguage);
+          validateOutputLanguage(
+            action.outputLanguage,
+            hasOutputLanguage(action),
+          );
           action = {
             ...action,
             outputLanguage: resolveOutputLanguage(
@@ -934,6 +944,8 @@ chrome.runtime.onConnect.addListener((port) => {
             ),
           };
         }
+        if (requiresInstructions(action) && !action.instruction.trim())
+          throw new ModelError("invalidAction");
         if (hasSameLanguages(action)) throw new ModelError("sameLanguages");
         const connection = await connectionFor(settings, action.model),
           key = data.credentials[connection.id!] || "";

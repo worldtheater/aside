@@ -198,6 +198,9 @@ const base = {
   outputLengths: { brief: "짧게", balanced: "보통", detailed: "자세히" },
   outputLengthHint:
     "약 1~3문장, 한 문단, 또는 2~3문단이며 엄격한 제한이 아닌 분량 기준입니다.",
+  followInstructionLanguage: "지침 언어 따르기",
+  additionalInstructionsRequired: "추가 요구 사항 (필수)",
+  instructionLanguageHint: "원하는 출력 언어로 추가 요구 사항을 작성하세요.",
   followInterfaceLanguage: "인터페이스 언어 따르기",
   swapLanguages: "언어 바꾸기",
   translationHint:
@@ -337,6 +340,9 @@ const full = {
     outputLengths: base.outputLengths,
     outputLengthHint: base.outputLengthHint,
     followInterfaceLanguage: base.followInterfaceLanguage,
+    followInstructionLanguage: base.followInstructionLanguage,
+    additionalInstructionsRequired: base.additionalInstructionsRequired,
+    instructionLanguageHint: base.instructionLanguageHint,
     languages: base.languages,
     openTools: "Aside 도구 열기",
     collapseTools: "도구 접기",

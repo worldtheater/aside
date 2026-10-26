@@ -26,6 +26,7 @@
   box-sizing: border-box;
 }
 html {
+  scrollbar-gutter: stable;
   scroll-behavior: smooth;
   scroll-padding-top: 32px;
 }
@@ -40,7 +41,7 @@ a {
 a:hover {
   text-decoration-thickness: 2px;
 }
-:is(a, summary):focus-visible {
+:is(a, summary, .theme-toggle):focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 5px;
   border-radius: 4px;
@@ -121,7 +122,7 @@ p {
 }
 .site-header nav {
   display: flex;
-  gap: 26px;
+  gap: 8px;
   align-items: center;
   font-size: 14px;
 }
@@ -132,22 +133,9 @@ p {
 .site-header nav a:hover {
   text-decoration: underline;
 }
-.github-link {
-  display: flex;
-}
 .github-link svg {
   width: 22px;
   height: 22px;
-}
-.site-header .header-install {
-  padding: 8px 16px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  white-space: nowrap;
-}
-.site-header .header-install:hover {
-  background: var(--surface);
-  text-decoration: none;
 }
 .hero {
   display: grid;
@@ -162,6 +150,7 @@ p {
   margin-bottom: 20px;
 }
 h1 {
+  text-wrap: balance;
   max-width: 10em;
   font-size: clamp(3rem, 4.8vw, 4.2rem);
 }
@@ -169,7 +158,7 @@ h1 {
   font-size: 18px;
   line-height: 1.7;
   margin-top: 25px;
-  margin-bottom: 30px;
+  margin-bottom: 28px;
   color: var(--muted);
 }
 .hero-actions,
@@ -260,19 +249,18 @@ figcaption {
   border-top: 1px solid var(--line);
 }
 .section-intro {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 32px;
+  max-width: 720px;
 }
 .section-intro > p {
+  margin-top: 14px;
+  font-size: 17px;
   color: var(--muted);
 }
 .inline-benefits {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 42px;
-  margin-top: 36px;
+  margin-top: 42px;
 }
 .inline-benefits p,
 .tools-grid p {
@@ -334,12 +322,25 @@ kbd {
   gap: 64px;
 }
 .comfort-copy h2 {
+  text-wrap: balance;
   max-width: 12em;
   margin-bottom: 24px;
 }
 .comfort-copy p {
   color: var(--comfort-muted);
   margin-top: 16px;
+}
+.comfort-copy .eye-icon {
+  display: inline-block;
+  width: 21px;
+  height: 21px;
+  margin-right: 6px;
+  vertical-align: -0.22em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 .comfort-copy a {
   color: var(--comfort-link);
@@ -374,9 +375,18 @@ kbd {
   margin: 24px 0 0;
 }
 .protocols li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   padding: 8px 0;
   border-bottom: 1px solid var(--line);
   font-size: 15px;
+}
+.protocols svg {
+  width: 23px;
+  height: 23px;
+  flex: none;
+  fill: currentColor;
 }
 .protocols li:last-child {
   border-bottom: none;
@@ -506,27 +516,29 @@ code {
 .site-footer nav a:hover {
   text-decoration: underline;
 }
-:lang(zh-CN) h1,
-:lang(zh-CN) h2,
-:lang(zh-CN) .feature-copy h3 {
+:lang(zh) h1,
+:lang(zh) h2,
+:lang(zh) .feature-copy h3 {
   font-family: "Songti SC", "Noto Serif CJK SC", "Source Han Serif SC", serif;
   line-height: 1.3;
   letter-spacing: 0;
 }
-:lang(zh-CN) h1 {
+:lang(zh) h1 {
   max-width: 7em;
 }
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #1d1f21;
-    --surface: #25282b;
-    --text: #e3e4e5;
-    --muted: #b0b4bb;
-    --line: #3b3e42;
-    --focus: #dfb47f;
-    --button: #dfb47f;
-    --button-text: #222629;
-  }
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #1d1f21;
+  --surface: #25282b;
+  --text: #e3e4e5;
+  --muted: #b0b4bb;
+  --line: #3b3e42;
+  --focus: #dfb47f;
+  --button: #dfb47f;
+  --button-text: #222629;
 }
 @media (max-width: 1050px) {
   .hero {
@@ -550,18 +562,12 @@ code {
     margin-left: 0;
   }
 }
-@media (max-width: 780px) {
+@media (max-width: 960px) {
   .wrap {
     width: calc(100% - 48px);
   }
   .site-header {
     min-height: 82px;
-  }
-  .site-header nav {
-    gap: 18px;
-  }
-  .site-header .features-link {
-    display: none;
   }
   .hero {
     grid-template-columns: 1fr;
@@ -587,12 +593,6 @@ code {
   .lead {
     margin-top: 20px;
     font-size: 17px;
-  }
-  .section-intro {
-    display: block;
-  }
-  .section-intro p {
-    margin-top: 14px;
   }
   .inline-benefits,
   .tools-grid {
@@ -665,14 +665,7 @@ code {
     width: 32px;
   }
   .site-header nav {
-    gap: 14px;
     font-size: 13px;
-  }
-  .site-header .header-install {
-    padding: 6px 10px;
-  }
-  .github-link {
-    display: none;
   }
   .hero {
     padding-top: 34px;
@@ -700,4 +693,184 @@ code {
   *::after {
     transition: none !important;
   }
+}
+
+/* Native dialog keeps focus and keyboard interaction within the image viewer. */
+html:has(.image-dialog[open]) {
+  overflow: hidden;
+}
+.image-dialog {
+  width: fit-content;
+  max-width: min(1200px, calc(100vw - 48px));
+  max-height: calc(100dvh - 48px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 24px 80px #0005;
+}
+.image-dialog::backdrop {
+  background: #11171cc4;
+}
+.image-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.image-dialog form {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 10px 0;
+}
+.image-close {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 8px;
+  border: 0;
+  border-radius: 8px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  transition: background-color 0.18s ease;
+}
+.image-close:hover {
+  background: var(--background);
+  color: var(--text);
+}
+.image-close:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.image-close svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+}
+.image-dialog figure {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 12px 24px 24px;
+}
+.image-dialog img {
+  width: auto;
+  max-height: calc(100dvh - 190px);
+  object-fit: contain;
+  margin-inline: auto;
+  border-radius: 8px;
+}
+.image-dialog figcaption {
+  max-width: 70ch;
+  margin-inline: auto;
+  text-align: center;
+}
+@media (max-width: 600px) {
+  .image-dialog {
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+  .image-dialog figure {
+    padding: 8px 12px 16px;
+  }
+}
+
+.language-menu {
+  position: relative;
+  flex: none;
+}
+.language-menu summary,
+.theme-toggle,
+.site-header .github-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  line-height: 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  list-style: none;
+  transition: background-color 0.18s ease;
+}
+.language-menu summary::-webkit-details-marker {
+  display: none;
+}
+.site-header .github-link:hover,
+.theme-toggle:hover,
+.language-menu summary:hover,
+.language-menu[open] summary {
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+}
+.language-menu svg,
+.theme-toggle svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.language-options {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(calc(-50% + var(--menu-shift, 0px)));
+  z-index: 10;
+  display: grid;
+  gap: 4px;
+  width: min(260px, calc(100vw - 36px));
+  max-height: min(460px, calc(100dvh - 130px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 16px 48px #0002;
+}
+.site-header .language-options a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: 15px;
+  text-decoration: none;
+  transition: background-color 0.18s ease;
+}
+.site-header .language-options a:hover,
+.language-options a[aria-current="page"] {
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+  text-decoration: none;
+}
+.language-options a[aria-current="page"] {
+  font-weight: 600;
+}
+:lang(th) :is(h1, h2, .feature-copy h3) {
+  font-family: "Thonburi", "Noto Sans Thai", sans-serif;
+  letter-spacing: 0;
+  line-height: 1.4;
+}
+
+.theme-toggle {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.theme-toggle svg {
+  display: none;
+}
+.theme-toggle[data-mode="system"] [data-theme-icon="system"],
+.theme-toggle[data-mode="light"] [data-theme-icon="light"],
+.theme-toggle[data-mode="dark"] [data-theme-icon="dark"] {
+  display: block;
 }

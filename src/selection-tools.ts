@@ -4,6 +4,8 @@ import brandMark from "../icons/brand-mark.svg";
 import {
   hasOutputLanguage,
   hasDefaultInstructions,
+  followsInstructionLanguage,
+  requiresInstructions,
   DEFAULT_OUTPUT_LENGTH,
 } from "./prompts.js";
 import { MAX_ACTIONS, toolbarActions } from "./action-policy.js";
@@ -225,6 +227,11 @@ export class SelectionTools {
       this.error = "";
       const error = root.querySelector<HTMLElement>(".selection-error");
       if (error) error.hidden = true;
+      if (
+        input.dataset.selectionField === "targetLanguage" ||
+        input.dataset.selectionField === "outputLanguage"
+      )
+        this.render();
     };
     root.addEventListener("input", change);
     root.addEventListener("focusin", () => this.updateSelection());
@@ -472,7 +479,7 @@ export class SelectionTools {
     for (const action of changes) {
       const error =
         !action.name.trim() ||
-        (!hasDefaultInstructions(action) && !action.instruction.trim())
+        (requiresInstructions(action) && !action.instruction.trim())
           ? S.requiredAction
           : hasSameLanguages(
                 action,
@@ -624,12 +631,16 @@ export class SelectionTools {
 
   private editor(a: Action, config: PublicConfig) {
     const S = config.strings;
-    const instructionLabel = hasDefaultInstructions(a)
-      ? S.additionalInstructions
-      : S.instruction;
-    const instructionPlaceholder = hasDefaultInstructions(a)
-      ? S.additionalInstructionsPlaceholder
-      : "";
+    const instructionLabel = followsInstructionLanguage(a)
+      ? S.additionalInstructionsRequired
+      : hasDefaultInstructions(a)
+        ? S.additionalInstructions
+        : S.instruction;
+    const instructionPlaceholder = followsInstructionLanguage(a)
+      ? S.instructionLanguageHint
+      : hasDefaultInstructions(a)
+        ? S.additionalInstructionsPlaceholder
+        : "";
     const options = (entries: [string, string][], value: string | undefined) =>
       entries
         .map(
@@ -656,6 +667,7 @@ export class SelectionTools {
               S.targetLanguage,
               [
                 ["interface", S.followInterfaceLanguage],
+                ["instruction", S.followInstructionLanguage],
                 ...Object.entries(S.languages).filter(([id]) => id !== "auto"),
               ],
               a.targetLanguage,
@@ -666,6 +678,7 @@ export class SelectionTools {
                 S.outputLanguage,
                 [
                   ["interface", S.followInterfaceLanguage],
+                  ["instruction", S.followInstructionLanguage],
                   ...Object.entries(S.languages).filter(
                     ([id]) => id !== "auto",
                   ),

@@ -205,6 +205,9 @@ const base = {
   outputLengths: { brief: "Kısa", balanced: "Dengeli", detailed: "Ayrıntılı" },
   outputLengthHint:
     "Yaklaşık 1–3 cümle, bir paragraf veya 2–3 paragraf; kesin sınır değil, yol göstericidir.",
+  followInstructionLanguage: "Talimatların dilini kullan",
+  additionalInstructionsRequired: "Ek gereksinimler (zorunlu)",
+  instructionLanguageHint: "Ek gereksinimleri istediğiniz çıktı dilinde yazın.",
   followInterfaceLanguage: "Arayüz dilini kullan",
   swapLanguages: "Dilleri değiştir",
   translationHint:
@@ -348,6 +351,9 @@ const full = {
     outputLengths: base.outputLengths,
     outputLengthHint: base.outputLengthHint,
     followInterfaceLanguage: base.followInterfaceLanguage,
+    followInstructionLanguage: base.followInstructionLanguage,
+    additionalInstructionsRequired: base.additionalInstructionsRequired,
+    instructionLanguageHint: base.instructionLanguageHint,
     languages: base.languages,
     openTools: "Aside araçlarını aç",
     collapseTools: "Araçları daralt",

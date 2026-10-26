@@ -242,3 +242,46 @@ assert.throws(
 console.log(
   "PASS: Q&A length defaults, three request instructions, length-specific cache reuse and invalid length rejection.",
 );
+
+// The language sentinel is carried to the model, without locale substitution or another detection call.
+for (const original of english) {
+  const field =
+    original.kind === "translate" ? "targetLanguage" : "outputLanguage";
+  const guided = {
+    ...original,
+    [field]: "instruction",
+    instruction: "अर्थ स्पष्ट और संक्षिप्त रखें।",
+  };
+  for (const locale of ["en", "zh-CN", "ja"]) {
+    assert.equal(resolveOutputLanguage("instruction", locale), "instruction");
+    const prompt = actionInstructions(
+      localizeAction({ ...guided, builtin: false }, locale),
+    );
+    assert(prompt.includes(guided.instruction));
+    assert(
+      prompt.includes(
+        "in the language in which the additional requirements are written",
+      ),
+    );
+    assert(!prompt.includes("Simplified Chinese (zh-Hans)"));
+    assert(!prompt.includes("Output language: English (en)"));
+  }
+  for (const instruction of ["", "  "]) {
+    assert.throws(
+      () => actionInstructions({ ...guided, instruction }),
+      (error) => error.code === "invalidAction",
+    );
+  }
+  assert.notEqual(
+    await resultKey(connection, guided, "Same source"),
+    await resultKey(
+      connection,
+      { ...guided, instruction: "সংক্ষিপ্ত রাখুন।" },
+      "Same source",
+    ),
+    "Requirements in different languages have different cached results",
+  );
+}
+console.log(
+  "PASS: instruction-language selection, empty requirement rejection, interface independence and cache separation.",
+);

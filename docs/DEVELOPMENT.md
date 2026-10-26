@@ -124,9 +124,7 @@ node tests/browser.cjs --lights-recovery-only
 
 页面渲染只负责生成和挂载界面，数据查询由页面进入、筛选、翻页或刷新事件触发。用量页刷新保留已展开的记录范围；调用记录写入失败单独记录诊断，不覆盖模型调用的原始结果或错误。连接列表的滚动恢复由连接页更新函数负责。
 
-## 产品首页、隐私政策与 GitHub Pages
-
-英文产品首页为 `docs/index.html` 和 `docs/home.css`，地址为 <https://worldtheater.github.io/aside/>。首页素材位于 `docs/assets/`：Logo 来自 `icons/icon.svg`，界面截图和分享图来自 `web-store/assets/`；更新演示图时同步这些副本。商店审核期间，安装入口链接到 README 安装指南；商店页面公开后再替换安装入口及审核中的提示。
+## 隐私政策与 GitHub Pages
 
 英文隐私政策源文件为 `docs/privacy.html` 和 `docs/privacy.css`，无构建步骤、脚本或远程字体。GitHub Pages 使用 `main` 分支的 `/docs` 目录发布，`docs/.nojekyll` 禁用 Jekyll 处理。公开地址为 <https://worldtheater.github.io/aside/privacy.html>，供 Chrome Web Store 的 Privacy Policy 字段使用。
 
@@ -134,8 +132,10 @@ node tests/browser.cjs --lights-recovery-only
 
 ## 产品介绍页
 
-GitHub Pages 从 `main` 分支的 `docs/` 提供静态页面：`index.html` 为英文首页，`zh/index.html` 为简体中文首页，两者共享 `home.css`。隐私政策仍位于 `privacy.html`。修改产品介绍时同步两种语言；更新发布版本时，同步首页与 README 中的版本号及下载链接。
+GitHub Pages 从 `main` 分支的 `docs/` 提供静态页面。首页使用 `website/template.html` 共用模板，文案在 `website/locales/`，语言名称与路由在 `website/languages.json`。运行 `npm run build:site` 生成十五种语言的静态页面；`npm run check:site` 检查文案完整性和生成结果是否最新。不要直接修改生成的首页 HTML。页面共享 `docs/home.css` 和 `docs/home.js`，图片位于 `docs/assets/`。英文首页仍位于根目录，简体中文仍位于 `zh/`；隐私政策仍位于 `privacy.html`，其他语言的链接会标明其为英文。
 
-首页下载入口指向 GitHub Release 的 `aside-<version>.zip`，不是自动生成的源码包。发布前运行 `npm run package`，将 `artifacts/aside-<version>.zip` 上传为对应版本的 Release 附件。
+首页下载入口指向 GitHub Release 的 `aside-<version>.zip`，版本号取自 `package.json`。更新版本后重新生成首页。发布前运行 `npm run package`，将 `artifacts/aside-<version>.zip` 上传为对应版本的 Release 附件。
 
-使用 `node scripts/store-assets.mjs --website` 重新生成首页截图。它复用商店素材的隔离浏览器与本地模拟服务，以 2 倍像素密度直接截取真实插件界面，并为首屏提供移动端和暗色版本。无参数运行仍只生成商店素材。首页图片按自然比例显示，不再依赖 CSS 放大与负偏移裁切。
+使用 `node scripts/store-assets.mjs --website` 重新生成首页截图。它复用商店素材的隔离浏览器与本地模拟服务，以 2 倍像素密度直接截取真实插件界面，并为首屏提供移动端版本，为首屏、选文问答和收藏提供亮暗色版本。无参数运行仍只生成商店素材。首页图片按自然比例显示，不再依赖 CSS 放大与负偏移裁切。
+
+首页主题按钮在跟随系统、浅色、深色之间循环，选择保存在本站的本地存储中。页面配色与示例截图同步切换。修改 `docs/home.css` 或 `docs/home.js` 后也要运行 `npm run build:site`，生成页面中的资源版本随内容更新，避免旧缓存影响预览和发布。

@@ -208,6 +208,10 @@ const base = {
   },
   outputLengthHint:
     "Aproximadamente 1–3 frases, un párrafo o 2–3 párrafos; es una orientación, no un límite estricto.",
+  followInstructionLanguage: "Usar el idioma de las instrucciones",
+  additionalInstructionsRequired: "Requisitos adicionales (obligatorios)",
+  instructionLanguageHint:
+    "Escribe los requisitos adicionales en el idioma de salida deseado.",
   followInterfaceLanguage: "Usar idioma de la interfaz",
   swapLanguages: "Intercambiar idiomas",
   translationHint:
@@ -353,6 +357,9 @@ const full = {
     outputLengths: base.outputLengths,
     outputLengthHint: base.outputLengthHint,
     followInterfaceLanguage: base.followInterfaceLanguage,
+    followInstructionLanguage: base.followInstructionLanguage,
+    additionalInstructionsRequired: base.additionalInstructionsRequired,
+    instructionLanguageHint: base.instructionLanguageHint,
     languages: base.languages,
     openTools: "Abrir herramientas de Aside",
     collapseTools: "Contraer herramientas",

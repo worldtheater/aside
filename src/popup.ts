@@ -75,7 +75,7 @@ function renderLanguages() {
   const action = chosen();
   document.querySelector<HTMLElement>("#languages")!.innerHTML =
     action?.kind === "translate"
-      ? `<label class="field"><span class="field-label">${C.outputLanguage}</span><select data-language="targetLanguage" data-search="false" aria-label="${C.outputLanguage}"><option value="interface" ${action.targetLanguage === "interface" ? "selected" : ""}>${escape(C.followInterfaceLanguage)}</option>${Object.entries(
+      ? `<label class="field"><span class="field-label">${C.outputLanguage}</span><select data-language="targetLanguage" data-search="false" aria-label="${C.outputLanguage}"><option value="interface" ${action.targetLanguage === "interface" ? "selected" : ""}>${escape(C.followInterfaceLanguage)}</option><option value="instruction" ${action.targetLanguage === "instruction" ? "selected" : ""} ${action.instruction.trim() ? "" : "disabled"}>${escape(C.followInstructionLanguage)}</option>${Object.entries(
           C.languages,
         )
           .filter(([value]) => value !== "auto")

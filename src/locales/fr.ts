@@ -209,6 +209,10 @@ const base = {
   },
   outputLengthHint:
     "Environ 1 à 3 phrases, un paragraphe ou 2 à 3 paragraphes ; une indication, pas une limite stricte.",
+  followInstructionLanguage: "Suivre la langue des consignes",
+  additionalInstructionsRequired: "Consignes supplémentaires (obligatoires)",
+  instructionLanguageHint:
+    "Rédigez les consignes supplémentaires dans la langue de sortie souhaitée.",
   followInterfaceLanguage: "Suivre la langue de l’interface",
   swapLanguages: "Inverser les langues",
   translationHint:
@@ -353,6 +357,9 @@ const full = {
     outputLengths: base.outputLengths,
     outputLengthHint: base.outputLengthHint,
     followInterfaceLanguage: base.followInterfaceLanguage,
+    followInstructionLanguage: base.followInstructionLanguage,
+    additionalInstructionsRequired: base.additionalInstructionsRequired,
+    instructionLanguageHint: base.instructionLanguageHint,
     languages: base.languages,
     openTools: "Ouvrir les outils Aside",
     collapseTools: "Replier les outils",

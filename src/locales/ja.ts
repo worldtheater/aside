@@ -198,6 +198,9 @@ const base = {
   outputLengths: { brief: "短め", balanced: "標準", detailed: "詳しく" },
   outputLengthHint:
     "約1〜3文、1段落、または2〜3段落が目安です。厳密な上限ではありません。",
+  followInstructionLanguage: "指示の言語に従う",
+  additionalInstructionsRequired: "追加の指示（必須）",
+  instructionLanguageHint: "出力に使いたい言語で追加の指示を入力してください。",
   followInterfaceLanguage: "表示言語に合わせる",
   swapLanguages: "言語を入れ替え",
   translationHint:
@@ -337,6 +340,9 @@ const full = {
     outputLengths: base.outputLengths,
     outputLengthHint: base.outputLengthHint,
     followInterfaceLanguage: base.followInterfaceLanguage,
+    followInstructionLanguage: base.followInstructionLanguage,
+    additionalInstructionsRequired: base.additionalInstructionsRequired,
+    instructionLanguageHint: base.instructionLanguageHint,
     languages: base.languages,
     openTools: "Aside ツールを開く",
     collapseTools: "ツールを閉じる",

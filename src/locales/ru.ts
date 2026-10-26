@@ -209,6 +209,10 @@ const base = {
   },
   outputLengthHint:
     "Примерно 1–3 предложения, один абзац или 2–3 абзаца. Это ориентир, а не строгое ограничение.",
+  followInstructionLanguage: "Язык указаний",
+  additionalInstructionsRequired: "Дополнительные требования (обязательно)",
+  instructionLanguageHint:
+    "Напишите дополнительные требования на желаемом языке ответа.",
   followInterfaceLanguage: "Как в интерфейсе",
   swapLanguages: "Поменять языки местами",
   translationHint:
@@ -354,6 +358,9 @@ const full = {
     outputLengths: base.outputLengths,
     outputLengthHint: base.outputLengthHint,
     followInterfaceLanguage: base.followInterfaceLanguage,
+    followInstructionLanguage: base.followInstructionLanguage,
+    additionalInstructionsRequired: base.additionalInstructionsRequired,
+    instructionLanguageHint: base.instructionLanguageHint,
     languages: base.languages,
     openTools: "Открыть инструменты Aside",
     collapseTools: "Свернуть инструменты",

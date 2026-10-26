@@ -1,0 +1,92 @@
+[
+  {
+    "code": "en",
+    "name": "English",
+    "short": "EN",
+    "path": ""
+  },
+  {
+    "code": "zh-CN",
+    "name": "简体中文",
+    "short": "简",
+    "path": "zh"
+  },
+  {
+    "code": "zh-TW",
+    "name": "繁體中文",
+    "short": "繁",
+    "path": "zh-tw"
+  },
+  {
+    "code": "ja",
+    "name": "日本語",
+    "short": "JA",
+    "path": "ja"
+  },
+  {
+    "code": "ko",
+    "name": "한국어",
+    "short": "KO",
+    "path": "ko"
+  },
+  {
+    "code": "fr",
+    "name": "Français",
+    "short": "FR",
+    "path": "fr"
+  },
+  {
+    "code": "de",
+    "name": "Deutsch",
+    "short": "DE",
+    "path": "de"
+  },
+  {
+    "code": "es",
+    "name": "Español",
+    "short": "ES",
+    "path": "es"
+  },
+  {
+    "code": "pt-BR",
+    "name": "Português (Brasil)",
+    "short": "PT",
+    "path": "pt-br"
+  },
+  {
+    "code": "ru",
+    "name": "Русский",
+    "short": "RU",
+    "path": "ru"
+  },
+  {
+    "code": "id",
+    "name": "Bahasa Indonesia",
+    "short": "ID",
+    "path": "id"
+  },
+  {
+    "code": "it",
+    "name": "Italiano",
+    "short": "IT",
+    "path": "it"
+  },
+  {
+    "code": "tr",
+    "name": "Türkçe",
+    "short": "TR",
+    "path": "tr"
+  },
+  {
+    "code": "th",
+    "name": "ไทย",
+    "short": "TH",
+    "path": "th"
+  },
+  {
+    "code": "vi",
+    "name": "Tiếng Việt",
+    "short": "VI",
+    "path": "vi"
+  }
+]

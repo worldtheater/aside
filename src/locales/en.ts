@@ -200,6 +200,10 @@ const base = {
   outputLengths: { brief: "Brief", balanced: "Balanced", detailed: "Detailed" },
   outputLengthHint:
     "About 1–3 sentences, one paragraph, or 2–3 paragraphs; a guide rather than a strict limit.",
+  followInstructionLanguage: "Follow instructions",
+  additionalInstructionsRequired: "Additional requirements (required)",
+  instructionLanguageHint:
+    "Write additional requirements in your desired output language.",
   followInterfaceLanguage: "Follow interface language",
   swapLanguages: "Swap languages",
   translationHint:
@@ -325,6 +329,9 @@ const full = {
     outputLengths: base.outputLengths,
     outputLengthHint: base.outputLengthHint,
     followInterfaceLanguage: base.followInterfaceLanguage,
+    followInstructionLanguage: base.followInstructionLanguage,
+    additionalInstructionsRequired: base.additionalInstructionsRequired,
+    instructionLanguageHint: base.instructionLanguageHint,
     languages: base.languages,
     openTools: "Open Aside tools",
     collapseTools: "Collapse tools",

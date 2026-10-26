@@ -565,7 +565,7 @@ async function initializePagework() {
     )
       .map(
         (field) =>
-          `<label><span>${escape(S[field])}</span><select data-language="${field}" aria-label="${escape(S[field])}" ${run ? "disabled" : ""}>${field === "targetLanguage" ? `<option value="interface" ${selected[field] === "interface" ? "selected" : ""}>${escape(S.followInterfaceLanguage)}</option>` : ""}${Object.entries(
+          `<label><span>${escape(S[field])}</span><select data-language="${field}" aria-label="${escape(S[field])}" ${run ? "disabled" : ""}>${field === "targetLanguage" ? `<option value="interface" ${selected[field] === "interface" ? "selected" : ""}>${escape(S.followInterfaceLanguage)}</option><option value="instruction" ${selected[field] === "instruction" ? "selected" : ""} ${selected.instruction.trim() ? "" : "disabled"}>${escape(S.followInstructionLanguage)}</option>` : ""}${Object.entries(
             S.languages,
           )
             .filter(([value]) => field === "sourceLanguage" || value !== "auto")

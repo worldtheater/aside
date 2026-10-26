@@ -472,8 +472,119 @@ module.exports = async ({
       (await snapshot()).actions.find((a) => a.id === "summary").outputLanguage,
       "ru",
     );
+    // Follow-instructions mode is required in both editors and at service boundaries.
+    await bar
+      .locator("[data-selection-field=outputLanguage]")
+      .selectOption("instruction");
+    await bar.locator("[data-selection-field=instruction]").fill(" ");
+    await command("save").click();
+    assert(await bar.locator(".selection-error").isVisible());
+    assert(
+      (
+        await bar
+          .locator("[data-selection-field=instruction]")
+          .getAttribute("aria-label")
+      ).includes("必填"),
+    );
+    const requirements = "अर्थ स्पष्ट और संक्षिप्त रखें।";
+    await bar.locator("[data-selection-field=instruction]").fill(requirements);
+    await command("save").click();
+    await bar.locator(".selection-settings").waitFor({ state: "detached" });
+    await run("summary");
+    assert(wire().includes(requirements));
+    assert(
+      wire().includes(
+        "in the language in which the additional requirements are written",
+      ),
+    );
+    await page.reload();
+    for (const id of ["translate", "plain"]) {
+      await nav("actions");
+      await page.locator(`[data-op=edit-action][data-id=${id}]`).click();
+      const selector = `[data-language=${id === "translate" ? "targetLanguage" : "outputLanguage"}]`;
+      await choose(selector, "instruction");
+      await page.locator("#instruction").fill(" ");
+      await op("save").click();
+      assert(await page.locator("#editor-error").isVisible());
+      if (id === "translate") assert(await op("swap-languages").isDisabled());
+      await page.locator("#instruction").fill(requirements);
+      await op("save").click();
+      await page.locator("#action-rows").waitFor();
+      await run(id);
+      assert(wire().includes(requirements));
+      assert(
+        wire().includes(
+          "in the language in which the additional requirements are written",
+        ),
+      );
+    }
+    const boundaryResults = await page.evaluate(async () => {
+      const { value } = await chrome.runtime.sendMessage({ type: "snapshot" });
+      const results = [];
+      for (const action of value.actions.filter(
+        (action) => action.kind !== "custom",
+      )) {
+        const empty = {
+          ...action,
+          instruction: " ",
+          [action.kind === "translate" ? "targetLanguage" : "outputLanguage"]:
+            "instruction",
+        };
+        const edit = await chrome.runtime.sendMessage({
+          type: "actions.save",
+          changes: [empty],
+        });
+        const save = await chrome.runtime.sendMessage({
+          type: "settings.save",
+          patch: {
+            actions: value.actions.map((a) => (a.id === empty.id ? empty : a)),
+          },
+        });
+        let processError;
+        try {
+          await (
+            await import("./client.js")
+          ).processRequest({
+            action: empty,
+            blocks: [{ id: "one", text: "Empty requirements" }],
+            source: "trial",
+          }).promise;
+        } catch (error) {
+          processError = error.code;
+        }
+        results.push({ edit, save, processError });
+      }
+      return results;
+    });
+    for (const result of boundaryResults) {
+      assert.equal(result.edit.error, "invalidAction");
+      assert.equal(result.save.error, "invalidAction");
+      assert.equal(result.processError, "invalidInput");
+    }
+    const beforeInvalidDaily = calls.length;
+    const dailyError = await page.evaluate(async () => {
+      try {
+        await (
+          await import("./client.js")
+        ).processRequest({
+          daily: {
+            prompt: "A brief reflection.",
+            outputLanguage: "instruction",
+            useCollection: false,
+          },
+        }).promise;
+      } catch (error) {
+        return error.code;
+      }
+    });
+    assert.equal(dailyError, "invalidAction");
+    assert.equal(
+      calls.length,
+      beforeInvalidDaily,
+      "Unsupported daily language never reaches the provider",
+    );
     console.log(
-      "PASS: empty built-in instructions save and run in both editors; empty custom actions are rejected; output language UI/save/reload, live interface defaults, fixed-language cache reuse, daily preview invalidation, actual provider instructions and native selection settings.",
+      "PASS: instruction-language mode and required-input validation across both editors, save boundaries and model requests; empty built-in instructions save and run in both editors; empty custom actions are rejected; output language UI/save/reload, live interface defaults, fixed-language cache reuse, daily preview invalidation, actual provider instructions and native selection settings.",
     );
   } finally {
     if (source) await source.close();

@@ -209,6 +209,10 @@ const base = {
   },
   outputLengthHint:
     "Etwa 1–3 Sätze, ein Absatz oder 2–3 Absätze; als Orientierung, nicht als feste Grenze.",
+  followInstructionLanguage: "Sprache der Anweisungen verwenden",
+  additionalInstructionsRequired: "Zusätzliche Anforderungen (erforderlich)",
+  instructionLanguageHint:
+    "Schreiben Sie die zusätzlichen Anforderungen in der gewünschten Ausgabesprache.",
   followInterfaceLanguage: "Oberflächensprache übernehmen",
   swapLanguages: "Sprachen tauschen",
   translationHint:
@@ -354,6 +358,9 @@ const full = {
     outputLengths: base.outputLengths,
     outputLengthHint: base.outputLengthHint,
     followInterfaceLanguage: base.followInterfaceLanguage,
+    followInstructionLanguage: base.followInstructionLanguage,
+    additionalInstructionsRequired: base.additionalInstructionsRequired,
+    instructionLanguageHint: base.instructionLanguageHint,
     languages: base.languages,
     openTools: "Aside-Werkzeuge öffnen",
     collapseTools: "Werkzeuge einklappen",

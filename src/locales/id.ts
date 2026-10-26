@@ -208,6 +208,10 @@ const base = {
   },
   outputLengthHint:
     "Sekitar 1–3 kalimat, satu paragraf, atau 2–3 paragraf; panduan, bukan batas ketat.",
+  followInstructionLanguage: "Ikuti bahasa petunjuk",
+  additionalInstructionsRequired: "Persyaratan tambahan (wajib)",
+  instructionLanguageHint:
+    "Tulis persyaratan tambahan dalam bahasa keluaran yang diinginkan.",
   followInterfaceLanguage: "Ikuti bahasa antarmuka",
   swapLanguages: "Tukar bahasa",
   translationHint:
@@ -353,6 +357,9 @@ const full = {
     outputLengths: base.outputLengths,
     outputLengthHint: base.outputLengthHint,
     followInterfaceLanguage: base.followInterfaceLanguage,
+    followInstructionLanguage: base.followInstructionLanguage,
+    additionalInstructionsRequired: base.additionalInstructionsRequired,
+    instructionLanguageHint: base.instructionLanguageHint,
     languages: base.languages,
     openTools: "Buka alat Aside",
     collapseTools: "Ciutkan alat",
