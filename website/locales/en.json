@@ -1,4 +1,6 @@
 {
+  "seoTitle": "Aside — Free AI Web Translator & Reading Assistant",
+  "seoDescription": "Free, open-source Chrome extension for AI bilingual page translation, explanations, Q&A and saved passages. Connect your own cloud or local models.",
   "productType": "AI reading assistant · Open-source Chrome extension",
   "lead": "Use AI to translate pages, explain difficult passages, pull out key points, and answer questions about what you’re reading. Translations stay beside the original, so you can keep reading without switching to a separate chat window.",
   "installNote": "For Chrome 120+. No sign-up, free to use. Connect to your choice of cloud or local models (model services may charge fees).",

@@ -178,6 +178,10 @@ node tests/browser.cjs --lights-recovery-only
 
 GitHub Pages 从 `main` 分支的 `docs/` 提供静态页面。首页使用 `website/template.html` 共用模板，文案在 `website/locales/`，语言名称与路由在 `website/languages.json`。运行 `npm run build:site` 生成十五种语言的静态页面；`npm run check:site` 检查文案完整性和生成结果是否最新。不要直接修改生成的首页 HTML。页面共享 `docs/home.css` 和 `docs/home.js`，图片位于 `docs/assets/`。英文首页仍位于根目录，简体中文仍位于 `zh/`；隐私政策仍位于 `privacy.html`，其他语言的链接会标明其为英文。
 
+搜索标题和摘要分别使用各语言文案的 `seoTitle`、`seoDescription`，与可见主标题分开维护。模板保留 Google Search Console 的 `google-site-verification` 验证标记，验证成功后也不要删除。构建同时生成产品 `SoftwareApplication` JSON-LD 和 `docs/sitemap.xml`；结构化数据中的版本与最低 Chrome 版本来自项目配置，网站地图包含全部语言首页与隐私政策，不填写虚构的更新时间、评分或评论。
+
+部署后，在 Search Console 使用 URL 前缀 `https://worldtheater.github.io/aside/` 验证所有权，再提交 <https://worldtheater.github.io/aside/sitemap.xml>。`robots.txt` 只在域名根目录生效；本仓库的 `/aside/` 是项目子路径，无需在此放置无效的 robots 文件。网站验证和结构化数据不保证收录、排名或 AI 引用。
+
 首页下载入口指向 GitHub Release 的 `aside-<version>.zip`，版本号取自 `package.json`。更新版本后重新生成首页；推送匹配的版本标签后，自动发布工作流会生成并上传对应安装包到草稿，验收并公开发布后下载链接才生效，见[自动发布](#自动发布)。
 
 使用 `node scripts/store-assets.mjs --website` 重新生成首页截图。它复用商店素材的隔离浏览器与本地模拟服务，以 2 倍像素密度直接截取真实插件界面，并为首屏提供移动端版本，为首屏、选文问答和收藏提供亮暗色版本。无参数运行仍只生成商店素材。首页图片按自然比例显示，不再依赖 CSS 放大与负偏移裁切。

@@ -10,6 +10,8 @@ const readJson = async (name) =>
 const languages = await readJson("website/languages.json");
 const reference = await readJson("website/locales/en.json");
 const { version } = await readJson("package.json");
+const { minimum_chrome_version: minimumChromeVersion } =
+  await readJson("manifest.json");
 const template = await readFile(
   path.join(root, "website/template.html"),
   "utf8",
@@ -17,6 +19,19 @@ const template = await readFile(
 const site = "https://worldtheater.github.io/aside/";
 const repo = "https://github.com/worldtheater/aside";
 const check = process.argv.includes("--check");
+const url = (locale) => site + (locale.path ? locale.path + "/" : "");
+const downloadUrl = `${repo}/releases/download/v${version}/aside-${version}.zip`;
+
+async function writeOrCheck(file, output) {
+  if (check) {
+    if ((await readFile(file, "utf8")) !== output)
+      throw Error(`${file} is out of date. Run npm run build:site.`);
+  } else {
+    await mkdir(path.dirname(file), { recursive: true });
+    await writeFile(file, output);
+  }
+}
+
 const assetVersions = Object.fromEntries(
   await Promise.all(
     ["home.css", "home.js"].map(async (file) => [
@@ -66,7 +81,6 @@ for (const language of languages) {
   if (missing.length || extra.length)
     throw Error(`${language.code}: missing [${missing}], extra [${extra}]`);
   const prefix = language.path ? "../" : "./";
-  const url = (locale) => site + (locale.path ? locale.path + "/" : "");
   const fragments = {
     version: escape(version),
     darkReader:
@@ -96,7 +110,30 @@ for (const language of languages) {
     brandName: language.code.startsWith("zh") ? "旁白" : "Aside",
     brandSecondary: language.code.startsWith("zh") ? "Aside" : "旁白",
     releaseUrl: `${repo}/releases/tag/v${version}`,
-    downloadUrl: `${repo}/releases/download/v${version}/aside-${version}.zip`,
+    downloadUrl,
+    structuredData: `<script type="application/ld+json">${JSON.stringify(
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "@id": `${site}#application`,
+        name: "Aside",
+        alternateName: "旁白",
+        description: copy.seoDescription,
+        url: url(language),
+        applicationCategory: "BrowserApplication",
+        operatingSystem: ["Windows", "macOS", "Linux", "ChromeOS"],
+        softwareRequirements: `Google Chrome ${minimumChromeVersion}+`,
+        softwareVersion: version,
+        inLanguage: languages.map(({ code }) => code),
+        isAccessibleForFree: true,
+        license: `${repo}/blob/main/LICENSE`,
+        downloadUrl,
+        installUrl: `${url(language)}#install`,
+        image: `${site}assets/social-preview.png`,
+      },
+      null,
+      2,
+    ).replaceAll("<", "\\u003c")}</script>`,
     alternates:
       languages
         .map(
@@ -113,16 +150,18 @@ for (const language of languages) {
     throw Error(`Unknown template field: ${key}`);
   });
   const output = await format(html, { parser: "html", printWidth: 80 });
-  const directory = path.join(root, "docs", language.path);
-  const file = path.join(directory, "index.html");
-  if (check) {
-    if ((await readFile(file, "utf8")) !== output)
-      throw Error(`${file} is out of date. Run npm run build:site.`);
-  } else {
-    await mkdir(directory, { recursive: true });
-    await writeFile(file, output);
-  }
+  await writeOrCheck(
+    path.join(root, "docs", language.path, "index.html"),
+    output,
+  );
 }
+const sitemapUrls = [...languages.map(url), `${site}privacy.html`];
+const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapUrls.map((pageUrl) => `  <url><loc>${escape(pageUrl)}</loc></url>`).join("\n")}
+</urlset>
+`;
+await writeOrCheck(path.join(root, "docs", "sitemap.xml"), sitemap);
 console.log(
-  `${check ? "Checked" : "Built"} ${languages.length} localized product pages.`,
+  `${check ? "Checked" : "Built"} ${languages.length} localized product pages and sitemap.`,
 );
