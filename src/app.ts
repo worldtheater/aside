@@ -6,6 +6,7 @@ import {
 } from "./usage-page.js";
 import { icon, button, iconButton, heading, selected } from "./ui.js";
 import { LOCALES } from "./locale.js";
+import siteLanguages from "../website/languages.json";
 import { HoverTips } from "./hover-tips.js";
 import { showColorPicker } from "./color-picker.js";
 import { escapeHtml as e } from "./html.js";
@@ -81,6 +82,8 @@ import {
   DECISION_MODELS_ENABLED,
 } from "./providers.js";
 import { summarizeUsage } from "./usage.js";
+
+const PRODUCT_SITE_URL = "https://worldtheater.github.io/aside/";
 
 const [data, initialCommands] = await Promise.all([
   request("snapshot"),
@@ -428,10 +431,13 @@ function renderPreferences() {
   </div>`;
 }
 function renderSidebar() {
+  const sitePath = siteLanguages.find((item) => item.code === locale)!.path;
+  const homepage = new URL(sitePath ? `${sitePath}/` : "", PRODUCT_SITE_URL)
+    .href;
   const route = state.route === "editor" ? "actions" : state.route;
   const link = (name: keyof typeof C.nav, glyph: string) =>
     `<button class="sidebar-link" data-route="${name}" ${name === "home" ? 'data-op="home"' : ""} ${route === name ? 'aria-current="page"' : ""}>${icon(glyph)}<span>${C.nav[name]}</span></button>`;
-  return `<aside class="sidebar" id="sidebar" aria-label="${C.pageMenu}"><div class="sidebar-brand"><img src="icons/icon-32.png" alt="" width="28" height="28"><strong>${C.brand}</strong>${iconButton(C.closeNavigation, "navigation-close", "close", "", false)}</div>
+  return `<aside class="sidebar" id="sidebar" aria-label="${C.pageMenu}"><div class="sidebar-brand"><a class="sidebar-brand-link" href="${e(homepage)}" target="_blank" rel="noopener noreferrer"><img src="icons/icon-32.png" alt="" width="28" height="28"><strong>${C.brand}</strong></a>${iconButton(C.closeNavigation, "navigation-close", "close", "", false)}</div>
     <nav><div class="sidebar-group"><h2>${C.contentGroup}</h2>${link("home", "bookmark")}</div><div class="sidebar-group"><h2>${C.settings}</h2>${link("actions", "spark")}${link("appearance", "palette")}${link("connections", "plug")}${link("shortcuts", "keyboard")}${link("usage", "list")}</div></nav><div class="sidebar-footer">${link("help", "question")}</div></aside>
     <button class="sidebar-backdrop" data-op="navigation-close" aria-label="${C.closeNavigation}" tabindex="-1"></button>`;
 }
@@ -826,7 +832,7 @@ function renderHelp() {
     <div class="help-layout">
       <section class="help-current-version" aria-labelledby="help-version-title"><h2 id="help-version-title">${e(H.version)}</h2><span class="help-version">${e(manifest.version)}</span></section>
       <section class="help-resources" aria-labelledby="help-links-title"><h2 id="help-links-title">${e(H.resources)}</h2><div class="help-links">
-        ${externalLink(H.project, repository, "github")}${externalLink(H.feedback, repository + "/issues", "explain")}${externalLink(H.privacy, "https://worldtheater.github.io/aside/privacy.html", "lock")}
+        ${externalLink(H.project, repository, "github")}${externalLink(H.feedback, repository + "/issues", "explain")}${externalLink(H.privacy, PRODUCT_SITE_URL + "privacy.html", "lock")}
       </div></section>
       <section class="help-credits" aria-labelledby="help-credits-title"><h2 id="help-credits-title">${e(H.openSource)}</h2><p>${e(H.licenseIntro).replace("{license}", licenseLink)}</p>
         <ul>${libraries.map((library) => `<li><a href="${e(library.url)}" target="_blank" rel="noopener noreferrer"><strong>${e(library.name)}</strong><span>${e(library.role)}</span></a><small>${e(library.license)}</small></li>`).join("")}</ul>

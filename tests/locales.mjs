@@ -10,6 +10,15 @@ import {
 import { getPresets } from "../data.js";
 import { DAILY_PROMPT, resolveOutputLanguage } from "../prompts.js";
 
+const siteLanguages = JSON.parse(
+  await readFile(new URL("../website/languages.json", import.meta.url), "utf8"),
+);
+assert.deepEqual(
+  siteLanguages.map(({ code }) => code).sort(),
+  Object.keys(LOCALES).sort(),
+  "Every interface locale has a product homepage route",
+);
+
 for (const [browser, expected] of [
   ["en-US", "en"],
   ["en-GB", "en"],

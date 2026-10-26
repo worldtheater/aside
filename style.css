@@ -120,6 +120,7 @@ button,
 input,
 textarea,
 select,
+.sidebar-brand-link,
 .mode-option,
 .connection-item {
   transition:
@@ -1893,9 +1894,22 @@ hr {
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 0 12px;
+  padding: 0;
   margin-bottom: 40px;
   height: 32px;
+}
+.sidebar-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  margin: -6px 0;
+  padding: 6px 12px;
+  border-radius: calc(8px * var(--corner-radius-scale, 1));
+  color: var(--ink);
+  text-decoration: none;
+}
+.sidebar-brand-link:is(:hover, :focus-visible) {
+  background: var(--hover);
 }
 .sidebar-brand img {
   border-radius: calc(8px * var(--corner-radius-scale, 1));
@@ -2745,9 +2759,6 @@ hr {
   .navigation-open .sidebar {
     transform: translateX(0);
     visibility: visible;
-  }
-  .sidebar-brand {
-    padding-right: 0;
   }
   .sidebar-brand .btn {
     display: flex;

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_appName__",
   "description": "__MSG_description__",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "homepage_url": "https://github.com/worldtheater/aside",
   "minimum_chrome_version": "120",
   "default_locale": "en",
@@ -13,6 +13,7 @@
     "contextMenus",
     "favicon"
   ],
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA5FM6M8qdUehNJFrd1d/XKBr/sAQZ/bqjNKJJ0NoegeS2WwbEZMvWml6Mg8GvLtQ6znIHl2mxIF2L9oJj7URZLda4Z7Pal38bdVleTpwyoJuzi+QoyGJlJd+XuZmqwjQD0mdZeN0Pi5/EbF/x2B2juJErWTrzHNnIqRobcUNoGrEjtarXOK4+Zjsz9MDEfPG9u1ATbYfBvvEuHhkfUg5kRSTW4NiPHoi2VjrGG6cHiyFYUTuVkpL3Kcan4cL9A11wjeL8gtI6cTSDjZpW5gB4rVTJ5GmJcn1SAK8D5VbUZegSm+Fxh863+xtqERoGNT3cezJ/h/klMnj8rU1t2oX2gQIDAQAB",
   "optional_host_permissions": ["https://*/*", "http://*/*"],
   "content_scripts": [
     {

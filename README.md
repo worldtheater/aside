@@ -20,7 +20,7 @@ A Chrome extension for translating, understanding, and collecting what you read 
 
 Requires **Chrome 120+**. The packaged extension does not require Node.js.
 
-1. [Download Aside 0.1.0](https://github.com/worldtheater/aside/releases/download/v0.1.0/aside-0.1.0.zip) from GitHub Releases. Use the extension ZIP, not the automatically generated “Source code” archive.
+1. [Download Aside 0.1.1](https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip) from GitHub Releases. Use the extension ZIP, not the automatically generated “Source code” archive.
 2. Extract the ZIP to a permanent folder.
 3. Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the extracted folder containing `manifest.json`.
 4. Open Aside’s **Settings**, add your service URL, API key, and protocol in **Model connections**, test the connection, choose a model, and save.
@@ -89,14 +89,14 @@ Read the [Privacy Policy](https://worldtheater.github.io/aside/privacy.html) for
 - Page access supports text selection, result insertion, and dark mode. Model connections request access to the configured service address.
 - Aside has no telemetry or hosted relay. Uninstalling the extension deletes its local data.
 
-If migrating from another directory, read [Loading paths and local data (Chinese)](docs/DEVELOPMENT.md#加载路径与本地数据). Changing an unpacked extension's path may change its extension ID; existing settings and collections do not migrate automatically.
+The public `key` in `manifest.json` keeps the extension ID consistent across source builds and release packages. Keep it unchanged and reload the existing extension to update it; do not uninstall it, as that deletes local data. Builds installed before this key was added may have a different ID, and their data does not migrate automatically. See [Loading paths and local data (Chinese)](docs/DEVELOPMENT.md#加载路径与本地数据).
 
 ## Development and packaging
 
 ```sh
 npm test               # Type checking, build, and core tests
 npm run test:browser   # Browser regression tests using local Chrome
-npm run package        # Create artifacts/aside-0.1.0.zip; requires Python 3
+npm run package        # Create artifacts/aside-0.1.1.zip; requires Python 3
 ```
 
 Browser tests use isolated profiles and local mock model services. They do not read your personal Chrome profile or call paid models. Install Google Chrome locally, or set `CHROME_PATH` to a custom executable path.
@@ -104,6 +104,20 @@ Browser tests use isolated profiles and local mock model services. They do not r
 See the [development guide (Chinese)](docs/DEVELOPMENT.md) for the source layout, focused tests, protocol maintenance, and migration notes.
 
 Chrome Web Store listing copy, artwork, permissions declarations, and reviewer instructions are maintained in [web-store/](web-store/README.md).
+
+### Automated releases
+
+Ordinary commits and branch pushes do not create extension packages. Push a version tag such as `v0.1.1` on the commit you want to release to run the [release workflow](.github/workflows/release.yml). It checks version consistency, formatting, generated product pages, and core tests, then builds the ZIP and uploads it to a **draft** GitHub Release with generated release notes. It does not publish the release automatically.
+
+Before tagging, update the versions in `manifest.json`, `package.json`, and `package-lock.json`, regenerate the product pages with `npm run build:site`, and update the installation download link above. Commit these changes first. The tag must match the version in all three files.
+
+```sh
+git tag -a v0.1.1 -m "Aside 0.1.1"
+git push origin main
+git push origin v0.1.1
+```
+
+The workflow uses GitHub's built-in token; no personal access token or model API key is needed. After the workflow succeeds, sign in to GitHub, download the ZIP from the draft, and verify it before clicking **Publish release**. Draft assets are not publicly downloadable; the website download link becomes available after publication. This workflow only prepares GitHub Releases. Chrome Web Store submission remains manual, and GitHub Pages continues to deploy from `main` / `docs`. See the [release guide (Chinese)](docs/DEVELOPMENT.md#自动发布) for targeting an earlier commit.
 
 ## License
 

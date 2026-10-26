@@ -36,6 +36,39 @@ CHROME_PATH="/path/to/chrome" npm run test:browser
 
 品牌资源：`icons/icon.svg` 是标准母版，`icons/icon-small.svg` 用于 16/32px 光学校正版；`icons/brand-mark.svg` 是界面共用标记。修改母版后运行 `npm run build:icons` 并检查生成图标。
 
+### 自动发布
+
+`.github/workflows/release.yml` 只响应推送到 GitHub 的 `v*` 标签，普通提交、分支推送和 Pull Request 不打包。只有要发布的提交才打版本标签，其他提交无需添加跳过标记。
+
+工作流检出标签对应的提交，要求标签格式为 `vX.Y.Z`，且与 `manifest.json`、`package.json`、`package-lock.json` 顶层及根包版本一致。格式检查、产品页生成检查和 `npm test` 全部通过后，使用 `build.py` 生成 ZIP，再创建草稿 GitHub Release 并上传附件，不会自动公开发布。发布使用内置 `GITHUB_TOKEN`，不需要配置个人令牌或模型密钥。浏览器回归仍根据改动范围在本地运行。
+
+首次使用前，先提交并推送工作流文件。之后以发布 `0.1.1` 为例：
+
+1. 同步三个版本文件中的版本号，保留 manifest 中的固定公钥。
+2. 运行 `npm run build:site` 更新产品页版本和下载链接，并更新 README 中的安装包链接。
+3. 提交发布相关改动，再创建并推送标签：
+
+```sh
+git tag -a v0.1.1 -m "Aside 0.1.1"
+git push origin main
+git push origin v0.1.1
+```
+
+需要发布特定历史提交时，在创建标签时指定它（将 `COMMIT_SHA` 替换为目标提交）：
+
+```sh
+git tag -a v0.1.1 COMMIT_SHA -m "Aside 0.1.1"
+git push origin v0.1.1
+```
+
+该提交必须已经包含工作流，且版本校验通过；打包取标签指向的代码，不取当时最新的 `main`。可先运行 `node scripts/check-release.mjs v0.1.1` 检查当前目录的版本。到 GitHub 的 Actions 页面查看进度，完成后登录仓库管理账号，从 Releases 草稿下载 `aside-0.1.1.zip`。用该包验证安装和覆盖升级，确认配置、收藏、调用记录与核心功能正常后，再点击 **Publish release** 公开发布。
+
+草稿附件仅仓库有权限的成员可下载；网站中的新版下载链接要等草稿公开发布后才能访问。
+
+已发布标签不重复使用或强制移动；后续更新使用新版本。工作流不会覆盖同名 Release。仅在本地试包仍可运行 `npm run package`，无需打标签。
+
+这条流水线不上传 Chrome Web Store。GitHub Pages 仍按 `main` 分支的 `/docs` 发布：推送普通网页改动可能更新网站，但不会触发扩展打包。
+
 ## 源码结构
 
 | 文件 | 职责 |
@@ -116,7 +149,9 @@ node tests/browser.cjs --lights-recovery-only
 
 独立仓库以迁移时完整版本作为首次提交，不带入旧项目历史。原目录保留用于核对和切换，运行或开发新仓库不依赖它。
 
-当前 manifest 不固定扩展 `key`。未打包扩展更换加载路径可能改变扩展 ID，Chrome 会将新 ID 视为另一个扩展，旧的配置、密钥、收藏及缓存不会自动出现在新实例中。项目目前没有数据导入/导出功能。
+当前 `manifest.json` 已包含固定公钥 `key`，源码构建与 Release 包使用相同的扩展 ID。后续更新保留公钥，通过重新加载现有扩展更新文件，不要先卸载。公钥可以公开，私钥不得放进仓库或安装包。
+
+添加固定公钥之前安装的版本可能使用另一个扩展 ID。Chrome 将不同 ID 视为不同扩展，旧的配置、密钥、收藏及缓存不会自动出现在新实例中。项目目前没有数据导入/导出功能。
 
 切换前保留旧扩展及其目录，记下连接和自定义处理方式，妥善保存需要的收藏。加载新目录后重新配置，并在 `chrome://extensions/shortcuts` 检查快捷键；确认新实例正常后再处理旧实例。验证新实例时先禁用旧实例，避免两个扩展同时向网页注入界面。不要通过卸载旧扩展来尝试迁移数据，卸载会删除其本地数据。
 
@@ -134,7 +169,7 @@ node tests/browser.cjs --lights-recovery-only
 
 GitHub Pages 从 `main` 分支的 `docs/` 提供静态页面。首页使用 `website/template.html` 共用模板，文案在 `website/locales/`，语言名称与路由在 `website/languages.json`。运行 `npm run build:site` 生成十五种语言的静态页面；`npm run check:site` 检查文案完整性和生成结果是否最新。不要直接修改生成的首页 HTML。页面共享 `docs/home.css` 和 `docs/home.js`，图片位于 `docs/assets/`。英文首页仍位于根目录，简体中文仍位于 `zh/`；隐私政策仍位于 `privacy.html`，其他语言的链接会标明其为英文。
 
-首页下载入口指向 GitHub Release 的 `aside-<version>.zip`，版本号取自 `package.json`。更新版本后重新生成首页。发布前运行 `npm run package`，将 `artifacts/aside-<version>.zip` 上传为对应版本的 Release 附件。
+首页下载入口指向 GitHub Release 的 `aside-<version>.zip`，版本号取自 `package.json`。更新版本后重新生成首页；推送匹配的版本标签后，自动发布工作流会生成并上传对应安装包到草稿，验收并公开发布后下载链接才生效，见[自动发布](#自动发布)。
 
 使用 `node scripts/store-assets.mjs --website` 重新生成首页截图。它复用商店素材的隔离浏览器与本地模拟服务，以 2 倍像素密度直接截取真实插件界面，并为首屏提供移动端版本，为首屏、选文问答和收藏提供亮暗色版本。无参数运行仍只生成商店素材。首页图片按自然比例显示，不再依赖 CSS 放大与负偏移裁切。
 

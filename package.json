@@ -1,17 +1,17 @@
 {
   "name": "aside",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "node scripts/build.mjs",
     "build:icons": "node scripts/build-icons.mjs",
-    "test": "npm run build && node tests/core.mjs && node tests/locales.mjs && node tests/action-policy.mjs && node tests/models.mjs && node tests/decision.mjs && node tests/reasoning.mjs && node tests/provider-icons.mjs && node tests/cache.mjs && node tests/output-language.mjs && node tests/usage-chart.mjs && node tests/website.mjs && node tests/context-menu.mjs && node tests/recent-tabs.mjs && node tests/store-presets.mjs",
+    "test": "npm run build && node tests/core.mjs && node tests/locales.mjs && node tests/action-policy.mjs && node tests/models.mjs && node tests/decision.mjs && node tests/reasoning.mjs && node tests/provider-icons.mjs && node tests/cache.mjs && node tests/output-language.mjs && node tests/usage-chart.mjs && node tests/website.mjs && node tests/context-menu.mjs && node tests/recent-tabs.mjs && node tests/store-presets.mjs && node tests/release.mjs",
     "test:browser": "npm run build && node tests/browser.cjs && node tests/content-recovery-browser.cjs && node tests/recent-tabs-browser.cjs",
     "package": "npm run build && python3 build.py",
-    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.{mjs,cjs}\" \"scripts/**/*.mjs\" \"*.css\" \"*.html\" \"*.json\" \"docs/**/*.{html,css,js}\" \"website/**/*.{html,json}\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.{mjs,cjs}\" \"scripts/**/*.mjs\" \"*.css\" \"*.html\" \"*.json\" \"docs/**/*.{html,css,js}\" \"website/**/*.{html,json}\"",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.{mjs,cjs}\" \"scripts/**/*.mjs\" \"*.css\" \"*.html\" \"*.json\" \"docs/**/*.{html,css,js}\" \"website/**/*.{html,json}\" \".github/**/*.yml\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.{mjs,cjs}\" \"scripts/**/*.mjs\" \"*.css\" \"*.html\" \"*.json\" \"docs/**/*.{html,css,js}\" \"website/**/*.{html,json}\" \".github/**/*.yml\"",
     "build:site": "node scripts/build-site.mjs",
     "check:site": "node scripts/build-site.mjs --check"
   },
