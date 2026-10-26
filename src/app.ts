@@ -168,6 +168,7 @@ const state: AppState = {
 };
 let toastTimer: number | undefined,
   dialogTimer: number | undefined,
+  dialogReturnFocusVisible = false,
   pendingNavigation: (() => void) | undefined,
   pendingDelete: string | undefined;
 let connectionDraft: ConnectionDraft = structuredClone(
@@ -347,6 +348,8 @@ function showDialog(content: string, { wide = false, showClose = true } = {}) {
   closeMenu();
   clearTimeout(dialogTimer);
   if (dialog.open) dialog.close();
+  dialogReturnFocusVisible =
+    document.activeElement?.matches(":focus-visible") ?? false;
   dialog.className = `dialog${wide ? " wide" : ""}`;
   dialog.innerHTML = `${showClose ? iconButton(C.cancel, "dialog-close", "close", "", false) : ""}${content}`;
   if (showClose)
@@ -373,6 +376,13 @@ function closeDialog(callback?: () => void) {
     : 180;
   dialogTimer = setTimeout(() => {
     dialog.close();
+    // Escape can promote pointer-origin focus to a keyboard highlight on return.
+    if (
+      !dialogReturnFocusVisible &&
+      document.activeElement instanceof HTMLElement &&
+      document.activeElement.matches(":focus-visible")
+    )
+      document.activeElement.blur();
     callback?.();
   }, duration);
 }

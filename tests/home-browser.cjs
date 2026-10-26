@@ -577,6 +577,25 @@ module.exports = async ({ page, context, artifacts, nav, op, choose }) => {
       "0",
       "Pointer-restored focus does not reveal the options button",
     );
+    await firstOpen.click();
+    await page.mouse.move(4, 4);
+    await page.keyboard.press("Escape");
+    await page.waitForFunction(() => !document.querySelector("dialog").open);
+    await settle(firstCard);
+    assert.equal(
+      await firstCard.evaluate(
+        (node) => getComputedStyle(node).backgroundColor,
+      ),
+      idleCardColor,
+      "Escape after opening with the pointer does not highlight the card",
+    );
+    assert.equal(
+      await firstCard
+        .locator("[data-op=collection-menu]")
+        .evaluate((node) => getComputedStyle(node).opacity),
+      "0",
+      "Escape does not expose options on a pointer-opened card",
+    );
     await page.keyboard.press("Tab");
     await page.keyboard.press("Shift+Tab");
     await page.keyboard.press("Enter");
