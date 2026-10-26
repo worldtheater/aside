@@ -117,6 +117,8 @@ git push origin main
 git push origin v0.1.1
 ```
 
+While a release is still a draft, moving its version tag to a newer commit reruns the workflow and replaces the ZIP in the same draft, preserving the release title and notes. Confirm the release is a draft before moving the tag. Published versions must use a new version number; the workflow refuses to overwrite their assets.
+
 The workflow uses GitHub's built-in token; no personal access token or model API key is needed. After the workflow succeeds, sign in to GitHub, download the ZIP from the draft, and verify it before clicking **Publish release**. Draft assets are not publicly downloadable; the website download link becomes available after publication. This workflow only prepares GitHub Releases. Chrome Web Store submission remains manual, and GitHub Pages continues to deploy from `main` / `docs`. See the [release guide (Chinese)](docs/DEVELOPMENT.md#自动发布) for targeting an earlier commit.
 
 ## License

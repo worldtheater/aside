@@ -50,15 +50,34 @@ jobs:
       - name: Package the extension
         run: python3 build.py
 
-      - name: Create draft GitHub Release
+      - name: Create or update draft GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           package_name="$(node -p 'require("./package.json").name')"
-          gh release create "$RELEASE_TAG" \
-            "artifacts/${package_name}-${RELEASE_TAG#v}.zip" \
-            --repo "$GITHUB_REPOSITORY" \
-            --verify-tag \
-            --draft \
-            --generate-notes \
-            --title "Aside ${RELEASE_TAG#v}"
+          package_path="artifacts/${package_name}-${RELEASE_TAG#v}.zip"
+          is_draft="$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+            --jq ".[] | select(.tag_name == \"$RELEASE_TAG\") | .draft")"
+          case "$is_draft" in
+            true)
+              gh release upload "$RELEASE_TAG" "$package_path" \
+                --repo "$GITHUB_REPOSITORY" --clobber
+              gh release edit "$RELEASE_TAG" \
+                --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA"
+              ;;
+            "")
+              gh release create "$RELEASE_TAG" "$package_path" \
+                --repo "$GITHUB_REPOSITORY" \
+                --verify-tag \
+                --draft \
+                --target "$GITHUB_SHA" \
+                --generate-notes \
+                --title "Aside ${RELEASE_TAG#v}"
+              ;;
+            *)
+              echo "::error::Release $RELEASE_TAG is already published; use a new version."
+              exit 1
+              ;;
+          esac
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
+            --json tagName,isDraft,targetCommitish,url

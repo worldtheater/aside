@@ -65,7 +65,16 @@ git push origin v0.1.1
 
 草稿附件仅仓库有权限的成员可下载；网站中的新版下载链接要等草稿公开发布后才能访问。
 
-已发布标签不重复使用或强制移动；后续更新使用新版本。工作流不会覆盖同名 Release。仅在本地试包仍可运行 `npm run package`，无需打标签。
+若验收发现问题，且该版本仍是 **Draft**，可在修复提交后将版本标签更新到新提交。工作流会替换同一草稿中的同名 ZIP、更新对应提交，并保留草稿标题与说明，不会公开发布。先在 GitHub 确认草稿状态，再操作：
+
+```sh
+previous_release_tag=$(git rev-parse refs/tags/v0.1.1)
+git push origin main
+git tag -f -a v0.1.1 -m "Aside 0.1.1"
+git push --force-with-lease="refs/tags/v0.1.1:$previous_release_tag" origin refs/tags/v0.1.1
+```
+
+已公开发布的标签不重复使用或移动，后续更新使用新版本；工作流会拒绝覆盖已公开 Release 的附件。草稿附件被替换后需重新下载验证。仅在本地试包仍可运行 `npm run package`，无需打标签。
 
 这条流水线不上传 Chrome Web Store。GitHub Pages 仍按 `main` 分支的 `/docs` 发布：推送普通网页改动可能更新网站，但不会触发扩展打包。
 
