@@ -132,7 +132,8 @@
         "isAccessibleForFree": true,
         "license": "https://github.com/worldtheater/aside/blob/main/LICENSE",
         "downloadUrl": "https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip",
-        "installUrl": "https://worldtheater.github.io/aside/zh/#install",
+        "installUrl": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
+        "sameAs": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
         "image": "https://worldtheater.github.io/aside/assets/social-preview.png"
       }
     </script>
@@ -180,7 +181,7 @@
     />
     <link rel="icon" href="../assets/aside.svg" type="image/svg+xml" />
     <script src="../home.js?v=551126cf82a1"></script>
-    <link rel="stylesheet" href="../home.css?v=62ead60eb4fe" />
+    <link rel="stylesheet" href="../home.css?v=44a19caeb655" />
   </head>
   <body>
     <a class="skip-link" href="#main">跳到正文</a>
@@ -274,9 +275,9 @@
           </p>
           <div class="hero-actions">
             <a
-              class="button primary download"
-              href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
-              >下载 Chrome 扩展</a
+              class="button primary"
+              href="https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf"
+              >添加至 Chrome</a
             ><a class="text-link" href="#install">查看安装步骤</a>
           </div>
           <p class="install-note">
@@ -519,9 +520,46 @@
         <div class="data-copy">
           <h3>直接连接，数据去向清楚。</h3>
           <p>
-            请求直接发送到你配置的服务。旁白无需注册账号，没有中转服务器，也不采集使用分析。设置、密钥、收藏与调用记录保存在你的浏览器中。
+            请求直接发送到你选择的模型服务，没有旁白中转服务器，也不采集使用分析。收藏与请求记录保存在你的浏览器中。
           </p>
           <a class="text-link" href="../privacy.html">阅读隐私政策（英文）</a>
+        </div>
+      </section>
+      <section class="sync-section wrap" aria-labelledby="sync-title">
+        <div class="sync-intro">
+          <p class="sync-availability">下一次 Chrome Web Store 更新提供</p>
+          <h2 id="sync-title">换台设备，沿用熟悉的设置。</h2>
+          <p class="sync-description">
+            可选择通过 Chrome
+            同步模型连接、处理方式和随想生成设置。配置在离开设备前，使用你设置的口令加密。
+          </p>
+        </div>
+        <div class="sync-details">
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="10" width="14" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+            <div>
+              <h3>各设备，使用同一个口令。</h3>
+              <p>
+                登录同一个 Chrome
+                账号并开启同步，再在旁白中使用同一个口令加入。模型服务的访问权限需在各设备上分别授权。
+              </p>
+            </div>
+          </div>
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="13" rx="2" />
+              <path d="M12 17v4M8 21h8" />
+            </svg>
+            <div>
+              <h3>这些内容留在本机。</h3>
+              <p>
+                收藏、已生成的随想、请求记录和缓存不参与同步。语言与显示样式等偏好也由各设备独立设置。
+              </p>
+            </div>
+          </div>
         </div>
       </section>
       <section id="faq" class="faq-section wrap" aria-labelledby="faq-title">
@@ -569,48 +607,55 @@
       >
         <div class="install-heading">
           <h2 id="install-title">从一页值得读的文字开始。</h2>
-          <p>下载已经构建好的扩展，无需安装 Node.js 或构建工具。</p>
+          <p>从 Chrome Web Store 安装，连接你常用的模型服务，即可开始使用。</p>
         </div>
-        <ol class="install-steps">
-          <li>
-            <h3>下载扩展。</h3>
-            <p>
-              点击下方按钮获取扩展 ZIP 安装包。请使用打包好的扩展，不是 GitHub
-              自动生成的“Source code”源码包。
-            </p>
-          </li>
-          <li>
-            <h3>解压并保留文件夹。</h3>
-            <p>
-              将 ZIP 解压到一个固定目录。Chrome
-              会从这个文件夹加载扩展，请保留它。
-            </p>
-          </li>
-          <li>
-            <h3>在 Chrome 中加载。</h3>
-            <p>
-              打开
-              chrome://extensions，开启<strong>开发者模式</strong>，点击<strong>加载已解压的扩展程序</strong>，选择刚刚解压的文件夹。
-            </p>
-          </li>
-        </ol>
-        <div class="install-actions">
+        <div class="install-actions store-install">
           <a
-            class="button primary download"
-            href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
-            >下载 Chrome 扩展</a
-          ><a href="https://github.com/worldtheater/aside/releases/tag/v0.1.1"
-            >版本说明</a
-          ><a href="https://github.com/worldtheater/aside#build-from-source"
-            >从源码构建</a
+            class="button primary"
+            href="https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf"
+            >添加至 Chrome</a
           >
         </div>
         <p class="after-install">
           安装后，打开旁白的“设置”，添加模型连接。回到普通网页，即可开始翻译或提问。
         </p>
-        <p class="review-note">
-          Chrome Web Store 正在审核中。审核期间，可以使用上述安装包加载旁白。
-        </p>
+        <details class="manual-install">
+          <summary>从 GitHub 手动安装</summary>
+          <ol class="install-steps">
+            <li>
+              <h3>下载扩展。</h3>
+              <p>
+                点击下方按钮获取扩展 ZIP 安装包。请使用打包好的扩展，不是 GitHub
+                自动生成的“Source code”源码包。
+              </p>
+            </li>
+            <li>
+              <h3>解压并保留文件夹。</h3>
+              <p>
+                将 ZIP 解压到一个固定目录。Chrome
+                会从这个文件夹加载扩展，请保留它。
+              </p>
+            </li>
+            <li>
+              <h3>在 Chrome 中加载。</h3>
+              <p>
+                打开
+                chrome://extensions，开启<strong>开发者模式</strong>，点击<strong>加载已解压的扩展程序</strong>，选择刚刚解压的文件夹。
+              </p>
+            </li>
+          </ol>
+          <div class="install-actions">
+            <a
+              class="button primary download"
+              href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
+              >下载 ZIP</a
+            ><a href="https://github.com/worldtheater/aside/releases/tag/v0.1.1"
+              >版本说明</a
+            ><a href="https://github.com/worldtheater/aside#build-from-source"
+              >从源码构建</a
+            >
+          </div>
+        </details>
       </section>
     </main>
     <footer class="site-footer wrap">

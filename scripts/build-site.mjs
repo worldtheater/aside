@@ -9,7 +9,8 @@ const readJson = async (name) =>
   JSON.parse(await readFile(path.join(root, name), "utf8"));
 const languages = await readJson("website/languages.json");
 const reference = await readJson("website/locales/en.json");
-const { version } = await readJson("package.json");
+// Public download links must not advance when the next release is still a draft.
+const { version } = await readJson("website/release.json");
 const { minimum_chrome_version: minimumChromeVersion } =
   await readJson("manifest.json");
 const template = await readFile(
@@ -18,6 +19,8 @@ const template = await readFile(
 );
 const site = "https://worldtheater.github.io/aside/";
 const repo = "https://github.com/worldtheater/aside";
+const storeUrl =
+  "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf";
 const check = process.argv.includes("--check");
 const url = (locale) => site + (locale.path ? locale.path + "/" : "");
 const downloadUrl = `${repo}/releases/download/v${version}/aside-${version}.zip`;
@@ -111,6 +114,7 @@ for (const language of languages) {
     brandSecondary: language.code.startsWith("zh") ? "Aside" : "旁白",
     releaseUrl: `${repo}/releases/tag/v${version}`,
     downloadUrl,
+    storeUrl,
     structuredData: `<script type="application/ld+json">${JSON.stringify(
       {
         "@context": "https://schema.org",
@@ -128,7 +132,8 @@ for (const language of languages) {
         isAccessibleForFree: true,
         license: `${repo}/blob/main/LICENSE`,
         downloadUrl,
-        installUrl: `${url(language)}#install`,
+        installUrl: storeUrl,
+        sameAs: storeUrl,
         image: `${site}assets/social-preview.png`,
       },
       null,

@@ -132,7 +132,8 @@
         "isAccessibleForFree": true,
         "license": "https://github.com/worldtheater/aside/blob/main/LICENSE",
         "downloadUrl": "https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip",
-        "installUrl": "https://worldtheater.github.io/aside/id/#install",
+        "installUrl": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
+        "sameAs": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
         "image": "https://worldtheater.github.io/aside/assets/social-preview.png"
       }
     </script>
@@ -180,7 +181,7 @@
     />
     <link rel="icon" href="../assets/aside.svg" type="image/svg+xml" />
     <script src="../home.js?v=551126cf82a1"></script>
-    <link rel="stylesheet" href="../home.css?v=62ead60eb4fe" />
+    <link rel="stylesheet" href="../home.css?v=44a19caeb655" />
   </head>
   <body>
     <a class="skip-link" href="#main">Lewati ke isi</a>
@@ -277,9 +278,9 @@
           </p>
           <div class="hero-actions">
             <a
-              class="button primary download"
-              href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
-              >Unduh untuk Chrome</a
+              class="button primary"
+              href="https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf"
+              >Tambahkan ke Chrome</a
             ><a class="text-link" href="#install">Cara memasang</a>
           </div>
           <p class="install-note">
@@ -554,13 +555,57 @@
         <div class="data-copy">
           <h3>Koneksi langsung.</h3>
           <p>
-            Permintaan langsung dikirim ke layanan pilihan Anda. Tidak ada
-            server perantara atau analitik penggunaan. Pengaturan, kunci,
-            koleksi, dan riwayat permintaan disimpan di browser.
+            Permintaan dikirim langsung ke layanan model pilihan Anda, tanpa
+            server perantara atau analitik penggunaan dari Aside. Koleksi dan
+            riwayat permintaan disimpan di browser Anda.
           </p>
           <a class="text-link" href="../privacy.html"
             >Baca kebijakan privasi (Inggris)</a
           >
+        </div>
+      </section>
+      <section class="sync-section wrap" aria-labelledby="sync-title">
+        <div class="sync-intro">
+          <p class="sync-availability">
+            Tersedia pada pembaruan Chrome Web Store berikutnya
+          </p>
+          <h2 id="sync-title">Pengaturan Anda, di setiap perangkat.</h2>
+          <p class="sync-description">
+            Anda dapat memilih untuk menyinkronkan koneksi model, tindakan
+            membaca, serta pengaturan refleksi melalui Chrome. Pengaturan
+            dienkripsi dengan frasa sandi pilihan Anda sebelum meninggalkan
+            perangkat.
+          </p>
+        </div>
+        <div class="sync-details">
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="10" width="14" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+            <div>
+              <h3>Satu frasa sandi di semua perangkat.</h3>
+              <p>
+                Masuk ke akun Chrome yang sama dan aktifkan sinkronisasi, lalu
+                bergabung di Aside dengan frasa sandi yang sama. Izinkan akses
+                ke layanan model pada setiap perangkat.
+              </p>
+            </div>
+          </div>
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="13" rx="2" />
+              <path d="M12 17v4M8 21h8" />
+            </svg>
+            <div>
+              <h3>Tetap di setiap perangkat.</h3>
+              <p>
+                Koleksi, refleksi yang dihasilkan, riwayat permintaan, dan cache
+                tidak disinkronkan. Bahasa dan tampilan juga diatur secara
+                terpisah pada setiap perangkat.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
       <section id="faq" class="faq-section wrap" aria-labelledby="faq-title">
@@ -617,52 +662,61 @@
       >
         <div class="install-heading">
           <h2 id="install-title">Mulai dari halaman yang layak dibaca.</h2>
-          <p>Unduh ekstensi siap pakai. Tidak perlu Node.js atau alat build.</p>
+          <p>
+            Instal Aside dari Chrome Web Store, lalu hubungkan layanan model
+            pilihan Anda untuk mulai membaca.
+          </p>
         </div>
-        <ol class="install-steps">
-          <li>
-            <h3>Unduh.</h3>
-            <p>
-              Gunakan tombol di bawah untuk mengunduh ZIP ekstensi, bukan arsip
-              “Source code” yang dibuat GitHub.
-            </p>
-          </li>
-          <li>
-            <h3>Ekstrak.</h3>
-            <p>
-              Ekstrak ZIP ke folder yang akan tetap Anda simpan. Chrome memuat
-              ekstensi dari folder tersebut.
-            </p>
-          </li>
-          <li>
-            <h3>Muat di Chrome.</h3>
-            <p>
-              Buka <code>chrome://extensions</code>, aktifkan
-              <strong>Mode developer</strong>, pilih
-              <strong>Muat yang belum dipaketkan</strong>, lalu pilih folder
-              hasil ekstraksi.
-            </p>
-          </li>
-        </ol>
-        <div class="install-actions">
+        <div class="install-actions store-install">
           <a
-            class="button primary download"
-            href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
-            >Unduh untuk Chrome</a
-          ><a href="https://github.com/worldtheater/aside/releases/tag/v0.1.1"
-            >Catatan rilis</a
-          ><a href="https://github.com/worldtheater/aside#build-from-source"
-            >Build dari kode sumber</a
+            class="button primary"
+            href="https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf"
+            >Tambahkan ke Chrome</a
           >
         </div>
         <p class="after-install">
           Kemudian buka pengaturan Aside dan tambahkan koneksi model. Kembali ke
           halaman web biasa untuk mulai menerjemahkan atau bertanya.
         </p>
-        <p class="review-note">
-          Peninjauan Chrome Web Store sedang berlangsung. Sementara itu, instal
-          paket di atas.
-        </p>
+        <details class="manual-install">
+          <summary>Instal manual dari GitHub</summary>
+          <ol class="install-steps">
+            <li>
+              <h3>Unduh.</h3>
+              <p>
+                Gunakan tombol di bawah untuk mengunduh ZIP ekstensi, bukan
+                arsip “Source code” yang dibuat GitHub.
+              </p>
+            </li>
+            <li>
+              <h3>Ekstrak.</h3>
+              <p>
+                Ekstrak ZIP ke folder yang akan tetap Anda simpan. Chrome memuat
+                ekstensi dari folder tersebut.
+              </p>
+            </li>
+            <li>
+              <h3>Muat di Chrome.</h3>
+              <p>
+                Buka <code>chrome://extensions</code>, aktifkan
+                <strong>Mode developer</strong>, pilih
+                <strong>Muat yang belum dipaketkan</strong>, lalu pilih folder
+                hasil ekstraksi.
+              </p>
+            </li>
+          </ol>
+          <div class="install-actions">
+            <a
+              class="button primary download"
+              href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
+              >Unduh ZIP</a
+            ><a href="https://github.com/worldtheater/aside/releases/tag/v0.1.1"
+              >Catatan rilis</a
+            ><a href="https://github.com/worldtheater/aside#build-from-source"
+              >Build dari kode sumber</a
+            >
+          </div>
+        </details>
       </section>
     </main>
     <footer class="site-footer wrap">

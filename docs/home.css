@@ -401,6 +401,47 @@ kbd {
   display: inline-block;
   margin-top: 24px;
 }
+.sync-section {
+  display: grid;
+  grid-template-columns: 1fr 0.85fr;
+  gap: 100px;
+  padding-block: 64px;
+  border-bottom: 1px solid var(--line);
+}
+.sync-availability {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+.sync-description {
+  margin-top: 20px;
+  color: var(--muted);
+}
+.sync-details {
+  display: grid;
+  align-content: start;
+  gap: 28px;
+}
+.sync-detail {
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 14px;
+}
+.sync-detail svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: var(--muted);
+}
+.sync-detail p {
+  margin-top: 10px;
+  font-size: 15px;
+  color: var(--muted);
+}
 .faq-section {
   display: grid;
   grid-template-columns: 0.8fr 1.2fr;
@@ -416,7 +457,8 @@ kbd {
 .faq-list details:first-child {
   border-top: 1px solid var(--line);
 }
-.faq-list summary {
+.faq-list summary,
+.manual-install > summary {
   padding: 18px 30px 18px 0;
   cursor: pointer;
   font-size: 17px;
@@ -424,10 +466,12 @@ kbd {
   position: relative;
   list-style: none;
 }
-.faq-list summary::-webkit-details-marker {
+.faq-list summary::-webkit-details-marker,
+.manual-install > summary::-webkit-details-marker {
   display: none;
 }
-.faq-list summary::after {
+.faq-list summary::after,
+.manual-install > summary::after {
   content: "+";
   position: absolute;
   right: 3px;
@@ -436,7 +480,8 @@ kbd {
   font-weight: 400;
   color: var(--muted);
 }
-.faq-list details[open] summary::after {
+.faq-list details[open] summary::after,
+.manual-install[open] > summary::after {
   content: "−";
 }
 .faq-list p {
@@ -484,10 +529,21 @@ code {
   color: var(--muted);
   max-width: 78ch;
 }
-.review-note {
-  margin-top: 12px;
+.store-install {
+  margin-top: 24px;
+}
+.manual-install {
+  border-top: 1px solid var(--line);
+  margin-top: 28px;
+}
+.manual-install > summary {
+  padding-bottom: 0;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--muted);
-  font-size: 12px;
+}
+.manual-install .install-steps {
+  margin-top: 24px;
 }
 .site-footer {
   border-top: 1px solid var(--line);
@@ -552,6 +608,7 @@ code {
   .feature-row,
   .comfort-layout,
   .model-section,
+  .sync-section,
   .faq-section {
     gap: 40px;
   }
@@ -602,6 +659,7 @@ code {
   .feature-row,
   .comfort-layout,
   .model-section,
+  .sync-section,
   .faq-section {
     grid-template-columns: 1fr;
     gap: 30px;
@@ -620,6 +678,7 @@ code {
   .features,
   .your-tools,
   .model-section,
+  .sync-section,
   .faq-section {
     padding-block: 48px;
   }

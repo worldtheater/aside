@@ -55,7 +55,7 @@ CHROME_PATH="/path/to/chrome" npm run test:browser
 首次使用前，先提交并推送工作流文件。之后以发布 `0.1.1` 为例：
 
 1. 同步三个版本文件中的版本号，保留 manifest 中的固定公钥。
-2. 运行 `npm run build:site` 更新产品页版本和下载链接，并更新 README 中的安装包链接。
+2. 运行 `npm run check:site` 确认首页生成结果最新。`website/release.json` 记录已公开的下载版本，准备草稿时不要修改；公开发布后再更新该版本与 README 下载链接，并运行 `npm run build:site`。
 3. 提交发布相关改动，再创建并推送标签：
 
 ```sh
@@ -73,7 +73,7 @@ git push origin v0.1.1
 
 该提交必须已经包含工作流，且版本校验通过；打包取标签指向的代码，不取当时最新的 `main`。可先运行 `node scripts/check-release.mjs v0.1.1` 检查当前目录的版本。到 GitHub 的 Actions 页面查看进度，完成后登录仓库管理账号，从 Releases 草稿下载 `aside-0.1.1.zip`。用该包验证安装和覆盖升级，确认配置、收藏、调用记录与核心功能正常后，再点击 **Publish release** 公开发布。
 
-草稿附件仅仓库有权限的成员可下载；网站中的新版下载链接要等草稿公开发布后才能访问。
+草稿附件仅仓库有权限的成员可下载；网站继续链接到 `website/release.json` 中记录的已公开版本，避免草稿阶段出现失效下载。
 
 若验收发现问题，且该版本仍是 **Draft**，可在修复提交后将版本标签更新到新提交。工作流会替换同一草稿中的同名 ZIP、更新对应提交，并保留草稿标题与说明，不会公开发布。先在 GitHub 确认草稿状态，再操作：
 
@@ -192,11 +192,11 @@ node tests/browser.cjs --lights-recovery-only
 
 GitHub Pages 从 `main` 分支的 `docs/` 提供静态页面。首页使用 `website/template.html` 共用模板，文案在 `website/locales/`，语言名称与路由在 `website/languages.json`。运行 `npm run build:site` 生成十五种语言的静态页面；`npm run check:site` 检查文案完整性和生成结果是否最新。不要直接修改生成的首页 HTML。页面共享 `docs/home.css` 和 `docs/home.js`，图片位于 `docs/assets/`。英文首页仍位于根目录，简体中文仍位于 `zh/`；隐私政策仍位于 `privacy.html`，其他语言的链接会标明其为英文。
 
-搜索标题和摘要分别使用各语言文案的 `seoTitle`、`seoDescription`，与可见主标题分开维护。模板保留 Google Search Console 的 `google-site-verification` 验证标记，验证成功后也不要删除。构建同时生成产品 `SoftwareApplication` JSON-LD 和 `docs/sitemap.xml`；结构化数据中的版本与最低 Chrome 版本来自项目配置，网站地图包含全部语言首页与隐私政策，不填写虚构的更新时间、评分或评论。
+搜索标题和摘要分别使用各语言文案的 `seoTitle`、`seoDescription`，与可见主标题分开维护。模板保留 Google Search Console 的 `google-site-verification` 验证标记，验证成功后也不要删除。构建同时生成产品 `SoftwareApplication` JSON-LD 和 `docs/sitemap.xml`；结构化数据中的公开版本来自 `website/release.json`，最低 Chrome 版本来自 manifest，网站地图包含全部语言首页与隐私政策，不填写虚构的更新时间、评分或评论。
 
 部署后，在 Search Console 使用 URL 前缀 `https://worldtheater.github.io/aside/` 验证所有权，再提交 <https://worldtheater.github.io/aside/sitemap.xml>。`robots.txt` 只在域名根目录生效；本仓库的 `/aside/` 是项目子路径，无需在此放置无效的 robots 文件。网站验证和结构化数据不保证收录、排名或 AI 引用。
 
-首页下载入口指向 GitHub Release 的 `aside-<version>.zip`，版本号取自 `package.json`。更新版本后重新生成首页；推送匹配的版本标签后，自动发布工作流会生成并上传对应安装包到草稿，验收并公开发布后下载链接才生效，见[自动发布](#自动发布)。
+首页主安装入口指向 Chrome Web Store，GitHub 手动安装步骤收在折叠区。`website/release.json` 单独记录已公开的版本，用于页面版本、结构化数据与 ZIP 下载链接；它不随 `package.json` 中的待发布版本自动变化。草稿验收并公开发布后，再更新该文件和 README 下载链接，运行 `npm run build:site` 并推送。同步功能在商店上线前保留下一次更新的提示，见[自动发布](#自动发布)。
 
 使用 `node scripts/store-assets.mjs --website` 重新生成首页截图。它复用商店素材的隔离浏览器与本地模拟服务，以 2 倍像素密度直接截取真实插件界面，并为首屏提供移动端版本，为首屏、选文问答和收藏提供亮暗色版本。无参数运行仍只生成商店素材。截图内容、显示比例与预览交互遵循设计规范。
 

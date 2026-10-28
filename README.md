@@ -14,11 +14,20 @@ A Chrome extension for translating, understanding, and collecting what you read 
 - **Reading tools:** A selection toolbar and floating menu, with configurable color palettes and result styles.
 - **Website dark mode:** Powered by [Dark Reader](https://github.com/darkreader/darkreader), with per-site settings.
 - **Collections and reflections:** Save, search, and copy results. Generate a short reflection with your chosen model, optionally drawing on saved passages.
+- **Encrypted configuration sync (next store update):** Sync model connections, API keys, reading actions, and reflection settings through your Chrome account using a shared passphrase. Collections and request history stay on each device.
 - **Models and usage:** Configure model services, reasoning levels, and output languages; review usage and manage the local result cache.
 
 ## Installation
 
-Requires **Chrome 120+**. The packaged extension does not require Node.js.
+Requires **Chrome 120+**.
+
+[**Install from the Chrome Web Store**](https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf).
+
+After installing, open Aside’s **Settings → Model connections**, add your model service, and save. Open a regular HTTP/HTTPS page to use the selection toolbar, floating menu, or extension popup.
+
+### Manual installation
+
+Alternatively, load the packaged extension from GitHub Releases. No Node.js is required.
 
 1. [Download Aside 0.1.1](https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip) from GitHub Releases. Use the extension ZIP, not the automatically generated “Source code” archive.
 2. Extract the ZIP to a permanent folder.
@@ -26,7 +35,7 @@ Requires **Chrome 120+**. The packaged extension does not require Node.js.
 4. Open Aside’s **Settings**, add your service URL, API key, and protocol in **Model connections**, test the connection, choose a model, and save.
 5. Open a regular HTTP/HTTPS page and use the selection toolbar, floating menu, or extension popup.
 
-Keep the extracted folder while using the extension. Chrome Web Store review is in progress; the release ZIP is the current installation option.
+Keep the extracted folder while using the unpacked extension.
 
 ### Build from source
 
@@ -80,7 +89,9 @@ Quick Q&A is unavailable on extension pages, blank pages, browser-internal pages
 
 ## Configuration sync
 
-Open **Settings → Configuration sync** to enable optional sync through your existing Chrome account. The page waits for existing synced settings by default. Only on the first device, choose **First-time setup** and set a passphrase of at least 12 characters. On another device, sign in to the same Chrome account, enable Chrome sync, install Aside with the same extension ID, and wait for the synced settings to arrive, then enter that passphrase to join. Do not select first-time setup again while waiting for delivery. Chrome controls delivery; Aside cannot detect whether your account sync is enabled or confirm delivery to another device.
+Available in the current source build; planned for the next Chrome Web Store update. The currently published store version does not include sync.
+
+Open **Settings → Sync** to enable optional sync through your existing Chrome account. The page waits for existing synced settings by default. Only on the first device, choose **First-time setup** and set a passphrase of at least 12 characters. On another device, sign in to the same Chrome account, enable Chrome sync, install Aside with the same extension ID, and wait for the synced settings to arrive, then enter that passphrase to join. Do not select first-time setup again while waiting for delivery. Chrome controls delivery; Aside cannot detect whether your account sync is enabled or confirm delivery to another device.
 
 - Sync merges model connections (with their API keys), actions, and reflection settings as separate records. All reflection settings travel together as one record. Language, theme, appearance, website preferences, quick-action visibility and order stay local. Collections, generated reflections, request history, caches, and discovered model lists are also excluded. Browser site permissions are granted separately on each device. After joining, the sync page lists model services that need access on this browser. Choose **Allow access** to authorize those addresses; this does not send a model request.
 - The shared records are compressed and encrypted on your device with AES-256-GCM. The key is derived from your passphrase using PBKDF2-HMAC-SHA-256 with 600,000 iterations and a random salt. Chrome receives encrypted data and revision metadata, not your passphrase or plaintext configuration.
@@ -107,7 +118,7 @@ The public `key` in `manifest.json` keeps the extension ID consistent across sou
 ```sh
 npm test               # Type checking, build, and core tests
 npm run test:browser   # Browser regression tests using local Chrome
-npm run package        # Create artifacts/aside-0.1.1.zip; requires Python 3
+npm run package        # Create artifacts/aside-0.1.2.zip; requires Python 3
 ```
 
 Browser tests use isolated profiles and local mock model services. They do not read your personal Chrome profile or call paid models. Install Google Chrome locally, or set `CHROME_PATH` to a custom executable path.
@@ -118,19 +129,19 @@ Chrome Web Store listing copy, artwork, permissions declarations, and reviewer i
 
 ### Automated releases
 
-Ordinary commits and branch pushes do not create extension packages. Push a version tag such as `v0.1.1` on the commit you want to release to run the [release workflow](.github/workflows/release.yml). It checks version consistency, formatting, generated product pages, and core tests, then builds the ZIP and uploads it to a **draft** GitHub Release with generated release notes. It does not publish the release automatically.
+Ordinary commits and branch pushes do not create extension packages. Push a version tag such as `v0.1.2` on the commit you want to release to run the [release workflow](.github/workflows/release.yml). It checks version consistency, formatting, generated product pages, and core tests, then builds the ZIP and uploads it to a **draft** GitHub Release with generated release notes. It does not publish the release automatically.
 
 Before tagging, update the versions in `manifest.json`, `package.json`, and `package-lock.json`, regenerate the product pages with `npm run build:site`, and update the installation download link above. Commit these changes first. The tag must match the version in all three files.
 
 ```sh
-git tag -a v0.1.1 -m "Aside 0.1.1"
+git tag -a v0.1.2 -m "Aside 0.1.2"
 git push origin main
-git push origin v0.1.1
+git push origin v0.1.2
 ```
 
 While a release is still a draft, moving its version tag to a newer commit reruns the workflow and replaces the ZIP in the same draft, preserving the release title and notes. Confirm the release is a draft before moving the tag. Published versions must use a new version number; the workflow refuses to overwrite their assets.
 
-The workflow uses GitHub's built-in token; no personal access token or model API key is needed. After the workflow succeeds, sign in to GitHub, download the ZIP from the draft, and verify it before clicking **Publish release**. Draft assets are not publicly downloadable; the website download link becomes available after publication. This workflow only prepares GitHub Releases. Chrome Web Store submission remains manual, and GitHub Pages continues to deploy from `main` / `docs`. See the [release guide (Chinese)](docs/DEVELOPMENT.md#自动发布) for targeting an earlier commit.
+The workflow uses GitHub's built-in token; no personal access token or model API key is needed. After the workflow succeeds, sign in to GitHub, download the ZIP from the draft, and verify it before clicking **Publish release**. Draft assets are not publicly downloadable. The website’s public version is recorded separately in `website/release.json`; after publishing a release, update that version and the README download link, then run `npm run build:site`. Keep the sync availability note until the Chrome Web Store version includes sync. This workflow only prepares GitHub Releases. Chrome Web Store submission remains manual, and GitHub Pages continues to deploy from `main` / `docs`. See the [release guide (Chinese)](docs/DEVELOPMENT.md#自动发布) for targeting an earlier commit.
 
 ## License
 

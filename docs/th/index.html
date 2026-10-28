@@ -132,7 +132,8 @@
         "isAccessibleForFree": true,
         "license": "https://github.com/worldtheater/aside/blob/main/LICENSE",
         "downloadUrl": "https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip",
-        "installUrl": "https://worldtheater.github.io/aside/th/#install",
+        "installUrl": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
+        "sameAs": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
         "image": "https://worldtheater.github.io/aside/assets/social-preview.png"
       }
     </script>
@@ -180,7 +181,7 @@
     />
     <link rel="icon" href="../assets/aside.svg" type="image/svg+xml" />
     <script src="../home.js?v=551126cf82a1"></script>
-    <link rel="stylesheet" href="../home.css?v=62ead60eb4fe" />
+    <link rel="stylesheet" href="../home.css?v=44a19caeb655" />
   </head>
   <body>
     <a class="skip-link" href="#main">ข้ามไปยังเนื้อหา</a>
@@ -278,9 +279,9 @@
           </p>
           <div class="hero-actions">
             <a
-              class="button primary download"
-              href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
-              >ดาวน์โหลดสำหรับ Chrome</a
+              class="button primary"
+              href="https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf"
+              >เพิ่มใน Chrome</a
             ><a class="text-link" href="#install">วิธีติดตั้ง</a>
           </div>
           <p class="install-note">
@@ -549,13 +550,55 @@
         <div class="data-copy">
           <h3>เชื่อมต่อโดยตรง</h3>
           <p>
-            คำขอส่งตรงไปยังบริการที่ตั้งค่าไว้
-            ไม่มีเซิร์ฟเวอร์ตัวกลางหรือการวิเคราะห์การใช้งาน การตั้งค่า คีย์
-            คอลเลกชัน และประวัติคำขอเก็บในเบราว์เซอร์
+            คำขอจะส่งตรงไปยังบริการโมเดลที่คุณเลือก
+            โดยไม่มีเซิร์ฟเวอร์ตัวกลางหรือการเก็บข้อมูลวิเคราะห์การใช้งานจาก
+            Aside คอลเลกชันและประวัติคำขอจะเก็บไว้ในเบราว์เซอร์ของคุณ
           </p>
           <a class="text-link" href="../privacy.html"
             >อ่านนโยบายความเป็นส่วนตัว (อังกฤษ)</a
           >
+        </div>
+      </section>
+      <section class="sync-section wrap" aria-labelledby="sync-title">
+        <div class="sync-intro">
+          <p class="sync-availability">
+            พร้อมใช้ในการอัปเดตครั้งถัดไปบน Chrome Web Store
+          </p>
+          <h2 id="sync-title">การตั้งค่าที่คุ้นเคย ในทุกอุปกรณ์</h2>
+          <p class="sync-description">
+            เลือกซิงค์การเชื่อมต่อโมเดล วิธีประมวลผลข้อความ
+            และการตั้งค่าข้อคิดผ่าน Chrome ได้
+            การตั้งค่าจะถูกเข้ารหัสด้วยวลีรหัสผ่านที่คุณตั้งก่อนส่งออกจากอุปกรณ์
+          </p>
+        </div>
+        <div class="sync-details">
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="10" width="14" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+            <div>
+              <h3>ใช้วลีรหัสผ่านเดียวกันทุกอุปกรณ์</h3>
+              <p>
+                ลงชื่อเข้าใช้บัญชี Chrome เดียวกันและเปิดการซิงค์
+                จากนั้นเข้าร่วมใน Aside ด้วยวลีรหัสผ่านเดียวกัน
+                ต้องอนุญาตให้เข้าถึงบริการโมเดลในแต่ละอุปกรณ์แยกกัน
+              </p>
+            </div>
+          </div>
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="13" rx="2" />
+              <path d="M12 17v4M8 21h8" />
+            </svg>
+            <div>
+              <h3>เก็บไว้ในแต่ละอุปกรณ์</h3>
+              <p>
+                คอลเลกชัน ข้อคิดที่สร้างแล้ว ประวัติคำขอ และแคชจะไม่ซิงค์
+                ภาษาและรูปแบบการแสดงผลก็ตั้งค่าแยกกันในแต่ละอุปกรณ์
+              </p>
+            </div>
+          </div>
         </div>
       </section>
       <section id="faq" class="faq-section wrap" aria-labelledby="faq-title">
@@ -613,54 +656,60 @@
         <div class="install-heading">
           <h2 id="install-title">เริ่มจากหน้าที่อยากอ่านอย่างตั้งใจ</h2>
           <p>
-            ดาวน์โหลดส่วนขยายที่พร้อมโหลดได้เลย ไม่ต้องใช้ Node.js
-            หรือเครื่องมือบิลด์
+            ติดตั้ง Aside จาก Chrome Web Store
+            แล้วเชื่อมต่อบริการโมเดลที่คุณเลือกเพื่อเริ่มใช้งาน
           </p>
         </div>
-        <ol class="install-steps">
-          <li>
-            <h3>ดาวน์โหลด</h3>
-            <p>
-              ใช้ปุ่มด้านล่างดาวน์โหลด ZIP ของส่วนขยาย ไม่ใช่ไฟล์ “Source code”
-              ที่ GitHub สร้างให้อัตโนมัติ
-            </p>
-          </li>
-          <li>
-            <h3>แตกไฟล์</h3>
-            <p>
-              แตกไฟล์ ZIP ไปยังโฟลเดอร์ที่จะเก็บไว้ Chrome
-              จะโหลดส่วนขยายจากโฟลเดอร์นั้น
-            </p>
-          </li>
-          <li>
-            <h3>โหลดใน Chrome</h3>
-            <p>
-              เปิด <code>chrome://extensions</code> เปิดใช้
-              <strong>โหมดนักพัฒนาซอฟต์แวร์</strong> เลือก
-              <strong>โหลดส่วนขยายที่คลายการแพคแล้ว</strong>
-              แล้วเลือกโฟลเดอร์ที่แตกไฟล์ไว้
-            </p>
-          </li>
-        </ol>
-        <div class="install-actions">
+        <div class="install-actions store-install">
           <a
-            class="button primary download"
-            href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
-            >ดาวน์โหลดสำหรับ Chrome</a
-          ><a href="https://github.com/worldtheater/aside/releases/tag/v0.1.1"
-            >บันทึกประจำรุ่น</a
-          ><a href="https://github.com/worldtheater/aside#build-from-source"
-            >บิลด์จากซอร์สโค้ด</a
+            class="button primary"
+            href="https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf"
+            >เพิ่มใน Chrome</a
           >
         </div>
         <p class="after-install">
           จากนั้นเปิดการตั้งค่า Aside และเพิ่มการเชื่อมต่อโมเดล
           กลับไปยังหน้าเว็บทั่วไปเพื่อเริ่มแปลหรือถามคำถาม
         </p>
-        <p class="review-note">
-          กำลังอยู่ระหว่างการตรวจสอบของ Chrome Web Store
-          ระหว่างนี้ติดตั้งจากแพ็กเกจด้านบนได้
-        </p>
+        <details class="manual-install">
+          <summary>ติดตั้งด้วยตนเองจาก GitHub</summary>
+          <ol class="install-steps">
+            <li>
+              <h3>ดาวน์โหลด</h3>
+              <p>
+                ใช้ปุ่มด้านล่างดาวน์โหลด ZIP ของส่วนขยาย ไม่ใช่ไฟล์ “Source
+                code” ที่ GitHub สร้างให้อัตโนมัติ
+              </p>
+            </li>
+            <li>
+              <h3>แตกไฟล์</h3>
+              <p>
+                แตกไฟล์ ZIP ไปยังโฟลเดอร์ที่จะเก็บไว้ Chrome
+                จะโหลดส่วนขยายจากโฟลเดอร์นั้น
+              </p>
+            </li>
+            <li>
+              <h3>โหลดใน Chrome</h3>
+              <p>
+                เปิด <code>chrome://extensions</code> เปิดใช้
+                <strong>โหมดนักพัฒนาซอฟต์แวร์</strong> เลือก
+                <strong>โหลดส่วนขยายที่คลายการแพคแล้ว</strong>
+                แล้วเลือกโฟลเดอร์ที่แตกไฟล์ไว้
+              </p>
+            </li>
+          </ol>
+          <div class="install-actions">
+            <a
+              class="button primary download"
+              href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
+              >ดาวน์โหลด ZIP</a
+            ><a href="https://github.com/worldtheater/aside/releases/tag/v0.1.1"
+              >บันทึกประจำรุ่น</a
+            ><a href="https://github.com/worldtheater/aside#build-from-source"
+              >บิลด์จากซอร์สโค้ด</a
+            >
+          </div>
+        </details>
       </section>
     </main>
     <footer class="site-footer wrap">

@@ -100,8 +100,7 @@
           <h1 id="hero-title">{{heroTitle}}</h1>
           <p class="lead">{{lead}}</p>
           <div class="hero-actions">
-            <a class="button primary download" href="{{downloadUrl}}"
-              >{{downloadLink}}</a
+            <a class="button primary" href="{{storeUrl}}">{{storeLink}}</a
             ><a class="text-link" href="#install">{{installLink}}</a>
           </div>
           <p class="install-note">{{installNote}}</p>
@@ -328,6 +327,35 @@
           <a class="text-link" href="{{root}}privacy.html">{{privacyRead}}</a>
         </div>
       </section>
+      <section class="sync-section wrap" aria-labelledby="sync-title">
+        <div class="sync-intro">
+          <p class="sync-availability">{{syncAvailability}}</p>
+          <h2 id="sync-title">{{syncTitle}}</h2>
+          <p class="sync-description">{{syncText}}</p>
+        </div>
+        <div class="sync-details">
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="10" width="14" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+            <div>
+              <h3>{{syncJoinTitle}}</h3>
+              <p>{{syncJoinText}}</p>
+            </div>
+          </div>
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="13" rx="2" />
+              <path d="M12 17v4M8 21h8" />
+            </svg>
+            <div>
+              <h3>{{syncLocalTitle}}</h3>
+              <p>{{syncLocalText}}</p>
+            </div>
+          </div>
+        </div>
+      </section>
       <section id="faq" class="faq-section wrap" aria-labelledby="faq-title">
         <h2 id="faq-title">{{faqTitle}}</h2>
         <div class="faq-list">
@@ -358,30 +386,35 @@
           <h2 id="install-title">{{installTitle}}</h2>
           <p>{{installIntro}}</p>
         </div>
-        <ol class="install-steps">
-          <li>
-            <h3>{{downloadTitle}}</h3>
-            <p>{{downloadText}}</p>
-          </li>
-          <li>
-            <h3>{{unzipTitle}}</h3>
-            <p>{{unzipText}}</p>
-          </li>
-          <li>
-            <h3>{{loadTitle}}</h3>
-            <p>{{loadText}}</p>
-          </li>
-        </ol>
-        <div class="install-actions">
-          <a class="button primary download" href="{{downloadUrl}}"
-            >{{downloadLink}}</a
-          ><a href="{{releaseUrl}}">{{releaseLink}}</a
-          ><a href="https://github.com/worldtheater/aside#build-from-source"
-            >{{sourceLink}}</a
-          >
+        <div class="install-actions store-install">
+          <a class="button primary" href="{{storeUrl}}">{{storeLink}}</a>
         </div>
         <p class="after-install">{{afterInstall}}</p>
-        <p class="review-note">{{reviewNote}}</p>
+        <details class="manual-install">
+          <summary>{{manualInstall}}</summary>
+          <ol class="install-steps">
+            <li>
+              <h3>{{downloadTitle}}</h3>
+              <p>{{downloadText}}</p>
+            </li>
+            <li>
+              <h3>{{unzipTitle}}</h3>
+              <p>{{unzipText}}</p>
+            </li>
+            <li>
+              <h3>{{loadTitle}}</h3>
+              <p>{{loadText}}</p>
+            </li>
+          </ol>
+          <div class="install-actions">
+            <a class="button primary download" href="{{downloadUrl}}"
+              >{{downloadLink}}</a
+            ><a href="{{releaseUrl}}">{{releaseLink}}</a
+            ><a href="https://github.com/worldtheater/aside#build-from-source"
+              >{{sourceLink}}</a
+            >
+          </div>
+        </details>
       </section>
     </main>
     <footer class="site-footer wrap">

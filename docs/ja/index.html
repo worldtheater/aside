@@ -132,7 +132,8 @@
         "isAccessibleForFree": true,
         "license": "https://github.com/worldtheater/aside/blob/main/LICENSE",
         "downloadUrl": "https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip",
-        "installUrl": "https://worldtheater.github.io/aside/ja/#install",
+        "installUrl": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
+        "sameAs": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
         "image": "https://worldtheater.github.io/aside/assets/social-preview.png"
       }
     </script>
@@ -180,7 +181,7 @@
     />
     <link rel="icon" href="../assets/aside.svg" type="image/svg+xml" />
     <script src="../home.js?v=551126cf82a1"></script>
-    <link rel="stylesheet" href="../home.css?v=62ead60eb4fe" />
+    <link rel="stylesheet" href="../home.css?v=44a19caeb655" />
   </head>
   <body>
     <a class="skip-link" href="#main">本文へ移動</a>
@@ -276,9 +277,9 @@
           </p>
           <div class="hero-actions">
             <a
-              class="button primary download"
-              href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
-              >Chrome拡張機能をダウンロード</a
+              class="button primary"
+              href="https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf"
+              >Chrome に追加</a
             ><a class="text-link" href="#install">インストール方法</a>
           </div>
           <p class="install-note">
@@ -533,11 +534,51 @@
         <div class="data-copy">
           <h3>接続も、データの行き先も明確に。</h3>
           <p>
-            リクエストは設定したサービスに直接送信されます。中継サーバーや利用状況の分析はありません。設定、キー、保存した文章、リクエスト履歴はブラウザーに保存されます。
+            リクエストは選んだモデルサービスに直接送信されます。Aside
+            の中継サーバーや利用分析はありません。コレクションとリクエスト履歴はブラウザーに保存されます。
           </p>
           <a class="text-link" href="../privacy.html"
             >プライバシーポリシーを読む（英語）</a
           >
+        </div>
+      </section>
+      <section class="sync-section wrap" aria-labelledby="sync-title">
+        <div class="sync-intro">
+          <p class="sync-availability">
+            次回の Chrome Web Store 更新で提供予定
+          </p>
+          <h2 id="sync-title">いつもの設定を、別の端末でも。</h2>
+          <p class="sync-description">
+            モデル接続、処理方法、随想の生成設定を Chrome
+            経由で同期できます。設定は端末から送信される前に、自分で決めたパスフレーズで暗号化されます。
+          </p>
+        </div>
+        <div class="sync-details">
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="10" width="14" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+            <div>
+              <h3>どの端末でも、同じパスフレーズ。</h3>
+              <p>
+                同じ Chrome アカウントでログインして同期を有効にし、Aside
+                で同じパスフレーズを入力して参加します。モデルサービスへのアクセスは端末ごとに許可してください。
+              </p>
+            </div>
+          </div>
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="13" rx="2" />
+              <path d="M12 17v4M8 21h8" />
+            </svg>
+            <div>
+              <h3>この端末に残るもの。</h3>
+              <p>
+                コレクション、生成済みの随想、リクエスト履歴、キャッシュは同期されません。言語や表示スタイルも端末ごとに設定できます。
+              </p>
+            </div>
+          </div>
         </div>
       </section>
       <section id="faq" class="faq-section wrap" aria-labelledby="faq-title">
@@ -585,53 +626,61 @@
         <div class="install-heading">
           <h2 id="install-title">じっくり読みたいページから。</h2>
           <p>
-            読み込み可能な拡張機能をダウンロード。Node.jsやビルドツールは不要です。
+            Chrome Web Store
+            からインストールし、使いたいモデルサービスに接続すれば、すぐに始められます。
           </p>
         </div>
-        <ol class="install-steps">
-          <li>
-            <h3>ダウンロード。</h3>
-            <p>
-              下のボタンから拡張機能のZIPを取得してください。GitHubの「Source
-              code」ではありません。
-            </p>
-          </li>
-          <li>
-            <h3>展開。</h3>
-            <p>
-              ZIPを、削除せずに保管するフォルダーへ展開します。Chromeはそこから拡張機能を読み込みます。
-            </p>
-          </li>
-          <li>
-            <h3>Chromeに読み込む。</h3>
-            <p>
-              <code>chrome://extensions</code> を開き、<strong
-                >デベロッパーモード</strong
-              >
-              を有効にし、<strong
-                >パッケージ化されていない拡張機能を読み込む</strong
-              >
-              を選んで展開したフォルダーを指定します。
-            </p>
-          </li>
-        </ol>
-        <div class="install-actions">
+        <div class="install-actions store-install">
           <a
-            class="button primary download"
-            href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
-            >Chrome拡張機能をダウンロード</a
-          ><a href="https://github.com/worldtheater/aside/releases/tag/v0.1.1"
-            >リリースノート</a
-          ><a href="https://github.com/worldtheater/aside#build-from-source"
-            >ソースからビルド</a
+            class="button primary"
+            href="https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf"
+            >Chrome に追加</a
           >
         </div>
         <p class="after-install">
           Asideの設定でモデル接続を追加してください。通常のウェブページに戻れば、翻訳や質問を始められます。
         </p>
-        <p class="review-note">
-          Chromeウェブストアで審査中です。それまでは上のパッケージからインストールできます。
-        </p>
+        <details class="manual-install">
+          <summary>GitHub から手動でインストール</summary>
+          <ol class="install-steps">
+            <li>
+              <h3>ダウンロード。</h3>
+              <p>
+                下のボタンから拡張機能のZIPを取得してください。GitHubの「Source
+                code」ではありません。
+              </p>
+            </li>
+            <li>
+              <h3>展開。</h3>
+              <p>
+                ZIPを、削除せずに保管するフォルダーへ展開します。Chromeはそこから拡張機能を読み込みます。
+              </p>
+            </li>
+            <li>
+              <h3>Chromeに読み込む。</h3>
+              <p>
+                <code>chrome://extensions</code> を開き、<strong
+                  >デベロッパーモード</strong
+                >
+                を有効にし、<strong
+                  >パッケージ化されていない拡張機能を読み込む</strong
+                >
+                を選んで展開したフォルダーを指定します。
+              </p>
+            </li>
+          </ol>
+          <div class="install-actions">
+            <a
+              class="button primary download"
+              href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
+              >ZIP をダウンロード</a
+            ><a href="https://github.com/worldtheater/aside/releases/tag/v0.1.1"
+              >リリースノート</a
+            ><a href="https://github.com/worldtheater/aside#build-from-source"
+              >ソースからビルド</a
+            >
+          </div>
+        </details>
       </section>
     </main>
     <footer class="site-footer wrap">

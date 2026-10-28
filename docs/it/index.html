@@ -132,7 +132,8 @@
         "isAccessibleForFree": true,
         "license": "https://github.com/worldtheater/aside/blob/main/LICENSE",
         "downloadUrl": "https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip",
-        "installUrl": "https://worldtheater.github.io/aside/it/#install",
+        "installUrl": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
+        "sameAs": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
         "image": "https://worldtheater.github.io/aside/assets/social-preview.png"
       }
     </script>
@@ -180,7 +181,7 @@
     />
     <link rel="icon" href="../assets/aside.svg" type="image/svg+xml" />
     <script src="../home.js?v=551126cf82a1"></script>
-    <link rel="stylesheet" href="../home.css?v=62ead60eb4fe" />
+    <link rel="stylesheet" href="../home.css?v=44a19caeb655" />
   </head>
   <body>
     <a class="skip-link" href="#main">Vai al contenuto</a>
@@ -279,9 +280,9 @@
           </p>
           <div class="hero-actions">
             <a
-              class="button primary download"
-              href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
-              >Scarica per Chrome</a
+              class="button primary"
+              href="https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf"
+              >Aggiungi a Chrome</a
             ><a class="text-link" href="#install">Come installare</a>
           </div>
           <p class="install-note">
@@ -556,13 +557,58 @@
         <div class="data-copy">
           <h3>Una connessione diretta.</h3>
           <p>
-            Le richieste vanno direttamente al servizio scelto. Non ci sono
-            server intermediari né analisi dell’utilizzo. Impostazioni, chiavi,
-            raccolta e cronologia restano nel browser.
+            Le richieste vengono inviate direttamente al servizio di modelli
+            scelto, senza server intermediari né analisi dell’utilizzo da parte
+            di Aside. Raccolte e cronologia delle richieste restano nel browser.
           </p>
           <a class="text-link" href="../privacy.html"
             >Leggi l’informativa sulla privacy (inglese)</a
           >
+        </div>
+      </section>
+      <section class="sync-section wrap" aria-labelledby="sync-title">
+        <div class="sync-intro">
+          <p class="sync-availability">
+            In arrivo con il prossimo aggiornamento sul Chrome Web Store
+          </p>
+          <h2 id="sync-title">Le tue impostazioni, su ogni dispositivo.</h2>
+          <p class="sync-description">
+            Sincronizza, se lo desideri, connessioni ai modelli, azioni di
+            lettura e impostazioni delle riflessioni tramite Chrome. Le
+            impostazioni vengono cifrate con una passphrase scelta da te prima
+            di lasciare il dispositivo.
+          </p>
+        </div>
+        <div class="sync-details">
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="10" width="14" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+            <div>
+              <h3>La stessa passphrase su ogni dispositivo.</h3>
+              <p>
+                Accedi allo stesso account Chrome con la sincronizzazione
+                attiva, poi unisciti in Aside usando la stessa passphrase.
+                Autorizza l’accesso ai servizi di modelli su ciascun
+                dispositivo.
+              </p>
+            </div>
+          </div>
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="13" rx="2" />
+              <path d="M12 17v4M8 21h8" />
+            </svg>
+            <div>
+              <h3>Resta su ciascun dispositivo.</h3>
+              <p>
+                Raccolte, riflessioni generate, cronologia delle richieste e
+                cache non vengono sincronizzate. Anche lingua e aspetto si
+                impostano separatamente su ciascun dispositivo.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
       <section id="faq" class="faq-section wrap" aria-labelledby="faq-title">
@@ -625,54 +671,60 @@
             Inizia da una pagina che merita attenzione.
           </h2>
           <p>
-            Scarica l’estensione pronta da caricare. Non servono Node.js o
-            strumenti di compilazione.
+            Installa Aside dal Chrome Web Store e collega il tuo servizio di
+            modelli preferito per iniziare.
           </p>
         </div>
-        <ol class="install-steps">
-          <li>
-            <h3>Scarica.</h3>
-            <p>
-              Usa il pulsante qui sotto per scaricare lo ZIP dell’estensione,
-              non l’archivio “Source code” generato da GitHub.
-            </p>
-          </li>
-          <li>
-            <h3>Estrai.</h3>
-            <p>
-              Estrai lo ZIP in una cartella che conserverai. Chrome carica
-              l’estensione da quella cartella.
-            </p>
-          </li>
-          <li>
-            <h3>Carica in Chrome.</h3>
-            <p>
-              Apri <code>chrome://extensions</code>, attiva la
-              <strong>Modalità sviluppatore</strong>, scegli
-              <strong>Carica estensione non pacchettizzata</strong> e seleziona
-              la cartella estratta.
-            </p>
-          </li>
-        </ol>
-        <div class="install-actions">
+        <div class="install-actions store-install">
           <a
-            class="button primary download"
-            href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
-            >Scarica per Chrome</a
-          ><a href="https://github.com/worldtheater/aside/releases/tag/v0.1.1"
-            >Note di versione</a
-          ><a href="https://github.com/worldtheater/aside#build-from-source"
-            >Compila dal codice sorgente</a
+            class="button primary"
+            href="https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf"
+            >Aggiungi a Chrome</a
           >
         </div>
         <p class="after-install">
           Poi apri le impostazioni di Aside e aggiungi una connessione a un
           modello. Torna a una normale pagina web per tradurre o fare domande.
         </p>
-        <p class="review-note">
-          La revisione sul Chrome Web Store è in corso. Nel frattempo puoi
-          installare il pacchetto qui sopra.
-        </p>
+        <details class="manual-install">
+          <summary>Installa manualmente da GitHub</summary>
+          <ol class="install-steps">
+            <li>
+              <h3>Scarica.</h3>
+              <p>
+                Usa il pulsante qui sotto per scaricare lo ZIP dell’estensione,
+                non l’archivio “Source code” generato da GitHub.
+              </p>
+            </li>
+            <li>
+              <h3>Estrai.</h3>
+              <p>
+                Estrai lo ZIP in una cartella che conserverai. Chrome carica
+                l’estensione da quella cartella.
+              </p>
+            </li>
+            <li>
+              <h3>Carica in Chrome.</h3>
+              <p>
+                Apri <code>chrome://extensions</code>, attiva la
+                <strong>Modalità sviluppatore</strong>, scegli
+                <strong>Carica estensione non pacchettizzata</strong> e
+                seleziona la cartella estratta.
+              </p>
+            </li>
+          </ol>
+          <div class="install-actions">
+            <a
+              class="button primary download"
+              href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
+              >Scarica ZIP</a
+            ><a href="https://github.com/worldtheater/aside/releases/tag/v0.1.1"
+              >Note di versione</a
+            ><a href="https://github.com/worldtheater/aside#build-from-source"
+              >Compila dal codice sorgente</a
+            >
+          </div>
+        </details>
       </section>
     </main>
     <footer class="site-footer wrap">

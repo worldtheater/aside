@@ -132,7 +132,8 @@
         "isAccessibleForFree": true,
         "license": "https://github.com/worldtheater/aside/blob/main/LICENSE",
         "downloadUrl": "https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip",
-        "installUrl": "https://worldtheater.github.io/aside/vi/#install",
+        "installUrl": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
+        "sameAs": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
         "image": "https://worldtheater.github.io/aside/assets/social-preview.png"
       }
     </script>
@@ -180,7 +181,7 @@
     />
     <link rel="icon" href="../assets/aside.svg" type="image/svg+xml" />
     <script src="../home.js?v=551126cf82a1"></script>
-    <link rel="stylesheet" href="../home.css?v=62ead60eb4fe" />
+    <link rel="stylesheet" href="../home.css?v=44a19caeb655" />
   </head>
   <body>
     <a class="skip-link" href="#main">Chuyển đến nội dung</a>
@@ -277,9 +278,9 @@
           </p>
           <div class="hero-actions">
             <a
-              class="button primary download"
-              href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
-              >Tải cho Chrome</a
+              class="button primary"
+              href="https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf"
+              >Thêm vào Chrome</a
             ><a class="text-link" href="#install">Cách cài đặt</a>
           </div>
           <p class="install-note">
@@ -546,13 +547,56 @@
         <div class="data-copy">
           <h3>Kết nối trực tiếp.</h3>
           <p>
-            Yêu cầu được gửi thẳng đến dịch vụ đã chọn. Không có máy chủ trung
-            gian hay phân tích sử dụng. Cài đặt, khóa, bộ sưu tập và lịch sử yêu
-            cầu nằm trong trình duyệt.
+            Yêu cầu được gửi trực tiếp đến dịch vụ mô hình bạn chọn. Aside không
+            có máy chủ trung gian và không thu thập phân tích sử dụng. Bộ sưu
+            tập và lịch sử yêu cầu được lưu trong trình duyệt của bạn.
           </p>
           <a class="text-link" href="../privacy.html"
             >Đọc chính sách quyền riêng tư (tiếng Anh)</a
           >
+        </div>
+      </section>
+      <section class="sync-section wrap" aria-labelledby="sync-title">
+        <div class="sync-intro">
+          <p class="sync-availability">
+            Sẽ có trong bản cập nhật Chrome Web Store tiếp theo
+          </p>
+          <h2 id="sync-title">Thiết lập quen thuộc trên mọi thiết bị.</h2>
+          <p class="sync-description">
+            Bạn có thể chọn đồng bộ kết nối mô hình, thao tác đọc và cài đặt suy
+            ngẫm qua Chrome. Cài đặt được mã hóa bằng cụm mật khẩu bạn chọn
+            trước khi rời khỏi thiết bị.
+          </p>
+        </div>
+        <div class="sync-details">
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="5" y="10" width="14" height="11" rx="2" />
+              <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+            </svg>
+            <div>
+              <h3>Cùng một cụm mật khẩu trên mọi thiết bị.</h3>
+              <p>
+                Đăng nhập cùng tài khoản Chrome và bật đồng bộ, rồi tham gia
+                trong Aside bằng cùng cụm mật khẩu. Cần cấp quyền truy cập dịch
+                vụ mô hình riêng trên từng thiết bị.
+              </p>
+            </div>
+          </div>
+          <div class="sync-detail">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="13" rx="2" />
+              <path d="M12 17v4M8 21h8" />
+            </svg>
+            <div>
+              <h3>Giữ riêng trên từng thiết bị.</h3>
+              <p>
+                Bộ sưu tập, suy ngẫm đã tạo, lịch sử yêu cầu và bộ nhớ đệm không
+                được đồng bộ. Ngôn ngữ và giao diện cũng được thiết lập riêng
+                trên từng thiết bị.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
       <section id="faq" class="faq-section wrap" aria-labelledby="faq-title">
@@ -608,52 +652,61 @@
       >
         <div class="install-heading">
           <h2 id="install-title">Bắt đầu từ một trang đáng đọc kỹ.</h2>
-          <p>Tải tiện ích sẵn để nạp. Không cần Node.js hay công cụ dựng.</p>
+          <p>
+            Cài Aside từ Chrome Web Store, rồi kết nối dịch vụ mô hình bạn chọn
+            để bắt đầu sử dụng.
+          </p>
         </div>
-        <ol class="install-steps">
-          <li>
-            <h3>Tải xuống.</h3>
-            <p>
-              Dùng nút bên dưới để tải ZIP của tiện ích, không phải bản “Source
-              code” do GitHub tự tạo.
-            </p>
-          </li>
-          <li>
-            <h3>Giải nén.</h3>
-            <p>
-              Giải nén ZIP vào một thư mục sẽ được giữ lại. Chrome nạp tiện ích
-              từ thư mục đó.
-            </p>
-          </li>
-          <li>
-            <h3>Nạp vào Chrome.</h3>
-            <p>
-              Mở <code>chrome://extensions</code>, bật
-              <strong>Chế độ dành cho nhà phát triển</strong>, chọn
-              <strong>Tải tiện ích đã giải nén</strong> rồi chọn thư mục đã giải
-              nén.
-            </p>
-          </li>
-        </ol>
-        <div class="install-actions">
+        <div class="install-actions store-install">
           <a
-            class="button primary download"
-            href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
-            >Tải cho Chrome</a
-          ><a href="https://github.com/worldtheater/aside/releases/tag/v0.1.1"
-            >Ghi chú phát hành</a
-          ><a href="https://github.com/worldtheater/aside#build-from-source"
-            >Dựng từ mã nguồn</a
+            class="button primary"
+            href="https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf"
+            >Thêm vào Chrome</a
           >
         </div>
         <p class="after-install">
           Sau đó mở cài đặt Aside và thêm kết nối mô hình. Trở lại trang web
           thông thường để bắt đầu dịch hoặc đặt câu hỏi.
         </p>
-        <p class="review-note">
-          Tiện ích đang được Chrome Web Store xét duyệt. Trong thời gian chờ,
-          hãy dùng gói cài đặt ở trên.
-        </p>
+        <details class="manual-install">
+          <summary>Cài đặt thủ công từ GitHub</summary>
+          <ol class="install-steps">
+            <li>
+              <h3>Tải xuống.</h3>
+              <p>
+                Dùng nút bên dưới để tải ZIP của tiện ích, không phải bản
+                “Source code” do GitHub tự tạo.
+              </p>
+            </li>
+            <li>
+              <h3>Giải nén.</h3>
+              <p>
+                Giải nén ZIP vào một thư mục sẽ được giữ lại. Chrome nạp tiện
+                ích từ thư mục đó.
+              </p>
+            </li>
+            <li>
+              <h3>Nạp vào Chrome.</h3>
+              <p>
+                Mở <code>chrome://extensions</code>, bật
+                <strong>Chế độ dành cho nhà phát triển</strong>, chọn
+                <strong>Tải tiện ích đã giải nén</strong> rồi chọn thư mục đã
+                giải nén.
+              </p>
+            </li>
+          </ol>
+          <div class="install-actions">
+            <a
+              class="button primary download"
+              href="https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip"
+              >Tải ZIP</a
+            ><a href="https://github.com/worldtheater/aside/releases/tag/v0.1.1"
+              >Ghi chú phát hành</a
+            ><a href="https://github.com/worldtheater/aside#build-from-source"
+              >Dựng từ mã nguồn</a
+            >
+          </div>
+        </details>
       </section>
     </main>
     <footer class="site-footer wrap">
