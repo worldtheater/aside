@@ -19,8 +19,13 @@ MAKE READING COMFORTABLE
 • Adjust result colors and typography, and use light or dark themes for Aside's interface.
 • Open Quick Q&A with Alt+Q and switch between your two most recently viewed tabs in the current window with Alt+W. Shortcuts can be changed in Chrome; existing key bindings may take precedence.
 
-YOUR SERVICES, LOCAL STORAGE
-Requests go directly to the model endpoint you choose. API keys, settings, collections, request history, and cached results are stored locally in your browser. Running a model feature sends the required text and instructions to that service. Aside has no developer-operated relay, analytics service, or cloud sync. The selected provider's privacy policy governs its handling of requests.
+YOUR SETUP, ACROSS DEVICES
+• Optionally sync model connections, reading actions, and reflection settings through Chrome using a passphrase you choose.
+• On another device, sign in to the same Chrome account with sync enabled and join with the same passphrase. Allow access to model services on each device.
+• Collections, generated reflections, request history, cached results, and local preferences such as language and appearance do not sync.
+
+YOUR SERVICES, YOUR DATA
+Requests go directly to the model endpoint you choose. Running a model feature sends the required text and instructions to that service; its privacy policy applies. Aside has no developer-operated relay or analytics service. Collections, request history, and cached results stay in your browser. API keys are encrypted locally with a device key stored in the same browser. If you enable configuration sync, settings including connection credentials are encrypted with your passphrase before being sent through Chrome Sync. The passphrase is not saved or uploaded.
 
 Supported protocols: OpenAI Responses, OpenAI-compatible Chat Completions, Anthropic Messages, and Gemini Interactions. Use HTTPS for remote services; supported local HTTP endpoints can also be configured. Model availability and capabilities depend on your provider.
 
@@ -29,5 +34,6 @@ The interface supports English, Simplified Chinese, Traditional Chinese, Japanes
 Page tools work on regular HTTP/HTTPS pages where Chrome permits extensions. Browser-internal pages, the Chrome Web Store, and other restricted pages are not supported.
 
 Aside is open source under the MIT License.
-Project and support: https://github.com/worldtheater/aside
+Website: https://worldtheater.github.io/aside/
+Source and support: https://github.com/worldtheater/aside
 Privacy policy: https://worldtheater.github.io/aside/privacy.html
