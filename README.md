@@ -125,24 +125,6 @@ Browser tests use isolated profiles and local mock model services. They do not r
 
 See the [development guide (Chinese)](docs/DEVELOPMENT.md) for the source layout, focused tests, protocol maintenance, and migration notes.
 
-Chrome Web Store listing copy, artwork, permissions declarations, and reviewer instructions are maintained in [web-store/](web-store/README.md).
-
-### Automated releases
-
-Ordinary commits and branch pushes do not create extension packages. Push a version tag such as `v0.1.2` on the commit you want to release to run the [release workflow](.github/workflows/release.yml). It checks version consistency, formatting, generated product pages, and core tests, then builds the ZIP and uploads it to a **draft** GitHub Release with generated release notes. It does not publish the release automatically.
-
-Before tagging, update the versions in `manifest.json`, `package.json`, and `package-lock.json`, regenerate the product pages with `npm run build:site`, and update the installation download link above. Commit these changes first. The tag must match the version in all three files.
-
-```sh
-git tag -a v0.1.2 -m "Aside 0.1.2"
-git push origin main
-git push origin v0.1.2
-```
-
-While a release is still a draft, moving its version tag to a newer commit reruns the workflow and replaces the ZIP in the same draft, preserving the release title and notes. Confirm the release is a draft before moving the tag. Published versions must use a new version number; the workflow refuses to overwrite their assets.
-
-The workflow uses GitHub's built-in token; no personal access token or model API key is needed. After the workflow succeeds, sign in to GitHub, download the ZIP from the draft, and verify it before clicking **Publish release**. Draft assets are not publicly downloadable. The website’s public version is recorded separately in `website/release.json`; after publishing a release, update that version and the README download link, then run `npm run build:site`. Keep the sync availability note until the Chrome Web Store version includes sync. This workflow only prepares GitHub Releases. Chrome Web Store submission remains manual, and GitHub Pages continues to deploy from `main` / `docs`. See the [release guide (Chinese)](docs/DEVELOPMENT.md#自动发布) for targeting an earlier commit.
-
 ## License
 
 [MIT](LICENSE). See [Third-party notices](THIRD_PARTY_NOTICES.md) for bundled dependencies and provider logos.
