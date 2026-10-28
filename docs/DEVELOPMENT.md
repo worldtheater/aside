@@ -1,9 +1,11 @@
 # 开发与维护
 
+UI 设计原则与验收检查项集中在 [设计规范](../.agents/design-principles.md)。本文保留实现约定、源码位置与开发流程。
+
 ## 环境与命令
 
 - Node.js 22+、npm；`.nvmrc` 指定 Node.js 24。
-- Python 3：仅 `npm run package` 需要，使用标准库，无额外 Python 依赖。
+- Python 3：打包命令需要，使用标准库，无额外 Python 依赖。
 - 本机 Google Chrome：浏览器回归和重建图标需要；普通构建使用已提交的 PNG，无需浏览器。
 - `npm ci` 按锁文件安装开发和运行依赖。项目不使用工作区包、父目录模块、外部脚本或本地辅助进程。
 
@@ -17,8 +19,10 @@
 | `npm test` | 构建并运行核心逻辑测试 |
 | `npm run test:browser` | 构建并运行主浏览器回归、内容脚本恢复和最近标签页测试 |
 | `node tests/browser.cjs --onboarding-only` | 已构建产物的首次安装引导、设置跳转及配置实时更新回归 |
+| `node tests/credentials-browser.cjs` | 已构建产物的本机凭据加密、升级迁移、重启保留及密文损坏回归 |
 | `node tests/theme-browser.cjs` | 已构建产物的首屏主题专项回归 |
 | `npm run package` | 构建并生成 `artifacts/aside-<manifest版本>.zip` |
+| `npm run package:dev` | 构建、打包，并将同一 ZIP 解压至固定调试目录 `artifacts/unpacked/` |
 
 测试默认通过 Playwright 的 `chrome` channel 查找已安装的 Chrome。自定义路径示例：
 
@@ -33,6 +37,12 @@ CHROME_PATH="/path/to/chrome" npm run test:browser
 根目录是未打包扩展的加载目录。`scripts/build.mjs` 先执行类型检查，再用 esbuild 打包模块和依赖；后台与界面使用 ESM，内容脚本单独打包为 IIFE。构建会清理根目录所有 `.js` 文件，因此源码和开发脚本必须放在 `src/`、`scripts/` 或 `tests/` 中。不要手工修改生成文件，也不要在浏览器回归运行期间重新构建。
 
 `build.py` 使用明确的运行文件清单打包 JS、CSS、HTML、manifest、图标、语言资源和许可证。安装包不包含源码、依赖目录、测试、截图或本机配置。发布前同步 `manifest.json`、`package.json` 和锁文件中的版本。
+
+### 本地调试安装
+
+运行 `npm run package:dev`，同时生成 ZIP 和更新 `artifacts/unpacked/`。首次在 `chrome://extensions` 开启开发者模式，选择「加载已解压的扩展程序」，加载当前仓库的 `artifacts/unpacked/` 目录。之后仍运行同一命令，再点击该扩展的「重新加载」，无需重新解压或卸载插件。
+
+`artifacts/unpacked/` 是专用构建产物目录，每次会清理旧文件，再从 ZIP 解压，避免残留过期模块。不要在该目录保存其他文件。运行中的扩展依赖此目录，请保留它；本地配置存储在 Chrome 的扩展数据中，不在该目录内。
 
 品牌资源：`icons/icon.svg` 是标准母版，`icons/icon-small.svg` 用于 16/32px 光学校正版；`icons/brand-mark.svg` 是界面共用标记。修改母版后运行 `npm run build:icons` 并检查生成图标。
 
@@ -104,9 +114,9 @@ git push --force-with-lease="refs/tags/v0.1.1:$previous_release_tag" origin refs
 
 当前支持英语、简体中文、繁体中文、日语、韩语、法语、德语、西班牙语、葡萄牙语（巴西）、俄语、印尼语、意大利语、土耳其语、泰语和越南语。`src/locale.ts` 统一声明语言名称、缩写、输出语言及系统语言匹配，界面与后台共用解析规则。繁体中文地区（台湾、香港、澳门）和 `zh-Hant` 匹配繁体中文；显式 `zh-Hans` 匹配简体中文。
 
-文案按语言存放于 `src/locales/`，每种语言需完整满足英文资源导出的 `Copy` 类型，不使用英语覆盖缺失文案。动态参数、占位符和用量格式函数同样需要翻译。释义、解释、总结和问答的模型指令共用 `ACTION_PROMPTS`；翻译和随想的可编辑默认要求按界面语言提供。修改显示语言不会改写自定义名称、提示词或显式输出语言。
+文案按语言存放于 `src/locales/`，每种语言需完整满足英文资源导出的 `Copy` 类型，不使用英语覆盖缺失文案。动态参数、占位符和用量格式函数同样需要翻译。释义、解释、总结和问答的模型指令共用 `ACTION_PROMPTS`；翻译和随想的可编辑默认要求按界面语言提供。
 
-新增语言时同步维护语言表、完整文案、`DAILY_PROMPT` 及 Chrome 的 `_locales/<locale>/messages.json`。运行 `node tests/locales.mjs` 和 `node tests/browser.cjs --locales-only`，验证系统匹配、保存、后台输出指令、弹窗及网页面板，并检查长文案在窄屏下的布局。
+新增语言时同步维护语言表、完整文案、`DAILY_PROMPT` 及 Chrome 的 `_locales/<locale>/messages.json`。运行 `node tests/locales.mjs` 和 `node tests/browser.cjs --locales-only`，验证系统匹配、保存、后台输出指令、弹窗及网页面板。
 
 ### 模型与协议
 
@@ -118,13 +128,17 @@ git push --force-with-lease="refs/tags/v0.1.1:$previous_release_tag" origin refs
 
 页内逐段翻译使用可见区域加上下各 600px 预加载，滚动和 DOM 变化增量调度；原文被编辑时丢弃旧版本结果。插件自己的结果节点不参与重复提取。整页结果面板、总结和提炼要点仍处理全文。
 
+选文处理将完整选文作为一个输入，保留原始换行；后台按选文来源使用整体处理，不随处理方式的整页分段设置拆块或分批。复用整体处理的缓存身份与单次输入上限，超限明确报错，不静默拆分；不修改已保存的处理方式。
+
 原文节点和事件保留，恢复原文会移除结果及插件的布局调整。相同任务可共享请求，同一连接共用并发额度；只有所有订阅者都取消才中止共享上游请求。完整有效的结果才进入缓存，手动重新生成绕过缓存；不引入静默重试。
 
 内容脚本处理扩展重载后的失效上下文，后台与页面消息客户端应共用既有错误处理。不要把消息通道断开误报成服务商返回错误。
 
 ### 数据与渲染
 
-密钥仅保存在后台受限存储中，内容脚本只获得不含密钥的配置快照。模型返回的 Markdown 经 Marked 和 DOMPurify 处理；网页内容和模型输出都是数据，不是可执行指令。提取排除表单、编辑区域、隐藏内容和整块代码。
+本机 API Key 和含密钥的同步副本统一封装在 `chrome.storage.local.protectedConfiguration`，使用 AES-256-GCM 加密；随机设备密钥以不可导出的 `CryptoKey` 保存在独立 `aside-credentials` IndexedDB 中，不进入 Chrome Sync。存储层负责解密与写回，未变化的敏感内容复用密文，避免触发无意义的同步循环。初始化时先写入加密副本，再移除已发布版本的明文 `credentials` 和 `configurationRecords`；读操作不执行迁移。密钥丢失或密文认证失败时明确报错，不生成替代密钥覆盖数据。此机制降低明文暴露，不提供系统钥匙串或完整浏览器数据被盗时的防护。内容脚本只获得不含密钥的配置快照。模型返回的 Markdown 经 Marked 和 DOMPurify 处理；网页内容和模型输出都是数据，不是可执行指令。提取排除表单、编辑区域、隐藏内容和整块代码。
+
+模型错误先替换已配置的 API Key，再限制提示长度。结果流在协议层暂存可能属于密钥的末尾前缀，跨分片匹配后再发往界面与记录器；异常结束不释放该前缀。调用记录的输入、指令、输出与显示元数据在写入前脱敏，缓存写入与命中返回也按已配置密钥处理。只匹配已知密钥（含 JSON 转义形式），不按外观猜测密钥，不改写已有历史记录或清理备份。
 
 本地结果缓存在 IndexedDB 中按容量淘汰，当前数据预算 50 MiB；清空后，在途任务不应重新写回旧结果。缓存结果可能包含原文信息，不能当作脱敏数据。最近标签页记录保存在 `chrome.storage.session`，重启浏览器或重载扩展后重新建立。
 
@@ -184,6 +198,6 @@ GitHub Pages 从 `main` 分支的 `docs/` 提供静态页面。首页使用 `web
 
 首页下载入口指向 GitHub Release 的 `aside-<version>.zip`，版本号取自 `package.json`。更新版本后重新生成首页；推送匹配的版本标签后，自动发布工作流会生成并上传对应安装包到草稿，验收并公开发布后下载链接才生效，见[自动发布](#自动发布)。
 
-使用 `node scripts/store-assets.mjs --website` 重新生成首页截图。它复用商店素材的隔离浏览器与本地模拟服务，以 2 倍像素密度直接截取真实插件界面，并为首屏提供移动端版本，为首屏、选文问答和收藏提供亮暗色版本。无参数运行仍只生成商店素材。首页图片按自然比例显示，不再依赖 CSS 放大与负偏移裁切。
+使用 `node scripts/store-assets.mjs --website` 重新生成首页截图。它复用商店素材的隔离浏览器与本地模拟服务，以 2 倍像素密度直接截取真实插件界面，并为首屏提供移动端版本，为首屏、选文问答和收藏提供亮暗色版本。无参数运行仍只生成商店素材。截图内容、显示比例与预览交互遵循设计规范。
 
-首页主题按钮在跟随系统、浅色、深色之间循环，选择保存在本站的本地存储中。页面配色与示例截图同步切换。修改 `docs/home.css` 或 `docs/home.js` 后也要运行 `npm run build:site`，生成页面中的资源版本随内容更新，避免旧缓存影响预览和发布。
+首页主题选择保存在本站的本地存储中；主题交互和截图呈现遵循设计规范。修改 `docs/home.css` 或 `docs/home.js` 后也要运行 `npm run build:site`，生成页面中的资源版本随内容更新，避免旧缓存影响预览和发布。

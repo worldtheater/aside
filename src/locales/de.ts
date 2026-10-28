@@ -4,6 +4,124 @@ import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
 const base = {
+  sync: {
+    devicesTitle: "Auf einem anderen Gerät",
+    joinSteps: [
+      "Mit demselben Chrome-Konto anmelden und die Chrome-Synchronisierung aktivieren.",
+      "In Aside die Seite „Synchronisierung“ öffnen und mit derselben Passphrase beitreten.",
+      "Auf diesem Gerät den Zugriff auf Modelldienste erlauben, wenn dazu aufgefordert wird.",
+    ],
+    mergeTitle: "Änderungen zusammenführen",
+    mergeRules: [
+      {
+        title: "Neue Einträge",
+        description: "Einträge von allen Geräten bleiben erhalten.",
+      },
+      {
+        title: "Änderungen",
+        description:
+          "Für denselben Eintrag gilt die zuletzt gespeicherte Version.",
+      },
+      {
+        title: "Löschungen",
+        description:
+          "Gelten auf allen Geräten; ältere Änderungen stellen den Eintrag nicht wieder her.",
+      },
+      {
+        title: "Standardmodell",
+        description:
+          "Wird nur übernommen, wenn auf diesem Gerät noch keines festgelegt ist.",
+      },
+    ],
+    manageTitle: "Synchronisierung verwalten",
+    stopHelp:
+      "Lokale Einstellungen bleiben erhalten. Andere Geräte synchronisieren weiter.",
+    clearHelp:
+      "Entfernt die gemeinsame Kopie, behält lokale Einstellungen. Andere Geräte müssen die Synchronisierung neu einrichten.",
+    accessTitle: "Zugriff auf Modelldienste erlauben",
+    accessHelp:
+      "Erlauben Sie diesem Browser den Zugriff auf die folgenden Dienste, bevor Sie Ihre Modelle verwenden.",
+    allowAccess: "Zugriff erlauben",
+    accessReady:
+      "Alle Modelldienstadressen sind in diesem Browser freigegeben.",
+    accessDenied:
+      "Der Zugriff wurde nicht erlaubt. Sie können es erneut versuchen; Ihre synchronisierten Einstellungen bleiben erhalten.",
+    joinExisting: "Bestehender Synchronisierung beitreten",
+    waitingHelp:
+      "Die synchronisierten Einstellungen sind noch nicht angekommen. Falls die Synchronisierung auf einem anderen Gerät bereits aktiv ist, verwenden Sie dasselbe Chrome-Konto mit aktivierter Chrome-Synchronisierung und warten Sie. Sobald die Einstellungen ankommen, können Sie Ihre bestehende Passphrase eingeben.",
+    firstSetup: "Erstmalig einrichten",
+    checkAgain: "Erneut prüfen",
+    forgotPassphrase: "Passphrase vergessen?",
+    resetSync: "Sync zurücksetzen",
+    resetText:
+      "Die alte Passphrase lässt sich nicht wiederherstellen. Beim Zurücksetzen werden die synchronisierten Einstellungen in der Cloud gelöscht. Einstellungen und API-Schlüssel auf den Geräten bleiben erhalten. Richte Sync auf einem Gerät mit deinen vollständigen Einstellungen und einer neuen Passphrase erneut ein. Andere Geräte müssen die neue Passphrase verwenden, um weiter zu synchronisieren. Einstellungen, die nur in der Cloud liegen, lassen sich nicht wiederherstellen.",
+    scopeTitle: "Synchronisiert",
+    localOnlyTitle: "Nur auf diesem Gerät",
+    createHelp:
+      "Legen Sie nur dann eine neue Passphrase fest, wenn Sie die Synchronisierung noch auf keinem Gerät aktiviert haben. Andere Geräte treten mit derselben Passphrase bei.",
+    joinHelp:
+      "Gib dieselbe Sync-Passphrase ein, die du auf einem anderen Gerät festgelegt hast. Verwende dasselbe Chrome-Konto mit aktivierter Synchronisierung.",
+    details: "Sync-Details und Verwaltung",
+    scope: [
+      "Modellverbindungen und API-Schlüssel",
+      "Aktionen",
+      "Einstellungen für Gedanken",
+    ],
+    localOnly: [
+      "Sammlung und erzeugte Gedanken",
+      "Anfrageverlauf und Cache",
+      "Sprache, Design und Geräteeinstellungen",
+    ],
+    join: "Sync beitreten",
+    joinTitle: "Konfigurationen zusammenführen?",
+    joinText:
+      "Die Einstellungen dieses Geräts mit den synchronisierten Einstellungen zusammenführen? Dabei können Einstellungen aktualisiert werden. Nur hier vorhandene Verbindungen und Aktionen bleiben erhalten. Sammlungen und persönliche Einstellungen sind nicht betroffen.",
+    title: "Synchronisierung",
+    intro:
+      "Synchronisiere verschlüsselte Einstellungen über dein Chrome-Konto zwischen Geräten.",
+    requirements:
+      "Chrome überträgt Änderungen im Hintergrund. Kommen sie nicht an, Chrome-Synchronisierung und Netzwerk prüfen.",
+    passphrase: "Sync-Passphrase",
+    confirmPassphrase: "Passphrase bestätigen",
+    passphraseHelp:
+      "Bewahre die Passphrase gut auf: Sie lässt sich nicht wiederherstellen. Nach einem Neustart von Chrome oder erneutem Laden der Erweiterung musst du sie erneut eingeben.",
+    locked:
+      "Gib deine ursprüngliche Passphrase ein, um weiter zu synchronisieren. Deine lokalen Einstellungen bleiben nutzbar.",
+    ready: "Die Synchronisierung ist aktiviert.",
+    lastSync: "Letzte Synchronisierung auf diesem Gerät",
+    create: "Synchronisierung aktivieren",
+    unlock: "Synchronisierung entsperren",
+    syncNow: "Jetzt synchronisieren",
+    stop: "Auf diesem Gerät stoppen",
+    clear: "Synchronisierte Einstellungen löschen",
+    clearText:
+      "Verschlüsselte Einstellungen aus Chrome Sync löschen und hier die Synchronisierung stoppen? Lokale Einstellungen und API-Schlüssel bleiben erhalten. Andere Geräte müssen neu eingerichtet werden. Bei vergessener Passphrase kannst du danach eine neue Kopie erstellen.",
+    stopText:
+      "Synchronisierung auf diesem Gerät stoppen? Lokale Einstellungen und API-Schlüssel bleiben nutzbar. Die synchronisierte Kopie und andere Geräte bleiben unverändert.",
+    done: "Sync-Einstellungen aktualisiert",
+    working: "Wird verarbeitet…",
+    errors: {
+      passphraseRequired: "Gib deine Sync-Passphrase ein.",
+      passphraseShort:
+        "Die Passphrase muss mindestens {min} Zeichen lang sein.",
+      mismatch: "Die Passphrasen stimmen nicht überein.",
+      wrongPassphrase:
+        "Falsche Passphrase oder die synchronisierten Daten konnten nicht authentifiziert werden.",
+      locked: "Entsperre die Synchronisierung zuerst mit deiner Passphrase.",
+      waiting:
+        "Chrome empfängt die Einstellungen noch. Versuche es gleich erneut.",
+      tooLarge:
+        "Die Einstellungen überschreiten den verfügbaren Sync-Speicher. Kürze Anweisungen oder entferne ungenutzte Einstellungen.",
+      version:
+        "Die synchronisierten Einstellungen haben eine andere Version. Aktualisiere Aside auf deinen Geräten.",
+      invalidData:
+        "Die synchronisierten Einstellungen sind ungültig und wurden nicht angewendet.",
+      remoteMissing:
+        "Die synchronisierte Kopie wurde gelöscht. Lokale Einstellungen bleiben erhalten. Lösche die Sync-Einrichtung und aktiviere sie erneut.",
+      unavailable:
+        "Synchronisierung fehlgeschlagen. Prüfe Chrome Sync und deine Verbindung und versuche es erneut.",
+    },
+  },
   brand: "Aside",
   about: {
     version: "Aktuelle Version",
@@ -20,6 +138,7 @@ const base = {
     dompurify: "HTML-Bereinigung",
   },
   nav: {
+    sync: "Synchronisierung",
     help: "Über",
     home: "Sammlung",
     actions: "Aktionen",
@@ -511,6 +630,8 @@ const full = {
       invalidDecision:
         "Der Entscheidungsdienst hat ein ungültiges Ergebnis zurückgegeben.",
       actionLimit: `Bis zu ${MAX_ACTIONS} Aktionen können gespeichert werden. Entferne zuerst eine ungenutzte eigene Aktion.`,
+      recordDeleted:
+        "Dieser Eintrag wurde gelöscht. Erstelle einen neuen, um diese Änderungen zu speichern.",
       invalidAction: "Gültige Aktionseinstellungen eingeben.",
       presetActionProtected:
         "Voreingestellte Aktionen können nicht gelöscht werden.",
@@ -525,6 +646,8 @@ const full = {
       invalidUrl:
         "Eine HTTPS-Dienstadresse verwenden. Lokale Dienste dürfen localhost oder 127.0.0.1 nutzen.",
       invalidProtocol: "Ein gültiges API-Protokoll wählen.",
+      credentialsUnavailable:
+        "Der lokale API-Schlüsselspeicher ist nicht verfügbar. Laden Sie die Erweiterung neu und versuchen Sie es erneut.",
       invalidConnection:
         "Einen Verbindungsnamen eingeben und die Einstellungen prüfen.",
       modelRequired:

@@ -14,8 +14,13 @@ export const isPresetAction = (action: Pick<Action, "id">) =>
 export const MAX_ACTIONS = 20;
 export const MAX_COLLAPSED_ACTIONS = 3;
 
-export function actionLimitError(actions: readonly unknown[]) {
-  return actions.length > MAX_ACTIONS ? "actionLimit" : null;
+export function actionLimitError(
+  actions: readonly unknown[],
+  previousCount = 0,
+) {
+  return actions.length > Math.max(MAX_ACTIONS, previousCount)
+    ? "actionLimit"
+    : null;
 }
 
 export function toolbarActions(actions: Action[], expanded: boolean) {

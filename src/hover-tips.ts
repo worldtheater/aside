@@ -1,3 +1,4 @@
+import { randomUUID } from "./uuid.js";
 // Shared top-layer tips stay outside clipped panels and inside the viewport.
 export class HoverTips {
   readonly element = document.createElement("div");
@@ -12,7 +13,7 @@ export class HoverTips {
     private enabled: () => boolean = () => true,
   ) {
     this.element.className = "hover-tip";
-    this.element.id = `hover-tip-${crypto.randomUUID()}`;
+    this.element.id = `hover-tip-${randomUUID()}`;
     this.element.setAttribute("popover", "manual");
     this.element.setAttribute("role", "tooltip");
     root.append(this.element);

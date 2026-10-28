@@ -4,6 +4,104 @@ import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
 const base = {
+  sync: {
+    devicesTitle: "在其他裝置上加入",
+    joinSteps: [
+      "登入同一個 Chrome 帳戶，並開啟 Chrome 同步。",
+      "開啟旁白的「同步」頁面，使用同一個通關密語加入。",
+      "依照頁面提示，允許這台裝置存取模型服務。",
+    ],
+    mergeTitle: "變更如何合併",
+    mergeRules: [
+      {
+        title: "新增",
+        description: "各裝置新增的內容都會保留。",
+      },
+      {
+        title: "修改",
+        description: "同一項目採用最後儲存的版本。",
+      },
+      {
+        title: "刪除",
+        description: "刪除會同步，舊修改不會還原已刪除的項目。",
+      },
+      {
+        title: "預設模型",
+        description: "僅在本機尚未選擇時，採用同步中的選擇。",
+      },
+    ],
+    manageTitle: "同步管理",
+    stopHelp: "保留本機設定，其他裝置繼續同步。",
+    clearHelp: "移除共用副本，保留本機設定；其他裝置需重新加入同步。",
+    accessTitle: "授權模型服務",
+    accessHelp: "使用模型前，請在這個瀏覽器允許存取以下服務。",
+    allowAccess: "允許存取",
+    accessReady: "本機已授權所有模型服務位址。",
+    accessDenied: "尚未取得存取權限，可重新授權。已同步的設定會保留。",
+    joinExisting: "加入現有同步",
+    waitingHelp:
+      "尚未收到同步設定。如果已在其他裝置啟用，請登入同一個 Chrome 帳號並保持 Chrome 同步開啟。設定送達後，即可輸入原密語加入。",
+    firstSetup: "首次啟用同步",
+    checkAgain: "重新檢查",
+    forgotPassphrase: "忘記密語？",
+    resetSync: "重設同步",
+    resetText:
+      "無法找回舊密語。重設會刪除雲端同步設定，保留各裝置的本機設定和 API Key。請在仍有完整設定的裝置上重新啟用同步並設定新密語，其他裝置隨後使用新密語恢復同步。只儲存在雲端的設定將無法復原。",
+    scopeTitle: "同步內容",
+    localOnlyTitle: "保留在本機",
+    createHelp:
+      "僅在所有裝置都尚未啟用同步時設定新密語，其他裝置將使用同一個密語加入。",
+    joinHelp:
+      "輸入你在其他裝置設定的同一個同步密語。各裝置需登入同一個 Chrome 帳號並開啟同步。",
+    details: "同步說明與管理",
+    scope: ["模型連線與 API Key", "處理方式", "隨想生成設定"],
+    localOnly: [
+      "收藏與已生成的隨想",
+      "請求紀錄與快取",
+      "語言、佈景主題等本機偏好",
+    ],
+    join: "加入同步",
+    joinTitle: "合併設定？",
+    joinText:
+      "這台裝置的設定會與同步設定合併，部分設定可能更新。本機獨有的模型連線和處理方式會保留，收藏與個人偏好不受影響。",
+    title: "同步",
+    intro: "透過 Chrome 帳號，在裝置之間同步加密的設定。",
+    requirements:
+      "變更由 Chrome 在背景傳送。若遲遲未收到，請檢查 Chrome 同步與網路連線。",
+    passphrase: "同步密語",
+    confirmPassphrase: "確認密語",
+    passphraseHelp:
+      "請記住這個密語，遺忘後無法找回。重新啟動 Chrome 或重新載入擴充功能後需再次輸入。",
+    locked: "輸入原來的同步密語，繼續同步。本機設定仍可正常使用。",
+    ready: "同步已啟用。",
+    lastSync: "本機上次同步",
+    create: "啟用同步",
+    unlock: "解鎖同步",
+    syncNow: "立即同步",
+    stop: "停止本機同步",
+    clear: "刪除同步設定",
+    clearText:
+      "從 Chrome 同步中刪除加密設定，並停止本機同步？本機設定和 API Key 會保留，其他裝置需重新設定才能繼續同步。如果忘記密語，刪除後可建立新的同步副本。",
+    stopText:
+      "停止這台裝置的同步？本機設定和 API Key 仍可使用，同步副本會保留，其他裝置不受影響。",
+    done: "同步設定已更新",
+    working: "處理中…",
+    errors: {
+      passphraseRequired: "請輸入同步密語。",
+      passphraseShort: "同步密語至少需要 {min} 個字元。",
+      mismatch: "兩次輸入的密語不一致。",
+      wrongPassphrase: "密語不正確，或同步資料未通過完整性驗證。",
+      locked: "請先輸入密語解鎖同步。",
+      waiting: "Chrome 正在接收同步設定，請稍後重試。",
+      tooLarge:
+        "設定超過 Chrome 可用同步空間，請縮短補充要求或刪除不用的設定後重試。",
+      version: "同步設定需要不同版本的 Aside，請更新各裝置上的擴充功能。",
+      invalidData: "同步設定無效，未套用至本機。",
+      remoteMissing:
+        "同步副本已被刪除，本機設定仍保留。請刪除同步設定後重新啟用。",
+      unavailable: "同步未完成，請檢查 Chrome 同步和網路後重試。",
+    },
+  },
   brand: "旁白",
   about: {
     version: "目前版本",
@@ -19,6 +117,7 @@ const base = {
     dompurify: "HTML 內容淨化",
   },
   nav: {
+    sync: "同步",
     help: "關於",
     home: "收藏",
     actions: "處理方式",
@@ -471,6 +570,7 @@ const full = {
       noDecisionConnection: "請先設定預設判斷模型。",
       invalidDecision: "判斷服務回傳了無效結果。",
       actionLimit: `最多可儲存 ${MAX_ACTIONS} 個處理方式，請先移除不用的自訂項目。`,
+      recordDeleted: "這筆記錄已被刪除。請新增記錄來儲存這些修改。",
       invalidAction: "請輸入有效的處理方式設定。",
       presetActionProtected: "無法刪除預設處理方式。",
       sameLanguages: "來源與目標語言相同，請選擇不同語言後再翻譯。",
@@ -481,6 +581,8 @@ const full = {
       invalidUrl:
         "請使用 HTTPS 服務網址。本機服務可使用 localhost 或 127.0.0.1。",
       invalidProtocol: "請選擇有效的 API 協定。",
+      credentialsUnavailable:
+        "本機 API Key 儲存空間無法使用，請重新載入擴充功能後再試。",
       invalidConnection: "請填寫連線名稱並檢查連線設定。",
       modelRequired: "請先測試連線，再從回傳清單中選擇模型。",
       invalidReasoning:

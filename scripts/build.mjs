@@ -31,7 +31,7 @@ await build({
   bundle: true,
   splitting: true,
   target: "chrome120",
-  loader: { ".svg": "text" },
+  loader: { ".svg": "text", ".css": "text" },
 });
 // The website API shim must not wrap this extension's Promise-based chrome API.
 // Keep its compatibility runtime private, and execute its CSSOM proxy as a local
@@ -145,6 +145,6 @@ await build({
   format: "iife",
   plugins: [darkReaderPlugin],
   target: "chrome120",
-  loader: { ".svg": "text" },
+  loader: { ".svg": "text", ".css": "text" },
 });
 console.log(`Built Aside extension in ${root}`);

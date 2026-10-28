@@ -4,6 +4,125 @@ import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
 const base = {
+  sync: {
+    devicesTitle: "Sur un autre appareil",
+    joinSteps: [
+      "Connectez-vous au même compte Chrome et activez la synchronisation Chrome.",
+      "Ouvrez la page Synchronisation d’Aside et rejoignez-la avec la même phrase secrète.",
+      "Autorisez l’accès aux services de modèles lorsque cet appareil le demande.",
+    ],
+    mergeTitle: "Fusion des modifications",
+    mergeRules: [
+      {
+        title: "Ajouts",
+        description: "Les éléments créés sur chaque appareil sont conservés.",
+      },
+      {
+        title: "Modifications",
+        description:
+          "La dernière version enregistrée d’un élément est retenue.",
+      },
+      {
+        title: "Suppressions",
+        description:
+          "Elles se propagent ; une ancienne modification ne restaure pas l’élément.",
+      },
+      {
+        title: "Modèle par défaut",
+        description:
+          "Le choix synchronisé est repris uniquement si aucun modèle n’est défini ici.",
+      },
+    ],
+    manageTitle: "Gérer la synchronisation",
+    stopHelp:
+      "Les paramètres locaux sont conservés. Les autres appareils continuent à se synchroniser.",
+    clearHelp:
+      "Supprime la copie partagée et conserve les paramètres locaux. Les autres appareils devront se reconnecter.",
+    accessTitle: "Autoriser l’accès aux services de modèles",
+    accessHelp:
+      "Avant d’utiliser vos modèles, autorisez ce navigateur à accéder aux services ci-dessous.",
+    allowAccess: "Autoriser l’accès",
+    accessReady:
+      "Toutes les adresses des services de modèles sont autorisées dans ce navigateur.",
+    accessDenied:
+      "L’accès n’a pas été autorisé. Vous pouvez réessayer ; les paramètres synchronisés sont conservés.",
+    joinExisting: "Rejoindre une synchronisation existante",
+    waitingHelp:
+      "Les paramètres synchronisés ne sont pas encore arrivés. Si la synchronisation est déjà activée sur un autre appareil, utilisez le même compte Chrome, activez la synchronisation Chrome et patientez. Vous pourrez ensuite saisir votre phrase secrète existante.",
+    firstSetup: "Première configuration",
+    checkAgain: "Vérifier à nouveau",
+    forgotPassphrase: "Phrase secrète oubliée ?",
+    resetSync: "Réinitialiser la synchronisation",
+    resetText:
+      "L’ancienne phrase secrète ne peut pas être récupérée. La réinitialisation supprime les paramètres synchronisés dans le cloud, mais conserve les paramètres et clés API de chaque appareil. Configurez à nouveau la synchronisation avec une nouvelle phrase secrète depuis un appareil contenant encore tous vos paramètres. Les autres appareils devront aussi utiliser cette nouvelle phrase. Les paramètres présents uniquement dans le cloud ne pourront pas être récupérés.",
+    scopeTitle: "Synchronisé",
+    localOnlyTitle: "Sur cet appareil",
+    createHelp:
+      "Ne définissez une nouvelle phrase secrète que si aucun de vos appareils n’a encore activé la synchronisation. Les autres appareils utiliseront la même phrase pour rejoindre.",
+    joinHelp:
+      "Saisissez la même phrase secrète que celle définie sur un autre appareil. Utilisez le même compte Chrome avec la synchronisation Chrome activée.",
+    details: "Détails et gestion de la synchronisation",
+    scope: [
+      "Connexions aux modèles et clés API",
+      "Actions",
+      "Paramètres des réflexions",
+    ],
+    localOnly: [
+      "Collection et réflexions générées",
+      "Historique des requêtes et cache",
+      "Langue, thème et préférences de l’appareil",
+    ],
+    join: "Rejoindre la synchronisation",
+    joinTitle: "Fusionner les configurations ?",
+    joinText:
+      "Fusionner les paramètres de cet appareil avec ceux synchronisés ? Certains paramètres peuvent être mis à jour. Les connexions et actions propres à cet appareil sont conservées. Les collections et préférences personnelles ne sont pas affectées.",
+    title: "Synchronisation",
+    intro:
+      "Synchronisez vos paramètres chiffrés entre appareils avec votre compte Chrome.",
+    requirements:
+      "Chrome transmet les modifications en arrière-plan. Si elles n’arrivent pas, vérifiez la synchronisation Chrome et le réseau.",
+    passphrase: "Phrase secrète de synchronisation",
+    confirmPassphrase: "Confirmer la phrase secrète",
+    passphraseHelp:
+      "Conservez cette phrase secrète : elle ne peut pas être récupérée. Saisissez-la à nouveau après un redémarrage de Chrome ou un rechargement de l’extension.",
+    locked:
+      "Saisissez votre phrase secrète d’origine pour reprendre la synchronisation. Vos paramètres locaux restent disponibles.",
+    ready: "La synchronisation est activée.",
+    lastSync: "Dernière synchronisation sur cet appareil",
+    create: "Activer la synchronisation",
+    unlock: "Déverrouiller la synchronisation",
+    syncNow: "Synchroniser maintenant",
+    stop: "Arrêter sur cet appareil",
+    clear: "Supprimer les paramètres synchronisés",
+    clearText:
+      "Supprimer les paramètres chiffrés de Chrome Sync et arrêter la synchronisation ici ? Les paramètres locaux et clés API seront conservés. Les autres appareils devront être reconfigurés. Si vous avez oublié la phrase secrète, vous pourrez créer une nouvelle copie.",
+    stopText:
+      "Arrêter la synchronisation sur cet appareil ? Les paramètres locaux et clés API restent disponibles. La copie synchronisée et les autres appareils ne sont pas affectés.",
+    done: "Paramètres de synchronisation mis à jour",
+    working: "Traitement…",
+    errors: {
+      passphraseRequired: "Saisissez votre phrase secrète.",
+      passphraseShort:
+        "La phrase secrète doit contenir au moins {min} caractères.",
+      mismatch: "Les phrases secrètes ne correspondent pas.",
+      wrongPassphrase:
+        "Phrase secrète incorrecte ou données synchronisées non authentifiables.",
+      locked:
+        "Déverrouillez d’abord la synchronisation avec votre phrase secrète.",
+      waiting:
+        "Chrome reçoit les paramètres synchronisés. Réessayez dans un instant.",
+      tooLarge:
+        "La configuration dépasse l’espace de synchronisation disponible. Raccourcissez les instructions ou supprimez des paramètres inutilisés.",
+      version:
+        "La version des paramètres diffère. Mettez Aside à jour sur vos appareils.",
+      invalidData:
+        "Les paramètres synchronisés sont invalides et n’ont pas été appliqués.",
+      remoteMissing:
+        "La copie synchronisée a été supprimée. Les paramètres locaux sont conservés. Supprimez la configuration de synchronisation puis réactivez-la.",
+      unavailable:
+        "Échec de la synchronisation. Vérifiez Chrome Sync et votre connexion, puis réessayez.",
+    },
+  },
   brand: "Aside",
   about: {
     version: "Version actuelle",
@@ -20,6 +139,7 @@ const base = {
     dompurify: "Assainissement HTML",
   },
   nav: {
+    sync: "Synchronisation",
     help: "À propos",
     home: "Collection",
     actions: "Actions",
@@ -508,6 +628,8 @@ const full = {
         "Configurez d’abord un modèle de décision par défaut.",
       invalidDecision: "Le service de décision a renvoyé un résultat invalide.",
       actionLimit: `Vous pouvez enregistrer jusqu’à ${MAX_ACTIONS} actions. Supprimez d’abord une action personnalisée inutilisée.`,
+      recordDeleted:
+        "Cet élément a été supprimé. Créez-en un nouveau pour enregistrer ces modifications.",
       invalidAction: "Saisissez des paramètres d’action valides.",
       presetActionProtected:
         "Les actions prédéfinies ne peuvent pas être supprimées.",
@@ -521,6 +643,8 @@ const full = {
       invalidUrl:
         "Utilisez une URL HTTPS. Les services locaux peuvent utiliser localhost ou 127.0.0.1.",
       invalidProtocol: "Choisissez un protocole API valide.",
+      credentialsUnavailable:
+        "Le stockage local des clés API est indisponible. Rechargez l’extension et réessayez.",
       invalidConnection:
         "Saisissez un nom et vérifiez les paramètres de connexion.",
       modelRequired:

@@ -1,3 +1,5 @@
+import { createSecretRedactor } from "./redaction.js";
+import { ConfigurationSync } from "./config-sync.js";
 import { resolveLocale } from "./locale.js";
 import { trackRecentTabs, switchRecentTab } from "./recent-tabs.js";
 import { RequestScheduler } from "./scheduler.js";
@@ -250,6 +252,16 @@ function syncSelectionMenu() {
   selectionMenuUpdate = update;
   return update;
 }
+const configurationSync = new ConfigurationSync({
+  storage: chrome.storage,
+  mutate,
+  applied: async () => {
+    await syncSelectionMenu();
+    await broadcastSettings((await readStore()).settings);
+    await chrome.runtime.sendMessage({ type: "sync.applied" }).catch(() => {});
+  },
+});
+configurationSync.start();
 chrome.runtime.onInstalled.addListener(async (details) => {
   await initialize();
   const registrations = await chrome.scripting.getRegisteredContentScripts();
@@ -461,6 +473,7 @@ chrome.runtime.onMessage.addListener(
         await mutate((data) => {
           // Content scripts can edit actions, but cannot replace settings or credentials.
           const settings = data.settings;
+          const previousCount = settings.actions.length;
           for (const change of message.changes) {
             const index = settings.actions.findIndex((a) => a.id === change.id);
             if ((change.create && index >= 0) || (!change.create && index < 0))
@@ -530,7 +543,7 @@ chrome.runtime.onMessage.addListener(
             if (index < 0) settings.actions.push(next);
             else settings.actions[index] = next;
           }
-          const limit = actionLimitError(settings.actions);
+          const limit = actionLimitError(settings.actions, previousCount);
           if (limit) throw new ModelError(limit);
         });
         await syncSelectionMenu();
@@ -538,6 +551,16 @@ chrome.runtime.onMessage.addListener(
       }
       assertTrusted(sender);
       if (message.type === "snapshot") return snapshot();
+      if (message.type === "sync.status") return configurationSync.status();
+      if (message.type === "sync.connect")
+        return configurationSync.connect(
+          message.passphrase,
+          message.action,
+          message.revision,
+        );
+      if (message.type === "sync.run") return configurationSync.run();
+      if (message.type === "sync.stop") return configurationSync.stop();
+      if (message.type === "sync.clear") return configurationSync.clear();
       if (message.type === "cache.stats") return resultCache.stats();
       if (message.type === "cache.clear") {
         await resultCache.clear();
@@ -561,11 +584,16 @@ chrome.runtime.onMessage.addListener(
               validateOutputLanguage(action.outputLanguage, true);
             if (action.kind === "qa") validateOutputLength(action.outputLength);
           }
-          const limit = actionLimitError(message.patch.actions);
-          if (limit) throw new ModelError(limit);
         }
         await mutate((data) => {
           const actions = message.patch.actions;
+          if (actions) {
+            const limit = actionLimitError(
+              actions,
+              data.settings.actions.length,
+            );
+            if (limit) throw new ModelError(limit);
+          }
           if (
             actions &&
             data.settings.actions.some(
@@ -744,7 +772,13 @@ chrome.runtime.onMessage.addListener(
           new URL(stored.url).origin === new URL(connection.url).origin
             ? data.credentials[connection.id!]
             : message.key;
-        return withKeepAlive(() => listModels(connection, (key || "").trim()));
+        return withKeepAlive(() =>
+          listModels(
+            connection,
+            (key || "").trim(),
+            Object.values(data.credentials),
+          ),
+        );
       }
       if (message.type === "tab.enable") {
         await inject(message.tabId);
@@ -794,21 +828,36 @@ async function trackedModel(
   context: { source: UsageSource; actionName?: string },
   ...args: Parameters<ModelCall>
 ) {
-  const [connection, key, instructions, input, signal, onDelta] = args;
+  const [
+    connection,
+    key,
+    instructions,
+    input,
+    signal,
+    onDelta,
+    ,
+    secrets = [],
+  ] = args;
   const details: UsageDetails = { instructions, input, output: "" };
-  return trackedCall(connection, context, details, (onUsage) =>
-    callModel(
-      connection,
-      key,
-      instructions,
-      input,
-      signal,
-      (text) => {
-        details.output += text;
-        onDelta?.(text);
-      },
-      onUsage,
-    ),
+  return trackedCall(
+    connection,
+    context,
+    details,
+    (onUsage) =>
+      callModel(
+        connection,
+        key,
+        instructions,
+        input,
+        signal,
+        (text) => {
+          details.output += text;
+          onDelta?.(text);
+        },
+        onUsage,
+        secrets,
+      ),
+    [key, ...secrets],
   );
 }
 async function trackedCall<T>(
@@ -816,7 +865,9 @@ async function trackedCall<T>(
   context: { source: UsageSource; actionName?: string },
   details: UsageDetails,
   run: (onUsage: (usage: UsageUpdate) => void) => Promise<T>,
+  secrets: readonly string[],
 ): Promise<T> {
+  const redact = createSecretRedactor(secrets);
   const origin = new URL(endpoint(connection)).origin + "/*";
   if (!(await chrome.permissions.contains({ origins: [origin] })))
     throw new ModelError("permissionRequired");
@@ -843,20 +894,27 @@ async function trackedCall<T>(
           startedAt,
           durationMs: Date.now() - startedAt,
           connectionId: connection.id || null,
-          connectionName: connection.name || "",
-          model: connection.model,
+          connectionName: redact.text(connection.name || ""),
+          model: redact.text(connection.model),
           protocol: connection.protocol,
           source: context.source,
-          actionName: context.actionName || "",
+          actionName: redact.text(context.actionName || ""),
           status,
           errorCode,
           tokens,
           usageFinal,
         },
-        details,
+        {
+          instructions: redact.content(details.instructions),
+          input: redact.content(details.input),
+          output: redact.content(details.output),
+        },
       );
     } catch (error) {
-      console.warn("Aside could not save call history:", error);
+      console.warn(
+        "Aside could not save call history:",
+        redact.text(modelError(error).message),
+      );
     }
   }
 }
@@ -955,10 +1013,13 @@ chrome.runtime.onConnect.addListener((port) => {
             ? payload.source!
             : "processing";
         const output = await processContent({
-          action,
+          // A selection is one passage, even when the action divides full pages.
+          action:
+            source === "selection" ? { ...action, mode: "whole" } : action,
           blocks,
           connection,
           key,
+          secrets: Object.values(data.credentials),
           signal: controller.signal,
           refresh: Boolean(payload.refresh || payload.daily),
           invoke: (...args) =>
@@ -1084,7 +1145,9 @@ async function enhanceLights(
                 (text) => {
                   details.output = text;
                 },
+                Object.values(credentials),
               ),
+            Object.values(credentials),
           );
         },
       );

@@ -12,8 +12,12 @@ module.exports = async ({
   op,
   choose,
 }) => {
-  const stored = await page.evaluate(() =>
-    chrome.storage.local.get(["settings", "credentials", "daily"]),
+  const stored = await page.evaluate(async () =>
+    (await import("./tests/local-store-fixture.mjs")).localStore.get([
+      "settings",
+      "credentials",
+      "daily",
+    ]),
   );
   const callStart = calls.length,
     streamStart = streams.length;
@@ -30,9 +34,13 @@ module.exports = async ({
     );
   const protocol = (value) =>
     page.evaluate(async (value) => {
-      const { settings } = await chrome.storage.local.get("settings");
+      const { settings } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get("settings");
       settings.connections[0].protocol = value;
-      await chrome.storage.local.set({ settings });
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({ settings });
     }, value);
   const run = (text, overrides = {}) =>
     page.evaluate(
@@ -71,11 +79,12 @@ module.exports = async ({
       origin,
     );
     await page.evaluate(async (origin) => {
-      const { settings, daily } = await chrome.storage.local.get([
-        "settings",
-        "daily",
-      ]);
-      await chrome.storage.local.set({
+      const { settings, daily } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get(["settings", "daily"]);
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({
         settings: {
           ...settings,
           preferences: {
@@ -118,6 +127,59 @@ module.exports = async ({
         "List payloads contain metadata only",
       );
     }
+    // Input, instructions, returned text and persisted records must not retain any saved key.
+    const known = ["usage-fixture-secret", "other-connection-fixture-secret"];
+    await page.evaluate(async (known) => {
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({
+        credentials: { "usage-fixture": known[0], "other-fixture": known[1] },
+      });
+    }, known);
+    for (const value of ["chat", "responses", "anthropic", "gemini"]) {
+      await protocol(value);
+      const input = "Credential fixture " + known.join(" / ");
+      const result = await run(input, {
+        action: {
+          kind: "custom",
+          mode: "whole",
+          model: "default",
+          name: "Action " + known[1],
+          instruction: "Explain " + known[0],
+        },
+      });
+      const record = (await list())[0];
+      const body = await detail(record.id);
+      for (const secret of known) {
+        assert(!JSON.stringify([result, record, body]).includes(secret));
+      }
+      assert(body.input.includes("[redacted] / [redacted]"));
+      assert.equal(body.instructions.startsWith("Explain [redacted]"), true);
+      assert.equal(body.output, result.parts[0].text);
+    }
+    const persisted = await page.evaluate(async () => {
+      const read = async (name, store) => {
+        const db = await new Promise((resolve, reject) => {
+          const request = indexedDB.open(name);
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+        const values = await new Promise((resolve, reject) => {
+          const request = db.transaction(store).objectStore(store).getAll();
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+        db.close();
+        return values;
+      };
+      return [
+        await read("aside-usage", "details"),
+        await read("aside-usage", "records"),
+        await read("pagework-results", "entries"),
+      ];
+    });
+    for (const secret of known)
+      assert(!JSON.stringify(persisted).includes(secret));
     await protocol("chat");
     const worker = context.serviceWorkers()[0];
     const beforeWriteFailure = (await list()).length;
@@ -135,8 +197,8 @@ module.exports = async ({
         result.parts[0].text.includes("History write failure fixture"),
         "History failures keep successful model output",
       );
-      await page.evaluate(() =>
-        chrome.storage.local.set({
+      await page.evaluate(async () =>
+        (await import("./tests/local-store-fixture.mjs")).localStore.set({
           credentials: { "usage-fixture": "invalid-fixture" },
         }),
       );
@@ -169,8 +231,8 @@ module.exports = async ({
         IDBObjectStore.prototype.put = globalThis.savedUsagePut;
         delete globalThis.savedUsagePut;
       });
-      await page.evaluate(() =>
-        chrome.storage.local.set({
+      await page.evaluate(async () =>
+        (await import("./tests/local-store-fixture.mjs")).localStore.set({
           credentials: { "usage-fixture": "usage-fixture-secret" },
         }),
       );
@@ -256,8 +318,8 @@ module.exports = async ({
       assert.equal(record.status, interrupted ? "error" : "cancelled");
       assert.equal((await detail(record.id)).output, "逐步");
     }
-    await page.evaluate(() =>
-      chrome.storage.local.set({
+    await page.evaluate(async () =>
+      (await import("./tests/local-store-fixture.mjs")).localStore.set({
         credentials: { "usage-fixture": "invalid-fixture" },
       }),
     );
@@ -266,8 +328,8 @@ module.exports = async ({
     assert.equal(failed.errorCode, "authError");
     assert.equal((await detail(failed.id)).input, "Failure input");
     assert.equal((await detail(failed.id)).output, "");
-    await page.evaluate(() =>
-      chrome.storage.local.set({
+    await page.evaluate(async () =>
+      (await import("./tests/local-store-fixture.mjs")).localStore.set({
         credentials: { "usage-fixture": "usage-fixture-secret" },
       }),
     );
@@ -331,7 +393,9 @@ module.exports = async ({
     await page.mouse.wheel(0, -300);
     await page.waitForFunction((before) => scrollY < before, scrollBefore);
 
-    const htmlRecord = records.find((r) => r.protocol === "gemini");
+    const htmlRecord = records.find(
+      (r) => r.protocol === "gemini" && r.actionName === "Details fixture",
+    );
     await open(htmlRecord.id);
     assert.equal(await page.locator("dialog script").count(), 0);
     assert.equal(await page.evaluate(() => window.detailInjected), undefined);
@@ -446,7 +510,9 @@ module.exports = async ({
       if (!stream.closed) stream.interrupt();
     await page.evaluate(async (stored) => {
       await chrome.runtime.sendMessage({ type: "usage.clear" });
-      await chrome.storage.local.set(stored);
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set(stored);
     }, stored);
     calls.splice(callStart);
     streams.splice(streamStart);

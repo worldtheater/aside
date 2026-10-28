@@ -45,7 +45,7 @@
       <div class="policy-heading">
         <h1>Privacy Policy</h1>
         <p class="updated">
-          Last updated <time datetime="2026-10-25">October 25, 2026</time>
+          Last updated <time datetime="2026-10-29">October 28, 2026</time>
         </p>
         <p class="lead">
           Your reading stays in your browser until a feature sends content to
@@ -55,7 +55,8 @@
           Aside (旁白) is an open-source browser extension maintained through
           <a href="https://github.com/worldtheater/aside">worldtheater/aside</a
           >. This policy covers the extension and this policy page. Aside has no
-          developer-operated relay, analytics service, or cloud sync.
+          developer-operated relay, analytics service, or sync server. Optional
+          encrypted configuration sync is provided through Chrome Sync.
         </p>
       </div>
       <div class="policy-layout">
@@ -63,6 +64,7 @@
           <span>On this page</span>
           <ul>
             <li><a href="#local-data">Data on your device</a></li>
+            <li><a href="#configuration-sync">Configuration sync</a></li>
             <li><a href="#model-requests">Model requests</a></li>
             <li><a href="#other-connections">Other connections</a></li>
             <li><a href="#your-controls">Your controls</a></li>
@@ -86,6 +88,16 @@
                   Your preferences, custom instructions, per-site settings,
                   model service addresses, model names, and API keys. Keys are
                   used to authenticate requests to the service you configure.
+                  API keys and their local sync-record copies are encrypted with
+                  AES-256-GCM. A separate, non-exportable device key is stored
+                  in this browser’s IndexedDB and is not synchronized. It
+                  remains available across browser restarts and extension
+                  updates. Existing plaintext credentials are converted on
+                  upgrade; this does not rewrite old backups or guarantee secure
+                  erasure of historical disk data. This protection is not an
+                  operating-system keychain and does not prevent access by a
+                  compromised extension or someone able to read the full browser
+                  profile.
                 </dd>
               </div>
               <div>
@@ -103,7 +115,9 @@
                   instructions, submitted content, and received output. Failed
                   or interrupted calls may retain partial output. Connection
                   credentials and authorization headers are not added to this
-                  history.
+                  history. Known configured API keys are redacted from new
+                  request details and results, including streamed output.
+                  Previously stored history is not rewritten.
                 </dd>
               </div>
               <div>
@@ -124,6 +138,49 @@
                 </dd>
               </div>
             </dl>
+          </section>
+          <section aria-labelledby="configuration-sync">
+            <h2 id="configuration-sync">Optional configuration sync</h2>
+            <p>
+              When you enable Configuration sync, Aside sends an encrypted copy
+              of your model connections and API keys, actions and custom
+              instructions, and reflection settings to Chrome Sync, operated by
+              Google. Collections, generated reflections, request history,
+              caches, and discovered model lists are not included. Language,
+              theme, display and site preferences, quick-action visibility and
+              order also stay on each device. Default model selections are
+              included as encrypted suggestions, used only to fill unset
+              defaults on another device. Existing choices are kept. Record IDs,
+              modification times and deletion markers are included in the
+              encrypted configuration to merge changes across devices. This
+              feature uses your Chrome account; it does not create an Aside
+              account or send data to an Aside server.
+            </p>
+            <p>
+              The configuration is compressed and encrypted on your device using
+              AES-256-GCM. A key is derived from your passphrase using
+              PBKDF2-HMAC-SHA-256 with a random salt and 600,000 iterations.
+              Sync storage contains ciphertext, salt, an initialization vector,
+              revision identifiers, and update timestamps. The passphrase is not
+              saved or uploaded. The derived key is held in trusted extension
+              session storage and is cleared when Chrome restarts or the
+              extension is reloaded. The maintainers cannot recover a forgotten
+              passphrase. Local settings remain available while sync is locked.
+              Local API key encryption uses the separate device key described
+              above and does not depend on the sync passphrase.
+            </p>
+            <p>
+              Chrome manages delivery between devices according to your Chrome
+              account and sync settings. Google's handling of its service is
+              governed by the
+              <a href="https://policies.google.com/privacy"
+                >Google Privacy Policy</a
+              >. You can stop syncing on one device without deleting its local
+              settings. Delete synced settings removes the encrypted copy
+              through Chrome Sync; delivery of that deletion to other devices is
+              controlled by Chrome. Local settings on those devices remain, and
+              need a new sync setup to resume syncing.
+            </p>
           </section>
           <section aria-labelledby="model-requests">
             <h2 id="model-requests">Model requests</h2>
@@ -204,6 +261,11 @@
             <ul>
               <li>Delete saved passages from <strong>Collection</strong>.</li>
               <li>
+                Use <strong>Configuration sync</strong> to stop this device's
+                synchronization or delete the encrypted synced copy. Local
+                configuration is preserved.
+              </li>
+              <li>
                 Clear request history from <strong>Usage</strong> to remove both
                 summaries and input/output details. Clear the result cache
                 separately on the same page.
@@ -245,9 +307,9 @@
             </p>
             <p>
               Aside uses page access for reading tools and appearance changes,
-              extension storage for local settings and data, and
-              service-specific permissions for model requests. It does not use
-              these permissions to build advertising profiles.
+              extension storage for local settings, data, and optional encrypted
+              Chrome Sync, and service-specific permissions for model requests.
+              It does not use these permissions to build advertising profiles.
             </p>
           </section>
           <section aria-labelledby="limited-use">

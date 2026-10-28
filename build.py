@@ -1,6 +1,13 @@
 from pathlib import Path
+import argparse
 import json
+import shutil
 from zipfile import ZipFile, ZIP_DEFLATED
+
+parser = argparse.ArgumentParser(description='Package the Aside extension.')
+parser.add_argument('--unpack', action='store_true',
+                    help='Also refresh artifacts/unpacked for local debugging.')
+args = parser.parse_args()
 
 root = Path(__file__).resolve().parent
 if not (root / 'background.js').is_file():
@@ -18,3 +25,12 @@ with ZipFile(out, 'w', ZIP_DEFLATED) as archive:
     for file in sorted(files):
         archive.write(file, file.relative_to(root))
 print(out)
+
+if args.unpack:
+    unpacked = out.parent / 'unpacked'
+    # Recreate the dedicated output directory so old hashed bundles do not accumulate.
+    if unpacked.exists():
+        shutil.rmtree(unpacked)
+    with ZipFile(out) as archive:
+        archive.extractall(unpacked)
+    print(unpacked)

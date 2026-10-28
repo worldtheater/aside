@@ -1590,7 +1590,34 @@ hr {
   max-height: 60dvh;
   overflow: auto;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+  /* Fixed custom geometry keeps classic and overlay platforms consistent. */
+  scrollbar-width: auto;
+}
+.connection-items::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.connection-items::-webkit-scrollbar-button {
+  display: none;
+}
+.connection-items::-webkit-scrollbar-track,
+.connection-items::-webkit-scrollbar-corner {
+  background: transparent;
+}
+.connection-items::-webkit-scrollbar-thumb {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  background-clip: padding-box;
+}
+.connection-items.is-scrolling::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--muted) 55%, transparent);
+}
+@media (forced-colors: active) {
+  .connection-items::-webkit-scrollbar-thumb {
+    background-color: CanvasText;
+  }
 }
 .connection-item {
   width: 100%;
@@ -3537,4 +3564,260 @@ html:has(.dialog[open] > .usage-detail-body) {
 }
 .help-license:is(:hover, :focus-visible) {
   color: var(--ink);
+}
+
+/* Sync puts the current action first; supporting guidance stays in a disclosure. */
+.sync-page {
+  max-width: 720px;
+}
+.sync-overview {
+  border: 1px solid var(--line);
+  border-radius: calc(12px * var(--corner-radius-scale, 1));
+  background: var(--surface);
+}
+.sync-controls {
+  padding: 24px;
+}
+.sync-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.sync-status-copy {
+  min-width: 0;
+}
+.sync-status-row > .btn {
+  flex-shrink: 0;
+}
+.sync-state {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+}
+.sync-state svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+.sync-timestamp {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+.sync-timestamp time {
+  font-variant-numeric: tabular-nums;
+}
+.sync-guidance {
+  max-width: 65ch;
+  margin: 8px 0 22px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+.sync-controls form {
+  max-width: 480px;
+}
+.sync-controls form > .field {
+  margin-bottom: 16px;
+}
+.sync-passphrase-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-bottom: 7px;
+}
+.sync-passphrase-heading .field-label {
+  margin: 0;
+}
+.btn.sync-forgot {
+  min-height: 24px;
+  height: auto;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: 400;
+}
+.sync-controls form > .field-note {
+  margin: 0;
+}
+.sync-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+}
+.sync-service-access {
+  margin: 0 24px;
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.sync-service-access.has-pending-access {
+  padding: 20px 0 24px;
+}
+.sync-service-access .sync-state {
+  font-size: 14px;
+}
+.sync-service-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}
+.sync-service-list li {
+  display: grid;
+  gap: 4px;
+  overflow-wrap: anywhere;
+}
+.sync-service-list strong {
+  font-weight: 550;
+}
+.sync-service-list span,
+.sync-access-ready {
+  color: var(--muted);
+}
+.sync-access-ready {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 12px;
+}
+.sync-access-ready svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+.sync-error {
+  color: var(--danger);
+}
+.sync-details {
+  margin-top: 24px;
+  padding-top: 0;
+  border-top: 0;
+}
+.sync-details > summary {
+  width: fit-content;
+  max-width: 100%;
+  padding: 6px 0;
+  transition: color 0.16s;
+}
+.sync-details > summary:is(:hover, :focus-visible) {
+  color: var(--ink);
+}
+.sync-details > summary::before {
+  transition: transform 0.16s;
+}
+.sync-details .advanced-body {
+  padding-top: 20px;
+}
+.sync-guide-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+}
+.sync-details h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 550;
+}
+.sync-details h3 svg {
+  width: 16px;
+  height: 16px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.sync-scope ul,
+.sync-join-steps {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.sync-rules,
+.sync-management {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.sync-join-steps li {
+  padding-left: 4px;
+}
+.sync-join-steps li::marker {
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.sync-rules .field-note {
+  margin: 12px 0 0;
+  line-height: 1.65;
+}
+.sync-merge-rules {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.65;
+}
+.sync-merge-rules > div {
+  display: grid;
+  grid-template-columns: minmax(58px, 1fr) minmax(0, 3fr);
+  gap: 12px;
+}
+.sync-merge-rules dd {
+  margin: 0;
+  color: var(--muted);
+}
+.sync-management-item .btn {
+  height: auto;
+  max-width: 100%;
+  margin: -8px -9px 4px;
+  padding: 0 8px;
+  color: var(--ink);
+  font-weight: 550;
+  white-space: normal;
+  text-align: left;
+}
+.sync-management-item p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+.sync-management .sync-delete {
+  color: var(--danger);
+}
+.sync-management .sync-delete:not(:disabled):is(:hover, :focus-visible) {
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+@media (max-width: 620px) {
+  .sync-controls {
+    padding: 20px;
+  }
+  .sync-status-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .sync-service-access {
+    margin: 0 20px;
+  }
+  .sync-guide-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
 }

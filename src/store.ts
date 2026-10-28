@@ -1,3 +1,15 @@
+import {
+  PROTECTED_CONFIGURATION,
+  encryptCredentials,
+  decryptCredentials,
+} from "./credential-store.js";
+import type { EncryptedConfiguration } from "./credential-store.js";
+import {
+  configuration,
+  configurationText,
+  initializeSyncRecords,
+  recordConfigurationChanges,
+} from "./sync-records.js";
 import { connectionAvailable } from "./providers.js";
 import { createWebsiteSettings } from "./website.js";
 import type {
@@ -33,6 +45,7 @@ export function initialize() {
 }
 async function initializeStore() {
   await ready;
+  await migrateCredentials();
   const found = await chrome.storage.local.get<{
     settings?: Settings;
     qaShortcutDefaultApplied?: boolean;
@@ -108,25 +121,90 @@ async function initializeStore() {
       result: null,
       date: null,
     },
-    credentials: {},
   });
 }
-export async function readStore(): Promise<StoreData> {
+type ProtectedConfiguration = Pick<
+  StoreData,
+  "credentials" | "configurationRecords"
+>;
+type StoredData = Omit<StoreData, keyof ProtectedConfiguration> & {
+  [PROTECTED_CONFIGURATION]?: EncryptedConfiguration;
+};
+const protectedText = ({ credentials, configurationRecords }: StoreData) =>
+  configurationText({ credentials, configurationRecords });
+
+// Upgrade shipped plaintext storage once, before serving requests. Commit the
+// encrypted replacement before removing either plaintext copy of the API keys.
+async function migrateCredentials() {
+  const stored = await chrome.storage.local.get<
+    ProtectedConfiguration & StoredData
+  >(["credentials", "configurationRecords", PROTECTED_CONFIGURATION]);
+  if (
+    stored.credentials === undefined &&
+    stored.configurationRecords === undefined
+  )
+    return;
+  if (stored[PROTECTED_CONFIGURATION] !== undefined) {
+    await decryptCredentials(stored[PROTECTED_CONFIGURATION]);
+  } else {
+    const text = configurationText({
+      credentials: stored.credentials ?? {},
+      configurationRecords: stored.configurationRecords,
+    });
+    await chrome.storage.local.set({
+      [PROTECTED_CONFIGURATION]: await encryptCredentials(text),
+    });
+  }
+  await chrome.storage.local.remove(["credentials", "configurationRecords"]);
+}
+async function storedData(): Promise<StoredData> {
   await ready;
-  const data = await chrome.storage.local.get([
+  return (await chrome.storage.local.get([
     "settings",
     "collection",
     "daily",
-    "credentials",
-  ]);
-  return data as unknown as StoreData;
+    PROTECTED_CONFIGURATION,
+  ])) as StoredData;
 }
-export function mutate<T>(fn: (data: StoreData) => T | Promise<T>) {
+async function decodeStore(stored: StoredData): Promise<StoreData> {
+  const { [PROTECTED_CONFIGURATION]: encrypted, ...data } = stored;
+  const protectedData: ProtectedConfiguration =
+    encrypted === undefined
+      ? { credentials: {} }
+      : JSON.parse(await decryptCredentials(encrypted));
+  return { ...data, ...protectedData };
+}
+export async function readStore(): Promise<StoreData> {
+  return decodeStore(await storedData());
+}
+export function mutate<T>(
+  fn: (data: StoreData) => T | Promise<T>,
+  options?: { sync?: boolean },
+) {
   const job = writes.then(async () => {
     await initialize();
-    const data = await readStore();
+    const stored = await storedData();
+    const data = await decodeStore(stored);
+    const previous = protectedText(data);
+    initializeSyncRecords(data);
+    const before = configuration(data);
     const result = await fn(data);
-    await chrome.storage.local.set(data);
+    if (!options?.sync) recordConfigurationChanges(data, before);
+    const {
+      credentials: _credentials,
+      configurationRecords: _records,
+      ...plain
+    } = data;
+    const next = protectedText(data);
+    // Reuse unchanged ciphertext: a fresh IV on every read/merge would emit a
+    // storage change and schedule an endless sequence of no-op sync attempts.
+    await chrome.storage.local.set({
+      ...plain,
+      [PROTECTED_CONFIGURATION]:
+        next === previous
+          ? stored[PROTECTED_CONFIGURATION]
+          : await encryptCredentials(next),
+    });
     return result;
   });
   writes = job.then(

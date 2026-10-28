@@ -1,3 +1,4 @@
+import { randomUUID } from "./uuid.js";
 import { request } from "./client.js";
 import { pageBackground, localRepairAttribute } from "./lights-local.js";
 import { modelError } from "./providers.js";
@@ -465,7 +466,7 @@ export class LightsEnhancer {
     }
 
     return {
-      id: crypto.randomUUID(),
+      id: randomUUID(),
       tag: isBackground
         ? "background"
         : element instanceof HTMLCanvasElement

@@ -1,3 +1,13 @@
+import { readStore } from "./store.js";
+import {
+  renderSyncPage,
+  syncErrorText,
+  readSyncServiceAccess,
+  renderSyncServiceAccess,
+} from "./sync-page.js";
+import type { SyncServiceAccess } from "./sync-page.js";
+import type { SyncStatus, SyncConnect } from "./config-sync.js";
+import { SYNC_MIN_PASSPHRASE } from "./sync-data.js";
 import {
   renderUsage,
   renderUsageDetails,
@@ -90,6 +100,94 @@ const [data, initialCommands] = await Promise.all([
   chrome.commands.getAll(),
 ]);
 let commandBindings = initialCommands;
+let syncStatus: SyncStatus | null = null;
+let syncServices: SyncServiceAccess[] = [];
+let syncBusy = false;
+// No local sync data means delivery is unknown, not that this is the first device.
+let syncFirstSetup = false;
+let pendingSync: (() => Promise<void>) | null = null;
+async function refreshSync() {
+  const [next, services] = await Promise.all([
+    request("sync.status"),
+    readSyncServiceAccess(data.connections),
+  ]);
+  syncServices = services;
+  const remoteChanged = syncStatus?.remote !== next.remote;
+  syncStatus = next;
+  if (next.remote || next.enabled) syncFirstSetup = false;
+  if (
+    state.route === "sync" &&
+    !syncBusy &&
+    (remoteChanged ||
+      !document.querySelector<HTMLInputElement>("#sync-passphrase")?.value)
+  )
+    app.querySelector(".workspace")!.innerHTML = renderSyncPage(
+      syncStatus,
+      syncFirstSetup,
+      syncServices,
+    );
+  else if (state.route === "sync" && !syncBusy) {
+    const access = document.querySelector("#sync-service-access");
+    if (access)
+      access.innerHTML = next.enabled
+        ? renderSyncServiceAccess(syncServices)
+        : "";
+  }
+}
+async function performSync(operation: () => Promise<SyncStatus>) {
+  syncBusy = true;
+  document
+    .querySelectorAll<HTMLButtonElement>('[data-op^="sync-"]')
+    .forEach((button) => (button.disabled = true));
+  try {
+    syncStatus = await operation();
+    await reloadData();
+    setLocale(data.preferences.locale);
+    presets = getPresets();
+    if (dialog.open)
+      closeDialog(() => {
+        render();
+        notify(
+          syncStatus?.error ? syncErrorText(syncStatus.error) : C.sync.done,
+          syncStatus?.error ? "error" : "success",
+        );
+      });
+    else {
+      render();
+      notify(
+        syncStatus.error ? syncErrorText(syncStatus.error) : C.sync.done,
+        syncStatus.error ? "error" : "success",
+      );
+    }
+  } catch (caught) {
+    const message = syncErrorText(modelError(caught).code);
+    if (dialog.open)
+      closeDialog(() => {
+        render();
+        notify(message, "error");
+      });
+    else notify(message, "error");
+  } finally {
+    syncBusy = false;
+    document
+      .querySelectorAll<HTMLButtonElement>('[data-op^="sync-"]')
+      .forEach((button) => (button.disabled = false));
+    await refreshSync();
+  }
+}
+function confirmSync(
+  description: string,
+  label: string,
+  action: () => Promise<void>,
+  danger = false,
+  title = C.sync.joinTitle,
+) {
+  pendingSync = action;
+  showDialog(
+    `<h2>${e(title)}</h2><p>${e(description)}</p><div class="dialog-actions">${button(C.cancel, "dialog-close", "ghost")}${button(label, "sync-confirm-action", danger ? "danger" : "primary")}</div>`,
+  );
+}
+
 rememberTheme(data.preferences);
 setLocale(data.preferences.locale);
 let presets = getPresets();
@@ -187,6 +285,7 @@ const routeNames = [
   "appearance",
   "connections",
   "shortcuts",
+  "sync",
   "usage",
   "help",
 ];
@@ -253,7 +352,48 @@ async function reloadData() {
   Object.assign(data, fresh);
   persisted = structuredClone(data);
 }
+chrome.runtime.onMessage.addListener((message) => {
+  if (message?.type !== "sync.applied") return;
+  void (async () => {
+    await reloadData();
+    setLocale(data.preferences.locale);
+    presets = getPresets();
+    // Do not replace an unsaved editor or connection draft when another device syncs.
+    if (dialog.open || syncBusy) return;
+    if (state.route === "connections") {
+      if (JSON.stringify(connectionDraft) === initialConnectionDraft) {
+        const selectedId =
+          data.connections.find(
+            (connection) => connection.id === connectionDraft.id,
+          )?.id ??
+          data.defaultConnection ??
+          data.connections[0]?.id;
+        selectConnection(selectedId, true);
+      }
+    } else if (state.route === "editor") {
+      if (!dirty()) {
+        if (data.actions.some((action) => action.id === state.editor?.id))
+          beginEdit(state.editor!.id, true);
+        else navigate("actions");
+      }
+    } else if (state.route === "sync") await refreshSync();
+    else render();
+  })();
+});
+const refreshSyncPermissions = () => {
+  if (state.route === "sync") void refreshSync();
+};
+chrome.permissions.onAdded.addListener(refreshSyncPermissions);
+chrome.permissions.onRemoved.addListener(refreshSyncPermissions);
 chrome.storage.onChanged.addListener((changes, area) => {
+  if (
+    state.route === "sync" &&
+    !syncBusy &&
+    (area === "sync" ||
+      (area === "local" && changes.configurationSync) ||
+      (area === "session" && changes.configurationSyncKey))
+  )
+    void refreshSync();
   if (area === "local" && changes.collection) {
     data.collection = changes.collection.newValue as CollectionItem[];
     if (!data.collection.length) {
@@ -308,6 +448,7 @@ function navigate(route: string) {
   stopJob();
   closeMenu();
   if (route !== state.route) {
+    syncFirstSetup = false;
     const index = (history.state?.index || 0) + 1;
     maxHistoryIndex = index;
     history.pushState({ route, index }, "", `#${route}`);
@@ -315,10 +456,12 @@ function navigate(route: string) {
   state.route = route;
   render();
   if (route === "usage") void loadUsage();
+  if (route === "sync") void refreshSync();
   window.scrollTo(0, 0);
   void refreshDailyOnVisit();
 }
 window.addEventListener("popstate", (event) => {
+  syncFirstSetup = false;
   dismissNotice();
   stopJob();
   state.route = routeNames.includes(event.state?.route)
@@ -333,6 +476,7 @@ window.addEventListener("popstate", (event) => {
     );
   render();
   if (state.route === "usage") void loadUsage();
+  if (state.route === "sync") void refreshSync();
   window.scrollTo(0, 0);
   void refreshDailyOnVisit();
 });
@@ -362,6 +506,7 @@ function showDialog(content: string, { wide = false, showClose = true } = {}) {
   enhanceSelects(dialog);
 }
 function closeDialog(callback?: () => void) {
+  pendingSync = null;
   tips.hide(true);
   dismissNotice();
   if (dialog.querySelector<HTMLTextAreaElement>("#daily-prompt")!) {
@@ -448,7 +593,7 @@ function renderSidebar() {
   const link = (name: keyof typeof C.nav, glyph: string) =>
     `<button class="sidebar-link" data-route="${name}" ${name === "home" ? 'data-op="home"' : ""} ${route === name ? 'aria-current="page"' : ""}>${icon(glyph)}<span>${C.nav[name]}</span></button>`;
   return `<aside class="sidebar" id="sidebar" aria-label="${C.pageMenu}"><div class="sidebar-brand"><a class="sidebar-brand-link" href="${e(homepage)}" target="_blank" rel="noopener noreferrer"><img src="icons/icon-32.png" alt="" width="28" height="28"><strong>${C.brand}</strong></a>${iconButton(C.closeNavigation, "navigation-close", "close", "", false)}</div>
-    <nav><div class="sidebar-group"><h2>${C.contentGroup}</h2>${link("home", "bookmark")}</div><div class="sidebar-group"><h2>${C.settings}</h2>${link("actions", "spark")}${link("appearance", "palette")}${link("connections", "plug")}${link("shortcuts", "keyboard")}${link("usage", "list")}</div></nav><div class="sidebar-footer">${link("help", "question")}</div></aside>
+    <nav><div class="sidebar-group"><h2>${C.contentGroup}</h2>${link("home", "bookmark")}</div><div class="sidebar-group"><h2>${C.settings}</h2>${link("actions", "spark")}${link("appearance", "palette")}${link("connections", "plug")}${link("shortcuts", "keyboard")}${link("usage", "list")}${link("sync", "refresh")}</div></nav><div class="sidebar-footer">${link("help", "question")}</div></aside>
     <button class="sidebar-backdrop" data-op="navigation-close" aria-label="${C.closeNavigation}" tabindex="-1"></button>`;
 }
 const narrowNavigation = matchMedia("(max-width: 860px)");
@@ -522,7 +667,7 @@ function render() {
   applyTheme();
   const route = state.route === "editor" ? "actions" : state.route;
   app.innerHTML = `<div class="app-shell">${renderSidebar()}<main class="main"><header class="topbar"><div class="topbar-navigation">${iconButton(C.pageMenu, "navigation-open", "menu", 'aria-controls="sidebar" aria-expanded="false"')}<nav class="history-controls" aria-label="${C.pageMenu}">${iconButton(C.previous, "history-back", "back", history.state.index === 0 ? "disabled" : "", false)}${iconButton(C.forward, "history-forward", "arrow", history.state.index >= maxHistoryIndex ? "disabled" : "", false)}</nav></div>${renderPreferences()}</header>
-    <div class="workspace ${route === "home" ? "home-workspace" : ""}">${state.route === "home" ? renderHome() : state.route === "editor" ? renderEditor() : route === "actions" ? renderLibrary() : route === "appearance" ? renderAppearance() : route === "connections" ? renderConnections() : route === "usage" ? renderUsage(usageView, cacheInfo) : route === "shortcuts" ? renderShortcuts() : route === "help" ? renderHelp() : renderHome()}</div></main></div>`;
+    <div class="workspace ${route === "home" ? "home-workspace" : ""}">${state.route === "home" ? renderHome() : state.route === "editor" ? renderEditor() : route === "actions" ? renderLibrary() : route === "appearance" ? renderAppearance() : route === "connections" ? renderConnections() : route === "usage" ? renderUsage(usageView, cacheInfo) : route === "shortcuts" ? renderShortcuts() : route === "sync" ? renderSyncPage(syncStatus, syncFirstSetup, syncServices) : route === "help" ? renderHelp() : renderHome()}</div></main></div>`;
   setNavigationOpen(false);
   if (state.route === "editor") renderTrialResult();
   if (state.route === "appearance") renderStylePreview();
@@ -1260,7 +1405,7 @@ async function saveAction() {
   const candidates = previous.some((item) => item.id === next.id)
     ? previous.map((item) => (item.id === next.id ? next : item))
     : [...previous, next];
-  const limit = actionLimitError(candidates);
+  const limit = actionLimitError(candidates, previous.length);
   if (limit) {
     const error = document.querySelector<HTMLElement>("#editor-error")!;
     error.textContent = C.real.errors[limit];
@@ -1517,6 +1662,24 @@ function renderConnections() {
     <div class="connection-detail-actions">${!isNew ? button(C.real.removeConnection, "remove-connection", "danger") : ""}${button(connectionTest ? C.testingConnection : C.testConnection, "test-connection", "", "", connectionTest ? "disabled" : "")}${!isNew ? button(C.duplicateConnection, "duplicate-connection", "", "copy", connectionTest ? "disabled" : "") : ""}<span class="grow"></span>${button(C.cancel, "cancel-connection", "ghost")}${button(C.save, "save-connection", "primary", "check", connectionTest || !d.models?.some((model) => model.id === d.model) ? "disabled" : "")}</div>
     <p class="connection-note">${C.connectionNote}</p></section></div>`;
 }
+const CONNECTION_SCROLLBAR_IDLE_MS = 900;
+let connectionScrollTimer: number | undefined;
+// Capture scroll events so the behavior survives connection-list rerenders.
+app.addEventListener(
+  "scroll",
+  (event) => {
+    const list = event.target;
+    if (!(list instanceof HTMLElement) || !list.matches(".connection-items"))
+      return;
+    clearTimeout(connectionScrollTimer);
+    list.classList.add("is-scrolling");
+    connectionScrollTimer = setTimeout(
+      () => list.classList.remove("is-scrolling"),
+      CONNECTION_SCROLLBAR_IDLE_MS,
+    );
+  },
+  { capture: true, passive: true },
+);
 function refreshConnections() {
   const root = app.querySelector<HTMLElement>(".workspace")!;
   const list = root.querySelector<HTMLElement>(".connection-items");
@@ -1552,9 +1715,7 @@ async function duplicateConnection() {
   )!;
   let key = draft.key || "";
   if (!key && new URL(draft.url).origin === new URL(stored.url).origin) {
-    const { credentials } = await chrome.storage.local.get<{
-      credentials: Record<string, string>;
-    }>("credentials");
+    const { credentials } = await readStore();
     key = credentials[source.id] || "";
   }
   if (connectionDraft !== source) return;
@@ -1618,6 +1779,48 @@ async function copyResult(result: ProcessResult | null) {
   }
 }
 
+document.addEventListener("submit", async (event) => {
+  const form = event.target;
+  if (!(form instanceof HTMLFormElement) || form.id !== "sync-form") return;
+  event.preventDefault();
+  if (syncBusy) return;
+  try {
+    const input = document.querySelector<HTMLInputElement>("#sync-passphrase")!;
+    const confirmation =
+      document.querySelector<HTMLInputElement>("#sync-confirm");
+    const action = form.querySelector<HTMLButtonElement>(
+      '[data-op="sync-connect"]',
+    )!.dataset.action as SyncConnect;
+    if (!input.value.trim()) {
+      notify(syncErrorText("passphraseRequired"), "error");
+      input.focus();
+      return;
+    }
+    if (action === "create" && input.value.length < SYNC_MIN_PASSPHRASE) {
+      notify(syncErrorText("passphraseShort"), "error");
+      input.focus();
+      return;
+    }
+    if (confirmation && input.value !== confirmation.value) {
+      notify(syncErrorText("mismatch"), "error");
+      confirmation.focus();
+      return;
+    }
+    const passphrase = input.value,
+      revision = syncStatus?.revision ?? null;
+    const connect = async () => {
+      input.value = "";
+      if (confirmation) confirmation.value = "";
+      await performSync(() =>
+        request("sync.connect", { passphrase, action, revision }),
+      );
+    };
+    if (action === "join") confirmSync(C.sync.joinText, C.sync.join, connect);
+    else await connect();
+  } catch (caught) {
+    notify(syncErrorText(modelError(caught).code), "error");
+  }
+});
 document.addEventListener("click", async (event) => {
   try {
     const clicked = event.target as HTMLElement;
@@ -1641,7 +1844,62 @@ document.addEventListener("click", async (event) => {
       return;
     }
     const op = target.dataset.op;
-    if (op === "history-back") {
+    if (op?.startsWith("sync-") && syncBusy) return;
+    if (op === "sync-authorize") {
+      const origins = syncServices
+        .filter((service) => !service.granted)
+        .map((service) => service.origin + "/*");
+      if (!origins.length) return;
+      dismissNotice();
+      target.disabled = true;
+      try {
+        // Request directly from this click, before any asynchronous work loses the gesture.
+        const granted = await chrome.permissions.request({ origins });
+        if (!granted) notify(C.sync.accessDenied, "error");
+      } catch {
+        notify(C.sync.accessDenied, "error");
+      } finally {
+        target.disabled = false;
+        await refreshSync();
+      }
+    } else if (op === "sync-first-setup") {
+      await refreshSync();
+      if (syncStatus && !syncStatus.remote && !syncStatus.enabled) {
+        syncFirstSetup = true;
+        render();
+        document.querySelector<HTMLInputElement>("#sync-passphrase")?.focus();
+      }
+    } else if (op === "sync-join-existing") {
+      syncFirstSetup = false;
+      render();
+      await refreshSync();
+    } else if (op === "sync-check") {
+      await refreshSync();
+    } else if (op === "sync-confirm-action") {
+      const action = pendingSync;
+      pendingSync = null;
+      await action?.();
+    } else if (op === "sync-now") {
+      await performSync(() => request("sync.run"));
+    } else if (op === "sync-stop-ask") {
+      confirmSync(
+        C.sync.stopText,
+        C.sync.stop,
+        () => performSync(() => request("sync.stop")),
+        false,
+        C.sync.stop,
+      );
+    } else if (op === "sync-clear-ask" || op === "sync-reset-ask") {
+      const resetting = op === "sync-reset-ask";
+      const label = resetting ? C.sync.resetSync : C.sync.clear;
+      confirmSync(
+        resetting ? C.sync.resetText : C.sync.clearText,
+        label,
+        () => performSync(() => request("sync.clear")),
+        true,
+        label,
+      );
+    } else if (op === "history-back") {
       history.back();
     } else if (op === "history-forward") {
       history.forward();
@@ -2184,4 +2442,5 @@ document.addEventListener("change", async (event) => {
 });
 render();
 if (state.route === "usage") void loadUsage();
+if (state.route === "sync") void refreshSync();
 void refreshDailyOnVisit();

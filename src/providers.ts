@@ -1,3 +1,4 @@
+import { createSecretRedactor } from "./redaction.js";
 import {
   reasoningSpec,
   ANTHROPIC_EFFORTS,
@@ -156,13 +157,15 @@ function providerHeaders(
   if (protocol === "gemini") return key ? { "x-goog-api-key": key } : {};
   return key ? { Authorization: `Bearer ${key}` } : {};
 }
-export async function checkResponse(response: Response): Promise<void> {
+export async function checkResponse(
+  response: Response,
+  secrets: readonly string[] = [],
+): Promise<void> {
   if (response.ok) return;
   const body = object(await response.json().catch(() => null));
-  const detail = string(object(body.error).message || body.message).slice(
-    0,
-    240,
-  );
+  const detail = createSecretRedactor(secrets)
+    .text(string(object(body.error).message || body.message))
+    .slice(0, 240);
   throw new ModelError(
     response.status === 401 || response.status === 403
       ? "authError"
@@ -175,7 +178,9 @@ export async function checkResponse(response: Response): Promise<void> {
 export async function listModels(
   connection: Pick<Connection, "url" | "protocol">,
   key: string,
+  secrets: readonly string[] = [],
 ): Promise<ProviderModel[]> {
+  secrets = [key, ...secrets];
   const url = new URL(modelsEndpoint(connection));
   const timeout = AbortSignal.timeout(30000);
   const models = new Map<string, ProviderModel>(),
@@ -193,7 +198,7 @@ export async function listModels(
         credentials: "omit",
         cache: "no-store",
       });
-      await checkResponse(response);
+      await checkResponse(response, secrets);
       const data = object(
         await response.json().catch(() => {
           throw new ModelError("invalidModelList");
@@ -263,8 +268,10 @@ export async function listModels(
   } catch (error) {
     if (timeout.aborted) throw new ModelError("timeout");
     if (error instanceof ModelError) {
-      if (key) error.message = error.message.replaceAll(key, "[redacted]");
-      throw error;
+      throw new ModelError(
+        error.code,
+        createSecretRedactor(secrets).text(error.message),
+      );
     }
     throw new ModelError("networkError");
   }
@@ -369,7 +376,9 @@ export async function readResponse(
   protocol: Protocol,
   onDelta: (text: string) => void = () => {},
   onUsage: (usage: UsageUpdate) => void = () => {},
+  secrets: readonly string[] = [],
 ): Promise<string> {
+  const redact = createSecretRedactor(secrets);
   let rawUsage: Wire = {},
     hasUsage = false;
   const usage = (patch: unknown, final = false) => {
@@ -381,14 +390,14 @@ export async function readResponse(
     if (hasUsage)
       onUsage({ tokens: normalizeUsage(rawUsage, protocol), final });
   };
-  await checkResponse(response);
+  await checkResponse(response, secrets);
   if (!response.headers.get("content-type")?.includes("text/event-stream")) {
     const value = object(await response.json());
     usage(value.usage, true);
     if (value.error)
       throw new ModelError(
         "serviceError",
-        string(object(value.error).message).slice(0, 240),
+        redact.text(string(object(value.error).message)).slice(0, 240),
       );
     const choice = object(array(value.choices)[0]);
     const contentText = (content: unknown, type: string) =>
@@ -396,7 +405,7 @@ export async function readResponse(
         .filter((item) => object(item).type === type)
         .map((item) => string(object(item).text))
         .join("");
-    const text =
+    const text = redact.text(
       protocol === "responses"
         ? array(value.output)
             .map((item) => contentText(object(item).content, "output_text"))
@@ -409,7 +418,8 @@ export async function readResponse(
                 .filter((step) => object(step).type === "model_output")
                 .map((step) => contentText(object(step).content, "text"))
                 .join("")
-            : string(object(choice.message).content);
+            : string(object(choice.message).content),
+    );
     if (text) onDelta(text);
     if (
       value.status === "incomplete" ||
@@ -429,6 +439,10 @@ export async function readResponse(
     output = "",
     done = false,
     outputError: string | undefined;
+  const redactedStream = redact.stream((text) => {
+    output += text;
+    onDelta(text);
+  });
   const parse = (frame: string) => {
     if (done) return;
     const data = frame
@@ -476,7 +490,7 @@ export async function readResponse(
     if (value.error || value.type === "error" || value.event_type === "error")
       throw new ModelError(
         "serviceError",
-        string(object(value.error).message).slice(0, 240),
+        redact.text(string(object(value.error).message)).slice(0, 240),
       );
     let text = "";
     if (protocol === "chat") {
@@ -525,10 +539,7 @@ export async function readResponse(
       if (value.event_type === "interaction.completed" || outputError)
         done = true;
     }
-    if (text) {
-      output += text;
-      onDelta(text);
-    }
+    if (text) redactedStream.push(text);
   };
   // Decode incrementally: UTF-8 characters, CRLF pairs and SSE frames can cross network chunks.
   let trailingCR = "";
@@ -559,6 +570,7 @@ export async function readResponse(
   }
   if (outputError) throw new ModelError(outputError);
   if (!done) throw new ModelError("interrupted");
+  redactedStream.finish();
   if (!output.trim()) throw new ModelError("emptyOutput");
   return output;
 }
@@ -570,6 +582,7 @@ export type ModelCall = (
   signal: AbortSignal,
   onDelta?: (text: string) => void,
   onUsage?: (usage: UsageUpdate) => void,
+  secrets?: readonly string[],
 ) => Promise<string>;
 export const callModel: ModelCall = async (
   connection,
@@ -579,7 +592,9 @@ export const callModel: ModelCall = async (
   signal,
   onDelta,
   onUsage,
+  secrets = [],
 ) => {
+  secrets = [key, ...secrets];
   if (connectionPurpose(connection) !== "generation")
     throw new ModelError("invalidProtocol");
   const url = endpoint(connection),
@@ -598,13 +613,21 @@ export const callModel: ModelCall = async (
       redirect: "error",
       credentials: "omit",
     });
-    return await readResponse(response, connection.protocol, onDelta, onUsage);
+    return await readResponse(
+      response,
+      connection.protocol,
+      onDelta,
+      onUsage,
+      secrets,
+    );
   } catch (error) {
     if (signal.aborted) throw new ModelError("cancelled");
     if (timeout.aborted) throw new ModelError("timeout");
     if (error instanceof ModelError) {
-      if (key) error.message = error.message.replaceAll(key, "[redacted]");
-      throw error;
+      throw new ModelError(
+        error.code,
+        createSecretRedactor(secrets).text(error.message),
+      );
     }
     throw new ModelError("networkError");
   }

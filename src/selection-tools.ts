@@ -1,3 +1,4 @@
+import { randomUUID } from "./uuid.js";
 import { escapeHtml as escape } from "./html.js";
 import { HoverTips } from "./hover-tips.js";
 import brandMark from "../icons/brand-mark.svg";
@@ -431,7 +432,7 @@ export class SelectionTools {
         throw new ModelError("actionLimit");
       this.begin();
       const draft: Action = {
-        id: crypto.randomUUID(),
+        id: randomUUID(),
         name: "",
         instruction: "",
         model: "default",

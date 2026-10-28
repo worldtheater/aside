@@ -1,3 +1,4 @@
+import "fake-indexeddb/auto";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -101,7 +102,7 @@ if (scenario.startsWith("plain-")) {
 }
 const qaDefaultAlreadyApplied =
   scenario === "opted-out" || scenario.startsWith("plain-");
-const expectedWrites = repairsPlain || !qaDefaultAlreadyApplied ? 1 : 0;
+const expectedWrites = (repairsPlain || !qaDefaultAlreadyApplied ? 1 : 0) + 1;
 const stored = {
   ...(qaDefaultAlreadyApplied ? { qaShortcutDefaultApplied: true } : {}),
   settings: {
@@ -131,6 +132,9 @@ globalThis.chrome = {
             ]),
           ),
         ),
+      remove: async (keys) => {
+        for (const key of keys) delete stored[key];
+      },
       set: async (values) => {
         writes++;
         Object.assign(stored, structuredClone(values));
@@ -175,7 +179,8 @@ const { actions: old, ...originalSettings } = before.settings;
 assert.deepEqual(settings, originalSettings);
 assert.deepEqual(stored.collection, before.collection);
 assert.deepEqual(stored.daily, before.daily);
-assert.deepEqual(stored.credentials, before.credentials);
+assert.equal(stored.credentials, undefined);
+assert.deepEqual((await readStore()).credentials, before.credentials);
 await initialize();
 await readStore();
 assert.equal(

@@ -1,3 +1,6 @@
+import contentStyles from "../content-ui.css";
+import themeStyles from "../content-themes.css";
+import selectionStyles from "../selection-tools.css";
 import { resolveLocale } from "./locale.js";
 import { escapeHtml as escape } from "./html.js";
 import { HoverTips } from "./hover-tips.js";
@@ -63,8 +66,17 @@ async function initializePagework() {
   host.dataset.pagework = "ui";
   // Keep extension-owned controls out of page theme rewriters such as Dark Reader.
   const shadow = host.attachShadow({ mode: "closed" });
+  // Keep styling in the controller's bundle: no page-owned extension resource
+  // requests can outlive an extension reload or fail when this host is moved.
+  shadow.adoptedStyleSheets = [contentStyles, themeStyles, selectionStyles].map(
+    (css) => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(css);
+      return sheet;
+    },
+  );
   document.documentElement.append(host);
-  shadow.innerHTML = `<link rel="stylesheet" href="${chrome.runtime.getURL("content-ui.css")}"><link rel="stylesheet" href="${chrome.runtime.getURL("content-themes.css")}"><link rel="stylesheet" href="${chrome.runtime.getURL("selection-tools.css")}"><button id="dock" class="dock" data-op="toggle-tools" aria-controls="toolbar radial selection" aria-expanded="false">${brandMark}</button><div id="toolbar" class="panel tools-panel" hidden></div><div id="selection" class="selection-tools" hidden></div><div id="result" class="panel result" hidden></div><div id="notice" class="notice" hidden></div>`;
+  shadow.innerHTML = `<button id="dock" class="dock" data-op="toggle-tools" aria-controls="toolbar radial selection" aria-expanded="false">${brandMark}</button><div id="toolbar" class="panel tools-panel" hidden></div><div id="selection" class="selection-tools" hidden></div><div id="result" class="panel result" hidden></div><div id="notice" class="notice" hidden></div>`;
   const $ = (id: string) => shadow.getElementById(id)!;
   const paths: Record<string, string> = {
     close: "M6 6l12 12M6 18 18 6",
@@ -1327,10 +1339,7 @@ async function initializePagework() {
         actionId: currentAction,
         translation,
         stream: true,
-        blocks: text
-          .split(/\n\s*\n/)
-          .map((text, i) => ({ id: `s-${i}`, text, context }))
-          .filter((b: { text: string }) => b.text.trim()),
+        blocks: [{ id: "selection", text, context }],
       },
       undefined,
       (id, delta) => {
@@ -1698,12 +1707,6 @@ async function initializePagework() {
         });
     },
     { signal },
-  );
-  shadow.querySelectorAll("link").forEach((link) =>
-    link.addEventListener("load", () => {
-      positionTools();
-      positionSelection();
-    }),
   );
   function positionResult(left?: number, top?: number) {
     const panel = $("result");

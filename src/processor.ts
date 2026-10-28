@@ -1,3 +1,4 @@
+import { createSecretRedactor } from "./redaction.js";
 import type {
   ProcessingAction,
   TextBlock,
@@ -250,6 +251,7 @@ interface ProcessOptions {
   blocks: TextBlock[];
   connection: Parameters<ModelCall>[0];
   key: string;
+  secrets?: readonly string[];
   signal: AbortSignal;
   refresh?: boolean;
   onProgress?: (parts: ResultPart[], stats: ProcessStats) => void;
@@ -332,12 +334,15 @@ export function createProcessor(cache?: ResultCache) {
     blocks,
     connection,
     key,
+    secrets = [],
     signal,
     refresh = false,
     onProgress = () => {},
     onDelta,
     invoke = callModel,
   }: ProcessOptions): Promise<ProcessResult> {
+    secrets = [key, ...secrets];
+    const redact = createSecretRedactor(secrets);
     validate(blocks);
     if (signal.aborted) throw new ModelError("cancelled");
     const policy = processingPolicy(connection.processing),
@@ -436,7 +441,7 @@ export function createProcessor(cache?: ResultCache) {
           ? [
               {
                 id: block.id,
-                source: block.text,
+                source: redact.text(block.text),
                 text: indices.map((i) => completed.get(i)!).join("\n"),
               },
             ]
@@ -457,8 +462,8 @@ export function createProcessor(cache?: ResultCache) {
         hit = stored.get(cacheKey);
       if (hit !== undefined) {
         stats.hits++;
-        completed.set(index, hit);
-        buffers[index] = hit;
+        completed.set(index, redact.text(hit));
+        buffers[index] = redact.text(hit);
         return;
       }
       let flight = flights.get(cacheKey);
@@ -558,12 +563,16 @@ export function createProcessor(cache?: ResultCache) {
                     listener.delta(delta);
                 }
               : undefined,
+            undefined,
+            secrets,
           );
           if (work.controller.signal.aborted) throw new ModelError("cancelled");
           if (!output.trim()) throw new ModelError("emptyOutput");
-          const values = direct
-            ? [output]
-            : parseBatch(output, batch).map((part) => part.text);
+          const values = (
+            direct
+              ? [output]
+              : parseBatch(output, batch).map((part) => part.text)
+          ).map(redact.text);
           let writeFailed = false;
           if (cache) {
             const entries = live.flatMap((flight, i) =>

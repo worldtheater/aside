@@ -138,6 +138,7 @@ module.exports = async ({
   const beforeCopy = await snapshot(),
     beforeCopyRequests = modelRequests.length;
   await op("duplicate-connection").click();
+  await op("duplicate-connection").waitFor({ state: "hidden" });
   assert.equal(await field("name").inputValue(), saved.name + " · 副本");
   assert.equal(await field("url").inputValue(), saved.url);
   assert.equal(await field("protocol").inputValue(), saved.protocol);
@@ -181,7 +182,11 @@ module.exports = async ({
   assert.equal(
     await page.evaluate(
       async (id) =>
-        (await chrome.storage.local.get("credentials")).credentials[id],
+        (
+          await (
+            await import("./tests/local-store-fixture.mjs")
+          ).localStore.get("credentials")
+        ).credentials[id],
       copied.id,
     ),
     "fixture-key",
@@ -193,6 +198,7 @@ module.exports = async ({
     "The saved duplicate can use the copied credential",
   );
   await op("duplicate-connection").click();
+  await op("duplicate-connection").waitFor({ state: "hidden" });
   await op("cancel-connection").click();
   assert.equal(
     (await snapshot()).connections.length,
@@ -204,6 +210,7 @@ module.exports = async ({
     .click();
   await field("url").fill("https://other-provider.test/v1");
   await op("duplicate-connection").click();
+  await op("duplicate-connection").waitFor({ state: "hidden" });
   assert.equal(
     await field("key").inputValue(),
     "",
@@ -215,6 +222,7 @@ module.exports = async ({
     .click();
   await field("key").fill("edited-fixture-key");
   await op("duplicate-connection").click();
+  await op("duplicate-connection").waitFor({ state: "hidden" });
   assert.equal(
     await field("key").inputValue(),
     "edited-fixture-key",
@@ -392,6 +400,63 @@ module.exports = async ({
   assert.equal(calls.length, beforeCalls);
   assert.equal(await usage(), beforeUsage);
   assert(!modelRequests.some((r) => r.path.includes("fixture-key")));
+  // A short viewport makes the saved connection list scroll without extra fixtures.
+  const list = page.locator(".connection-items");
+  await list.evaluate((node) => {
+    node.style.maxHeight = "120px";
+    node.scrollTop = 0;
+  });
+  assert(await list.evaluate((node) => node.scrollHeight > node.clientHeight));
+  const waitForScrollbar = (visible) =>
+    page.waitForFunction((visible) => {
+      const node = document.querySelector(".connection-items");
+      const color = getComputedStyle(
+        node,
+        "::-webkit-scrollbar-thumb",
+      ).backgroundColor;
+      return (color !== "rgba(0, 0, 0, 0)") === visible;
+    }, visible);
+  await list.hover();
+  await waitForScrollbar(false);
+  const width = await list.evaluate((node) => node.clientWidth);
+  await page.mouse.wheel(0, 40);
+  await waitForScrollbar(true);
+  await page.waitForTimeout(500);
+  // Reverse direction so this also scrolls when the first wheel hit the end.
+  const scrolledTop = await list.evaluate((node) => node.scrollTop);
+  await page.mouse.wheel(0, -20);
+  await page.waitForFunction(
+    (top) => document.querySelector(".connection-items").scrollTop < top,
+    scrolledTop,
+  );
+  await page.waitForTimeout(600);
+  assert(
+    await list.evaluate(
+      (node) =>
+        getComputedStyle(node, "::-webkit-scrollbar-thumb").backgroundColor !==
+        "rgba(0, 0, 0, 0)",
+    ),
+    "More scrolling restarts the idle delay",
+  );
+  await waitForScrollbar(false);
+  assert(
+    await list.evaluate((node) => node.matches(":hover")),
+    "Pointer stays over the list while its scrollbar hides",
+  );
+  assert.equal(await list.evaluate((node) => node.clientWidth), width);
+  await list.locator("button").first().focus();
+  await waitForScrollbar(false);
+  await page.keyboard.press("PageDown");
+  await waitForScrollbar(true);
+  await waitForScrollbar(false);
+  assert(
+    await list.evaluate((node) => node.contains(document.activeElement)),
+    "Keyboard focus does not keep the scrollbar visible",
+  );
+  await list.evaluate((node) => node.style.removeProperty("max-height"));
+  console.log(
+    "PASS: scrollbar appears on wheel/keyboard scrolling, extends its delay during scrolling, and hides while pointer/focus remain inside with stable content width.",
+  );
   console.log(
     "PASS: implicit caching defaults, advanced settings save/reopen/cancel, URL/key-only model-list testing, searchable model selection, saved catalogs/credentials, four protocols and pagination, empty/invalid lists, stale-response isolation, zero generation calls and unchanged usage.",
   );

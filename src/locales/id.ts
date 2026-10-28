@@ -5,6 +5,115 @@ import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
 const base = {
+  sync: {
+    devicesTitle: "Di perangkat lain",
+    joinSteps: [
+      "Masuk ke akun Chrome yang sama dan aktifkan sinkronisasi Chrome.",
+      "Buka halaman Sinkronisasi di Aside dan gabung dengan frasa sandi yang sama.",
+      "Izinkan akses ke layanan model saat diminta di perangkat tersebut.",
+    ],
+    mergeTitle: "Cara perubahan digabungkan",
+    mergeRules: [
+      {
+        title: "Item baru",
+        description: "Item yang dibuat di setiap perangkat tetap disimpan.",
+      },
+      {
+        title: "Perubahan",
+        description:
+          "Versi terakhir yang disimpan dari item yang sama digunakan.",
+      },
+      {
+        title: "Penghapusan",
+        description:
+          "Berlaku di semua perangkat; perubahan lama tidak memulihkan item.",
+      },
+      {
+        title: "Model default",
+        description:
+          "Pilihan tersinkron hanya digunakan jika belum ada pilihan di perangkat ini.",
+      },
+    ],
+    manageTitle: "Kelola sinkronisasi",
+    stopHelp:
+      "Pengaturan lokal tetap disimpan. Perangkat lain tetap menyinkronkan.",
+    clearHelp:
+      "Menghapus salinan bersama dan mempertahankan pengaturan lokal. Perangkat lain perlu menyiapkan sinkronisasi lagi.",
+    accessTitle: "Izinkan akses layanan model",
+    accessHelp:
+      "Sebelum menggunakan model, izinkan browser ini mengakses layanan di bawah.",
+    allowAccess: "Izinkan akses",
+    accessReady: "Semua alamat layanan model telah diizinkan di browser ini.",
+    accessDenied:
+      "Akses belum diizinkan. Anda dapat mencoba lagi; setelan yang disinkronkan tetap tersimpan.",
+    joinExisting: "Gabung sinkronisasi yang sudah ada",
+    waitingHelp:
+      "Setelan sinkronisasi belum diterima. Jika sinkronisasi sudah aktif di perangkat lain, gunakan akun Chrome yang sama, aktifkan sinkronisasi Chrome, lalu tunggu. Setelah setelan tiba, Anda dapat memasukkan frasa sandi yang sudah ada.",
+    firstSetup: "Penyiapan pertama",
+    checkAgain: "Periksa lagi",
+    forgotPassphrase: "Lupa frasa sandi?",
+    resetSync: "Atur ulang sinkronisasi",
+    resetText:
+      "Frasa sandi lama tidak dapat dipulihkan. Pengaturan ulang menghapus pengaturan tersinkron di cloud, tetapi mempertahankan pengaturan dan kunci API di setiap perangkat. Atur kembali sinkronisasi dengan frasa sandi baru pada perangkat yang masih memiliki pengaturan lengkap. Perangkat lain juga harus menggunakan frasa sandi baru untuk melanjutkan sinkronisasi. Pengaturan yang hanya tersimpan di cloud tidak dapat dipulihkan.",
+    scopeTitle: "Disinkronkan",
+    localOnlyTitle: "Hanya di perangkat ini",
+    createHelp:
+      "Buat frasa sandi baru hanya jika sinkronisasi belum diaktifkan di perangkat mana pun. Perangkat lain akan bergabung dengan frasa sandi yang sama.",
+    joinHelp:
+      "Masukkan frasa sandi sinkronisasi yang sama dengan yang dibuat di perangkat lain. Gunakan akun Chrome yang sama dengan sinkronisasi aktif.",
+    details: "Detail dan pengelolaan sinkronisasi",
+    scope: ["Koneksi model dan kunci API", "Tindakan", "Pengaturan renungan"],
+    localOnly: [
+      "Koleksi dan renungan yang dihasilkan",
+      "Riwayat permintaan dan cache",
+      "Bahasa, tema, dan preferensi perangkat",
+    ],
+    join: "Gabung sinkronisasi",
+    joinTitle: "Gabungkan konfigurasi?",
+    joinText:
+      "Gabungkan pengaturan perangkat ini dengan pengaturan yang disinkronkan? Sebagian pengaturan dapat diperbarui. Koneksi dan tindakan yang hanya ada di perangkat ini tetap disimpan. Koleksi dan preferensi pribadi tidak terpengaruh.",
+    title: "Sinkronisasi",
+    intro:
+      "Sinkronkan pengaturan terenkripsi antarperangkat melalui akun Chrome Anda.",
+    requirements:
+      "Chrome mengirim perubahan di latar belakang. Jika belum diterima, periksa sinkronisasi Chrome dan jaringan.",
+    passphrase: "Frasa sandi sinkronisasi",
+    confirmPassphrase: "Konfirmasi frasa sandi",
+    passphraseHelp:
+      "Simpan frasa sandi ini: frasa sandi tidak dapat dipulihkan. Masukkan lagi setelah memulai ulang Chrome atau memuat ulang ekstensi.",
+    locked:
+      "Masukkan frasa sandi semula untuk melanjutkan sinkronisasi. Pengaturan lokal tetap dapat digunakan.",
+    ready: "Sinkronisasi pengaturan aktif.",
+    lastSync: "Sinkronisasi terakhir di perangkat ini",
+    create: "Aktifkan sinkronisasi",
+    unlock: "Buka kunci sinkronisasi",
+    syncNow: "Sinkronkan sekarang",
+    stop: "Hentikan di perangkat ini",
+    clear: "Hapus pengaturan tersinkron",
+    clearText:
+      "Hapus pengaturan terenkripsi dari Chrome Sync dan hentikan sinkronisasi di sini? Pengaturan dan kunci API lokal tetap tersimpan. Perangkat lain harus disiapkan ulang. Jika lupa frasa sandi, Anda dapat membuat salinan baru setelah menghapusnya.",
+    stopText:
+      "Hentikan sinkronisasi di perangkat ini? Pengaturan dan kunci API lokal tetap tersedia. Salinan tersinkron dan perangkat lain tidak terpengaruh.",
+    done: "Pengaturan sinkronisasi diperbarui",
+    working: "Memproses…",
+    errors: {
+      passphraseRequired: "Masukkan frasa sandi sinkronisasi.",
+      passphraseShort: "Gunakan minimal {min} karakter.",
+      mismatch: "Frasa sandi tidak cocok.",
+      wrongPassphrase:
+        "Frasa sandi salah atau data tersinkron gagal diautentikasi.",
+      locked: "Buka kunci sinkronisasi dengan frasa sandi terlebih dahulu.",
+      waiting: "Chrome masih menerima pengaturan. Coba lagi sebentar.",
+      tooLarge:
+        "Pengaturan melebihi ruang sinkronisasi yang tersedia. Persingkat instruksi atau hapus pengaturan yang tidak dipakai.",
+      version: "Versi pengaturan berbeda. Perbarui Aside di perangkat Anda.",
+      invalidData: "Pengaturan tersinkron tidak valid dan tidak diterapkan.",
+      remoteMissing:
+        "Salinan tersinkron dihapus. Pengaturan lokal tetap ada. Hapus pengaturan sinkronisasi lalu aktifkan kembali.",
+      unavailable:
+        "Sinkronisasi gagal. Periksa Chrome Sync dan koneksi Anda, lalu coba lagi.",
+    },
+  },
   brand: "Aside",
   about: {
     version: "Versi saat ini",
@@ -21,6 +130,7 @@ const base = {
     dompurify: "Sanitasi HTML",
   },
   nav: {
+    sync: "Sinkronisasi",
     help: "Tentang",
     home: "Koleksi",
     actions: "Tindakan",
@@ -509,6 +619,8 @@ const full = {
       invalidDecision:
         "Layanan keputusan mengembalikan hasil yang tidak valid.",
       actionLimit: `Anda dapat menyimpan hingga ${MAX_ACTIONS} tindakan. Hapus tindakan kustom yang tidak digunakan terlebih dahulu.`,
+      recordDeleted:
+        "Item ini telah dihapus. Buat item baru untuk menyimpan perubahan ini.",
       invalidAction: "Masukkan pengaturan tindakan yang valid.",
       presetActionProtected: "Tindakan bawaan tidak dapat dihapus.",
       sameLanguages:
@@ -521,6 +633,8 @@ const full = {
       invalidUrl:
         "Gunakan URL layanan HTTPS. Layanan lokal dapat memakai localhost atau 127.0.0.1.",
       invalidProtocol: "Pilih protokol API yang valid.",
+      credentialsUnavailable:
+        "Penyimpanan kunci API lokal tidak tersedia. Muat ulang ekstensi dan coba lagi.",
       invalidConnection: "Masukkan nama koneksi dan periksa pengaturannya.",
       modelRequired:
         "Uji koneksi dan pilih model dari daftar yang dikembalikan.",

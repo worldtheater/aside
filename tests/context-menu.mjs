@@ -1,3 +1,4 @@
+import "fake-indexeddb/auto";
 import assert from "node:assert/strict";
 
 // Exercise the installed menu and its event handler without a real model call.
@@ -17,7 +18,15 @@ globalThis.chrome = {
     onConnect: event("connect"),
   },
   storage: {
+    onChanged: event("storageChanged"),
+    sync: {
+      setAccessLevel: async () => {},
+      get: async () => ({}),
+      set: async () => {},
+      remove: async () => {},
+    },
     session: {
+      setAccessLevel: async () => {},
       get: async () => ({}),
       set: async () => {},
     },
@@ -406,3 +415,23 @@ stored.settings.actions = actionsBefore;
 console.log(
   "PASS: Q&A preserves its invoking tab, ignores retired/non-web commands, never redirects on blocked injection and opens action settings only for a removed Q&A action on a web page.",
 );
+
+// Page content cannot read sync state, submit a passphrase, or change/delete sync data.
+for (const type of [
+  "sync.status",
+  "sync.connect",
+  "sync.run",
+  "sync.stop",
+  "sync.clear",
+]) {
+  const response = await new Promise((resolve) =>
+    listeners.message(
+      { type },
+      { id: "fixture", url: "https://example.com/", tab: { id: 7 } },
+      resolve,
+    ),
+  );
+  assert.equal(response.ok, false);
+  assert.equal(response.error, "notAllowed");
+}
+console.log("PASS: sync management messages reject content-script callers.");

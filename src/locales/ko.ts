@@ -4,6 +4,111 @@ import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
 const base = {
+  sync: {
+    devicesTitle: "다른 기기에서 참여",
+    joinSteps: [
+      "같은 Chrome 계정으로 로그인하고 Chrome 동기화를 켜세요.",
+      "Aside의 동기화 페이지에서 같은 암호로 참여하세요.",
+      "안내에 따라 해당 기기의 모델 서비스 접근을 허용하세요.",
+    ],
+    mergeTitle: "변경 사항 병합",
+    mergeRules: [
+      {
+        title: "추가",
+        description: "각 기기에서 만든 항목을 모두 유지합니다.",
+      },
+      {
+        title: "수정",
+        description: "같은 항목은 마지막으로 저장된 버전을 사용합니다.",
+      },
+      {
+        title: "삭제",
+        description: "모든 기기에 반영되며 이전 수정으로 복원되지 않습니다.",
+      },
+      {
+        title: "기본 모델",
+        description:
+          "이 기기에 설정된 기본 모델이 없을 때만 동기화된 선택을 적용합니다.",
+      },
+    ],
+    manageTitle: "동기화 관리",
+    stopHelp: "로컬 설정은 유지되며 다른 기기는 계속 동기화됩니다.",
+    clearHelp:
+      "공유 사본을 삭제하고 로컬 설정은 유지합니다. 다른 기기는 동기화를 다시 설정해야 합니다.",
+    accessTitle: "모델 서비스 접근 허용",
+    accessHelp:
+      "모델을 사용하기 전에 이 브라우저에서 아래 서비스에 대한 접근을 허용하세요.",
+    allowAccess: "접근 허용",
+    accessReady:
+      "이 브라우저에서 모든 모델 서비스 주소에 대한 접근이 허용되었습니다.",
+    accessDenied:
+      "접근 권한이 부여되지 않았습니다. 다시 시도할 수 있으며, 동기화된 설정은 유지됩니다.",
+    joinExisting: "기존 동기화에 참여",
+    waitingHelp:
+      "동기화 설정이 아직 도착하지 않았습니다. 다른 기기에서 이미 동기화를 켰다면 같은 Chrome 계정으로 로그인하고 Chrome 동기화를 켠 채 기다리세요. 설정이 도착하면 기존 암호를 입력해 참여할 수 있습니다.",
+    firstSetup: "처음 동기화 설정",
+    checkAgain: "다시 확인",
+    forgotPassphrase: "암호를 잊으셨나요?",
+    resetSync: "동기화 초기화",
+    resetText:
+      "기존 암호는 복구할 수 없습니다. 초기화하면 클라우드의 동기화 설정이 삭제되지만 각 기기의 설정과 API 키는 유지됩니다. 전체 설정이 남아 있는 기기에서 새 암호로 동기화를 다시 설정하세요. 다른 기기도 새 암호로 동기화를 재개해야 합니다. 클라우드에만 있는 설정은 복구할 수 없습니다.",
+    scopeTitle: "동기화할 항목",
+    localOnlyTitle: "이 기기에만 보관",
+    createHelp:
+      "어떤 기기에서도 동기화를 켜지 않은 경우에만 새 암호를 설정하세요. 다른 기기도 같은 암호로 참여합니다.",
+    joinHelp:
+      "다른 기기에서 설정한 것과 같은 동기화 암호를 입력하세요. 같은 Chrome 계정으로 로그인하고 Chrome 동기화를 켜야 합니다.",
+    details: "동기화 안내 및 관리",
+    scope: ["모델 연결 및 API 키", "처리 방식", "단상 생성 설정"],
+    localOnly: [
+      "컬렉션 및 생성된 단상",
+      "요청 기록 및 캐시",
+      "언어, 테마 등 기기별 환경설정",
+    ],
+    join: "동기화 참여",
+    joinTitle: "설정을 병합할까요?",
+    joinText:
+      "이 기기의 설정을 동기화된 설정과 병합할까요? 일부 설정이 업데이트될 수 있습니다. 이 기기에만 있는 연결과 작업은 유지되며 컬렉션과 개인 환경설정은 영향을 받지 않습니다.",
+    title: "동기화",
+    intro: "Chrome 계정으로 암호화된 설정을 기기 간에 동기화합니다.",
+    requirements:
+      "Chrome이 백그라운드에서 변경 사항을 전달합니다. 도착하지 않으면 Chrome 동기화와 네트워크를 확인하세요.",
+    passphrase: "동기화 암호",
+    confirmPassphrase: "암호 확인",
+    passphraseHelp:
+      "암호는 복구할 수 없으니 잘 보관하세요. Chrome을 다시 시작하거나 확장 프로그램을 다시 로드하면 재입력해야 합니다.",
+    locked:
+      "기존 암호를 입력해 동기화를 재개하세요. 이 기기의 설정은 계속 사용할 수 있습니다.",
+    ready: "설정 동기화가 켜져 있습니다.",
+    lastSync: "이 기기의 마지막 동기화",
+    create: "동기화 켜기",
+    unlock: "동기화 잠금 해제",
+    syncNow: "지금 동기화",
+    stop: "이 기기에서 중지",
+    clear: "동기화된 설정 삭제",
+    clearText:
+      "Chrome 동기화에서 암호화된 설정을 삭제하고 이 기기의 동기화를 중지할까요? 로컬 설정과 API 키는 유지됩니다. 다른 기기는 다시 설정해야 합니다. 암호를 잊었다면 삭제 후 새 사본을 만들 수 있습니다.",
+    stopText:
+      "이 기기의 동기화를 중지할까요? 로컬 설정과 API 키는 계속 사용할 수 있으며 동기화된 사본과 다른 기기는 영향을 받지 않습니다.",
+    done: "동기화 설정이 업데이트되었습니다",
+    working: "처리 중…",
+    errors: {
+      passphraseRequired: "동기화 암호를 입력하세요.",
+      passphraseShort: "암호는 {min}자 이상이어야 합니다.",
+      mismatch: "암호가 일치하지 않습니다.",
+      wrongPassphrase: "암호가 틀리거나 동기화 데이터 인증에 실패했습니다.",
+      locked: "먼저 암호로 동기화 잠금을 해제하세요.",
+      waiting: "Chrome이 동기화 설정을 수신 중입니다. 잠시 후 다시 시도하세요.",
+      tooLarge:
+        "Chrome 동기화 용량을 초과했습니다. 지침을 줄이거나 불필요한 설정을 삭제하세요.",
+      version: "설정 버전이 다릅니다. 각 기기의 Aside를 업데이트하세요.",
+      invalidData: "동기화 설정이 유효하지 않아 적용되지 않았습니다.",
+      remoteMissing:
+        "동기화 사본이 삭제되었습니다. 로컬 설정은 유지됩니다. 동기화 설정을 삭제한 후 다시 켜세요.",
+      unavailable:
+        "동기화하지 못했습니다. Chrome 동기화와 네트워크를 확인하고 다시 시도하세요.",
+    },
+  },
   brand: "Aside",
   about: {
     version: "현재 버전",
@@ -20,6 +125,7 @@ const base = {
     dompurify: "HTML 정제",
   },
   nav: {
+    sync: "동기화",
     help: "정보",
     home: "컬렉션",
     actions: "작업",
@@ -487,6 +593,8 @@ const full = {
       noDecisionConnection: "먼저 기본 판단 모델을 설정하세요.",
       invalidDecision: "판단 서비스가 잘못된 결과를 반환했습니다.",
       actionLimit: `작업은 최대 ${MAX_ACTIONS}개까지 저장할 수 있습니다. 먼저 사용하지 않는 사용자 작업을 삭제하세요.`,
+      recordDeleted:
+        "이 항목은 삭제되었습니다. 변경 사항을 저장하려면 새 항목을 만드세요.",
       invalidAction: "올바른 작업 설정을 입력하세요.",
       presetActionProtected: "기본 제공 작업은 삭제할 수 없습니다.",
       sameLanguages:
@@ -499,6 +607,8 @@ const full = {
       invalidUrl:
         "HTTPS 서비스 URL을 사용하세요. 로컬 서비스는 localhost 또는 127.0.0.1을 사용할 수 있습니다.",
       invalidProtocol: "올바른 API 프로토콜을 선택하세요.",
+      credentialsUnavailable:
+        "로컬 API 키 저장소를 사용할 수 없습니다. 확장 프로그램을 새로고침한 후 다시 시도하세요.",
       invalidConnection: "연결 이름을 입력하고 연결 설정을 확인하세요.",
       modelRequired: "연결을 테스트하고 반환된 목록에서 모델을 선택하세요.",
       invalidReasoning:

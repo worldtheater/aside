@@ -5,6 +5,118 @@ import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
 const base = {
+  sync: {
+    devicesTitle: "Başka bir cihazda katılma",
+    joinSteps: [
+      "Aynı Chrome hesabıyla oturum açın ve Chrome senkronizasyonunu etkinleştirin.",
+      "Aside’ın Senkronizasyon sayfasını açıp aynı parola ile katılın.",
+      "İstendiğinde o cihazda model hizmetlerine erişim izni verin.",
+    ],
+    mergeTitle: "Değişikliklerin birleştirilmesi",
+    mergeRules: [
+      {
+        title: "Yeni kayıtlar",
+        description: "Her cihazda oluşturulan kayıtlar korunur.",
+      },
+      {
+        title: "Düzenlemeler",
+        description: "Aynı kaydın son kaydedilen sürümü kullanılır.",
+      },
+      {
+        title: "Silmeler",
+        description:
+          "Tüm cihazlara yansır; eski düzenlemeler kaydı geri getirmez.",
+      },
+      {
+        title: "Varsayılan model",
+        description:
+          "Yalnızca bu cihazda seçilmemişse senkronize seçim kullanılır.",
+      },
+    ],
+    manageTitle: "Senkronizasyonu yönet",
+    stopHelp:
+      "Yerel ayarlar korunur. Diğer cihazlar senkronizasyona devam eder.",
+    clearHelp:
+      "Paylaşılan kopyayı kaldırır, yerel ayarları korur. Diğer cihazlarda senkronizasyon yeniden kurulmalıdır.",
+    accessTitle: "Model hizmetlerine erişime izin ver",
+    accessHelp:
+      "Modellerinizi kullanmadan önce bu tarayıcının aşağıdaki hizmetlere erişmesine izin verin.",
+    allowAccess: "Erişime izin ver",
+    accessReady:
+      "Bu tarayıcıda tüm model hizmeti adreslerine erişim izni verildi.",
+    accessDenied:
+      "Erişim izni verilmedi. Yeniden deneyebilirsiniz; eşitlenen ayarlarınız korunur.",
+    joinExisting: "Mevcut eşitlemeye katıl",
+    waitingHelp:
+      "Eşitlenen ayarlar henüz ulaşmadı. Eşitleme başka bir cihazda zaten etkinse aynı Chrome hesabını kullanın, Chrome eşitlemesini açık tutun ve bekleyin. Ayarlar ulaştığında mevcut parolanızı girebilirsiniz.",
+    firstSetup: "İlk kez kur",
+    checkAgain: "Yeniden kontrol et",
+    forgotPassphrase: "Parolayı mı unuttunuz?",
+    resetSync: "Eşitlemeyi sıfırla",
+    resetText:
+      "Eski parola kurtarılamaz. Sıfırlama buluttaki eşitlenmiş ayarları siler, ancak her cihazda kayıtlı ayarları ve API anahtarlarını korur. Tüm ayarlarınızın bulunduğu bir cihazda yeni bir parolayla eşitlemeyi yeniden kurun. Diğer cihazlar da eşitlemeye devam etmek için yeni parolayı kullanmalıdır. Yalnızca bulutta saklanan ayarlar kurtarılamaz.",
+    scopeTitle: "Eşitlenenler",
+    localOnlyTitle: "Bu cihazda kalanlar",
+    createHelp:
+      "Yalnızca hiçbir cihazda eşitlemeyi etkinleştirmediyseniz yeni bir parola belirleyin. Diğer cihazlar aynı parolayla katılacaktır.",
+    joinHelp:
+      "Başka bir cihazda belirlediğiniz eşitleme parolasının aynısını girin. Aynı Chrome hesabını kullanın ve Chrome eşitlemesini etkinleştirin.",
+    details: "Eşitleme ayrıntıları ve yönetimi",
+    scope: [
+      "Model bağlantıları ve API anahtarları",
+      "İşlemler",
+      "Düşünce oluşturma ayarları",
+    ],
+    localOnly: [
+      "Koleksiyon ve oluşturulan düşünceler",
+      "İstek geçmişi ve önbellek",
+      "Dil, tema ve cihaz tercihleri",
+    ],
+    join: "Eşitlemeye katıl",
+    joinTitle: "Yapılandırmalar birleştirilsin mi?",
+    joinText:
+      "Bu cihazın ayarları eşitlenen ayarlarla birleştirilsin mi? Bazı ayarlar güncellenebilir. Yalnızca bu cihazda olan bağlantılar ve eylemler korunur. Koleksiyonlar ve kişisel tercihler etkilenmez.",
+    title: "Eşitleme",
+    intro:
+      "Chrome hesabınızla şifrelenmiş ayarları cihazlar arasında eşitleyin.",
+    requirements:
+      "Chrome değişiklikleri arka planda aktarır. Ulaşmazlarsa Chrome senkronizasyonunu ve ağ bağlantısını kontrol edin.",
+    passphrase: "Eşitleme parolası",
+    confirmPassphrase: "Parolayı doğrula",
+    passphraseHelp:
+      "Bu parolayı saklayın; unutulursa kurtarılamaz. Chrome’u yeniden başlattıktan veya uzantıyı yeniden yükledikten sonra tekrar girmeniz gerekir.",
+    locked:
+      "Eşitlemeye devam etmek için ilk parolanızı girin. Yerel ayarlarınız kullanılabilir durumda kalır.",
+    ready: "Ayar eşitleme etkin.",
+    lastSync: "Bu cihazdaki son eşitleme",
+    create: "Eşitlemeyi aç",
+    unlock: "Eşitleme kilidini aç",
+    syncNow: "Şimdi eşitle",
+    stop: "Bu cihazda durdur",
+    clear: "Eşitlenen ayarları sil",
+    clearText:
+      "Şifrelenmiş ayarlar Chrome Sync’ten silinsin ve bu cihazda eşitleme durdurulsun mu? Yerel ayarlar ve API anahtarları korunur. Diğer cihazların yeniden kurulması gerekir. Parolayı unuttuysanız sildikten sonra yeni bir kopya oluşturabilirsiniz.",
+    stopText:
+      "Bu cihazda eşitleme durdurulsun mu? Yerel ayarlar ve API anahtarları kullanılabilir kalır. Eşitlenen kopya ve diğer cihazlar etkilenmez.",
+    done: "Eşitleme ayarları güncellendi",
+    working: "İşleniyor…",
+    errors: {
+      passphraseRequired: "Eşitleme parolanızı girin.",
+      passphraseShort: "En az {min} karakter kullanın.",
+      mismatch: "Parolalar eşleşmiyor.",
+      wrongPassphrase: "Parola yanlış veya eşitlenen veriler doğrulanamadı.",
+      locked: "Önce parolanızla eşitleme kilidini açın.",
+      waiting: "Chrome ayarları almaya devam ediyor. Birazdan tekrar deneyin.",
+      tooLarge:
+        "Ayarlar kullanılabilir eşitleme alanını aşıyor. Talimatları kısaltın veya kullanılmayan ayarları kaldırın.",
+      version: "Ayar sürümü farklı. Cihazlarınızdaki Aside’ı güncelleyin.",
+      invalidData: "Eşitlenen ayarlar geçersiz olduğu için uygulanmadı.",
+      remoteMissing:
+        "Eşitlenen kopya silinmiş. Yerel ayarlar korunuyor. Eşitleme kurulumunu silip yeniden açın.",
+      unavailable:
+        "Eşitleme tamamlanamadı. Chrome Sync’i ve bağlantınızı kontrol edip tekrar deneyin.",
+    },
+  },
   brand: "Aside",
   about: {
     version: "Geçerli sürüm",
@@ -21,6 +133,7 @@ const base = {
     dompurify: "HTML temizleme",
   },
   nav: {
+    sync: "Eşitleme",
     help: "Hakkında",
     home: "Koleksiyon",
     actions: "İşlemler",
@@ -501,6 +614,8 @@ const full = {
       noDecisionConnection: "Önce varsayılan karar modelini ayarlayın.",
       invalidDecision: "Karar hizmeti geçersiz bir sonuç döndürdü.",
       actionLimit: `En fazla ${MAX_ACTIONS} işlem kaydedebilirsiniz. Önce kullanılmayan bir özel işlemi kaldırın.`,
+      recordDeleted:
+        "Bu öğe silindi. Bu değişiklikleri kaydetmek için yeni bir öğe oluşturun.",
       invalidAction: "Geçerli işlem ayarları girin.",
       presetActionProtected: "Hazır işlemler silinemez.",
       sameLanguages:
@@ -513,6 +628,8 @@ const full = {
       invalidUrl:
         "HTTPS hizmet URL’si kullanın. Yerel hizmetler localhost veya 127.0.0.1 kullanabilir.",
       invalidProtocol: "Geçerli bir API protokolü seçin.",
+      credentialsUnavailable:
+        "Yerel API anahtarı depolama alanı kullanılamıyor. Uzantıyı yeniden yükleyip tekrar deneyin.",
       invalidConnection: "Bağlantıya bir ad verin ve ayarlarını kontrol edin.",
       modelRequired:
         "Bağlantıyı test edip döndürülen listeden bir model seçin.",

@@ -10,8 +10,11 @@ module.exports = async ({
   nav,
   op,
 }) => {
-  const original = await page.evaluate(() =>
-    chrome.storage.local.get(["settings", "credentials"]),
+  const original = await page.evaluate(async () =>
+    (await import("./tests/local-store-fixture.mjs")).localStore.get([
+      "settings",
+      "credentials",
+    ]),
   );
   const ext = page.url().split("/").slice(0, 3).join("/");
   const decision = {
@@ -38,16 +41,17 @@ module.exports = async ({
   try {
     await page.evaluate(
       async ({ decision, generation }) => {
-        const { settings, credentials } = await chrome.storage.local.get([
-          "settings",
-          "credentials",
-        ]);
+        const { settings, credentials } = await (
+          await import("./tests/local-store-fixture.mjs")
+        ).localStore.get(["settings", "credentials"]);
         settings.connections = [decision, generation];
         settings.defaultConnection = generation.id;
         settings.defaultDecisionConnection = decision.id;
         settings.website.sites["127.0.0.1"] = { lights: "on", enhance: true };
         credentials[decision.id] = "local-fixture";
-        await chrome.storage.local.set({ settings, credentials });
+        await (
+          await import("./tests/local-store-fixture.mjs")
+        ).localStore.set({ settings, credentials });
       },
       { decision, generation },
     );
@@ -220,8 +224,11 @@ module.exports = async ({
         ).status === "off",
       tabId,
     );
-    const persisted = await page.evaluate(() =>
-      chrome.storage.local.get(["settings", "credentials"]),
+    const persisted = await page.evaluate(async () =>
+      (await import("./tests/local-store-fixture.mjs")).localStore.get([
+        "settings",
+        "credentials",
+      ]),
     );
     assert.deepEqual(
       persisted.settings.connections.find((c) => c.id === decision.id),
@@ -238,6 +245,10 @@ module.exports = async ({
   } finally {
     await popup?.close();
     await source?.close();
-    await page.evaluate((data) => chrome.storage.local.set(data), original);
+    await page.evaluate(
+      async (data) =>
+        (await import("./tests/local-store-fixture.mjs")).localStore.set(data),
+      original,
+    );
   }
 };

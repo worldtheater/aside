@@ -1,8 +1,8 @@
 const assert = require("node:assert/strict");
 
 module.exports = async ({ page, context, origin, calls, nav, op }) => {
-  const stored = await page.evaluate(() =>
-    chrome.storage.local.get([
+  const stored = await page.evaluate(async () =>
+    (await import("./tests/local-store-fixture.mjs")).localStore.get([
       "settings",
       "daily",
       "credentials",
@@ -23,7 +23,9 @@ module.exports = async ({ page, context, origin, calls, nav, op }) => {
   const settle = () => page.waitForTimeout(200);
   const generated = async (target = page) => {
     await target.waitForFunction(async () => {
-      const { daily } = await chrome.storage.local.get("daily");
+      const { daily } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get("daily");
       return (
         daily.result && daily.date === new Date().toLocaleDateString("en-CA")
       );
@@ -40,22 +42,27 @@ module.exports = async ({ page, context, origin, calls, nav, op }) => {
   };
   const expire = () =>
     page.evaluate(async () => {
-      const { daily } = await chrome.storage.local.get("daily");
-      await chrome.storage.local.set({
+      const { daily } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get("daily");
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({
         daily: { ...daily, result: "Yesterday's thought.", date: "2000-01-01" },
       });
     });
   let other;
   try {
     const modelId = await page.evaluate(async (origin) => {
-      const { settings, daily } = await chrome.storage.local.get([
-        "settings",
-        "daily",
-      ]);
+      const { settings, daily } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get(["settings", "daily"]);
       const model = settings.connections.find((model) =>
         model.url.startsWith(origin),
       );
-      await chrome.storage.local.set({
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({
         settings: {
           ...settings,
           defaultConnection: model.id,
@@ -123,8 +130,12 @@ module.exports = async ({ page, context, origin, calls, nav, op }) => {
     await nav("actions");
     await expire();
     await page.evaluate(async () => {
-      const { settings } = await chrome.storage.local.get("settings");
-      await chrome.storage.local.set({
+      const { settings } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get("settings");
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({
         settings: {
           ...settings,
           preferences: { ...settings.preferences, hideDaily: true },
@@ -142,8 +153,12 @@ module.exports = async ({ page, context, origin, calls, nav, op }) => {
     );
 
     await page.evaluate(async () => {
-      const { settings } = await chrome.storage.local.get("settings");
-      await chrome.storage.local.set({
+      const { settings } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get("settings");
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({
         settings: {
           ...settings,
           defaultConnection: null,
@@ -161,8 +176,12 @@ module.exports = async ({ page, context, origin, calls, nav, op }) => {
     );
     await nav("actions");
     await page.evaluate(async (id) => {
-      const { daily } = await chrome.storage.local.get("daily");
-      await chrome.storage.local.set({ daily: { ...daily, model: id } });
+      const { daily } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get("daily");
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({ daily: { ...daily, model: id } });
     }, modelId);
     await nav("home");
     await generated();
@@ -175,8 +194,12 @@ module.exports = async ({ page, context, origin, calls, nav, op }) => {
     await nav("actions");
     await expire();
     await page.evaluate(async () => {
-      const { daily } = await chrome.storage.local.get("daily");
-      await chrome.storage.local.set({
+      const { daily } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get("daily");
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({
         daily: { ...daily, useCollection: true },
         collection: [
           {
@@ -209,8 +232,12 @@ module.exports = async ({ page, context, origin, calls, nav, op }) => {
     await nav("actions");
     await expire();
     await page.evaluate(async (id) => {
-      const { credentials } = await chrome.storage.local.get("credentials");
-      await chrome.storage.local.set({
+      const { credentials } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get("credentials");
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({
         credentials: { ...credentials, [id]: "invalid-fixture" },
       });
     }, modelId);
@@ -223,7 +250,10 @@ module.exports = async ({ page, context, origin, calls, nav, op }) => {
       "Failures do not mark today as generated",
     );
     await page.evaluate(
-      (credentials) => chrome.storage.local.set({ credentials }),
+      async (credentials) =>
+        (await import("./tests/local-store-fixture.mjs")).localStore.set({
+          credentials,
+        }),
       stored.credentials,
     );
     await page.locator(".daily-card").hover();
@@ -235,6 +265,12 @@ module.exports = async ({ page, context, origin, calls, nav, op }) => {
   } finally {
     if (other) await other.close();
     await openRoute("connections");
-    await page.evaluate((stored) => chrome.storage.local.set(stored), stored);
+    await page.evaluate(
+      async (stored) =>
+        (await import("./tests/local-store-fixture.mjs")).localStore.set(
+          stored,
+        ),
+      stored,
+    );
   }
 };

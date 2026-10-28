@@ -38,9 +38,14 @@ Aside is a Manifest V3 reading extension. There is no Aside login or companion a
 
 ## Privacy and network behavior
 
-Requests go directly to the configured model service. Aside has no developer-operated relay, analytics service or cloud sync. Settings, API keys, collections, result cache, and request input/output history are stored locally. Content is sent to the chosen service when a model feature runs, including the daily-reflection behavior described above. The service's own charges, terms and privacy policy apply.
+Requests go directly to the configured model service. Aside has no developer-operated relay, analytics service or sync server. Configuration sync is optional: settings and API keys are encrypted on the device using a user-chosen passphrase and stored through Chrome Sync. Collections, generated reflections, request history and caches are excluded. The passphrase is not saved or uploaded. Settings, collections, result cache, and request input/output history are stored locally. Local API keys and their sync-record copies are encrypted with a separate device key held in the same browser’s IndexedDB; this requires no extra login or unlock after restart and is not an operating-system keychain. Content is sent to the chosen service when a model feature runs, including the daily-reflection behavior described above. The service's own charges, terms and privacy policy apply.
 
 All executable code is included in the extension package. Website dark mode uses bundled Dark Reader; model output is rendered as sanitized content rather than executed.
 
 Privacy policy: https://worldtheater.github.io/aside/privacy.html
 Source and support: https://github.com/worldtheater/aside
+
+
+## Optional configuration sync
+
+Configuration sync is off by default. It uses Chrome Sync with the reviewer's own Chrome account and a passphrase chosen by the reviewer; no Aside login is required. Enable it from Sync in the sidebar, then enter the same passphrase on a second Chrome profile using the same account and extension ID. Joining merges independent records and requires confirmation: existing records without a recorded modification time adopt the synced version for matching IDs. Later edits merge per record; the latest save wins and deletion takes priority. Reflection settings sync as one complete record. Language, theme, display and site preferences and quick-action visibility/order stay local. Default generation and decision model choices are adopted only when unset locally; existing choices are kept. Restarting Chrome or reloading the extension requires entering the passphrase again. Collections and request history stay on each device. Stopping sync preserves local data; deleting synced settings removes the encrypted synced copy while preserving local settings.

@@ -1,6 +1,6 @@
 # Privacy practices — dashboard draft
 
-对应 Aside 0.1.0。以下英文正文可分别粘贴到 Chrome Web Store 隐私权表单，每个字段均少于 1,000 字符；标题与字符数不用粘贴。内容对应实际扩展包，不是截图演示服务。
+对应当前源代码（含可选配置同步），发布时需与实际扩展包保持一致。以下英文正文可分别粘贴到 Chrome Web Store 隐私权表单，每个字段均少于 1,000 字符；标题与字符数不用粘贴。内容对应实际扩展包，不是截图演示服务。
 
 Privacy policy URL: https://worldtheater.github.io/aside/privacy.html
 
@@ -17,10 +17,10 @@ Aside helps users understand and retain what they read on the web. It provides t
 ### 需要 storage 的理由
 
 ```text
-Stores user preferences, model connection settings and API keys, per-site options, saved passages, and reflection settings locally. Session storage keeps temporary tab activation order for the recent-tabs shortcut. Aside does not synchronize these stores to a developer-operated server.
+Stores user preferences, model connection settings and API keys, per-site options, saved passages, and reflection settings locally. Session storage keeps temporary tab activation order for the recent-tabs shortcut. Optional configuration sync encrypts settings and API keys on the device and uses Chrome Sync; collections, generated content, request history, and caches stay local. No developer-operated sync server is used.
 ```
 
-286 / 1,000 characters.
+424 / 1,000 characters.
 
 ### 需要 activeTab 的理由
 
@@ -78,7 +78,7 @@ Recommended selections for this version:
 
 | Category | Select | Reason |
 | --- | --- | --- |
-| Authentication information | Yes | User-supplied API keys are stored locally and sent to the configured model service for authentication. |
+| Authentication information | Yes | User-supplied API keys are stored locally and sent to the configured model service for authentication. If configuration sync is enabled, they are included in a passphrase-encrypted copy stored through Chrome Sync. |
 | Web history | Yes | Saved passages retain their source URLs and titles; per-site settings retain site identifiers. The recent-tabs feature stores tab/window identifiers and activation order only for the browser session. |
 | User activity | Yes | Local request history records action, model, time, status, submitted input and output, and reported usage. This is user-facing history, not analytics sent to the developer. |
 | Website content | Yes | Selected/extracted text, page context, questions, generated results and saved passages are processed. Required content is sent to the selected model service when a model feature runs. |
@@ -96,8 +96,8 @@ The current implementation supports the certifications that data is not sold or 
 - Model requests include the content and instructions required by the action; page context may include titles, section titles and table headings.
 - Inline processing can continue for newly visible passages as the user scrolls after starting a page action.
 - With a model configured and the reflection area visible, the first Collection visit each local day can generate a reflection. Optional collection references include excerpts from up to five saved passages.
-- API keys are kept out of content scripts and are not automatically added to request-detail logs. They are local credentials, not an encrypted vault.
+- API keys are kept out of content scripts and are not automatically added to request-detail logs. Local API keys and their sync-record copies use AES-256-GCM with a non-exportable device key stored separately in the same browser’s IndexedDB. The device key is not synchronized; this is not an operating-system keychain and does not protect against full browser-profile access. Optional Chrome Sync encrypts the configuration, including credentials, on the device; the passphrase is not stored or uploaded.
 - Usage records include request inputs and outputs; clearing history also removes its details. Clearing result cache is separate. Collections can be deleted, and uninstalling removes extension-local data.
-- No developer relay, analytics, advertising, or cloud synchronization is included. Provider retention and use of requests depend on that provider's policy.
+- No developer relay, analytics, or advertising is included. Optional configuration sync sends encrypted settings and API keys through Chrome Sync; reading content, collections, request records, and caches are excluded. Provider retention and use of requests depend on that provider's policy.
 
 The required declaration fields and consistency requirements are documented in [Privacy practices](https://developer.chrome.com/docs/webstore/cws-dashboard-privacy).

@@ -1,3 +1,4 @@
+import { createSecretRedactor } from "./redaction.js";
 import { checkResponse, endpoint, ModelError } from "./providers.js";
 import { normalizeUsage } from "./usage.js";
 import type { Connection, UsageUpdate } from "./types.js";
@@ -27,7 +28,10 @@ export async function callDecision(
   signal: AbortSignal,
   onUsage: (usage: UsageUpdate) => void,
   onOutput: (text: string) => void = () => {},
+  secrets: readonly string[] = [],
 ): Promise<Record<string, ChoiceAnswer>> {
+  secrets = [key, ...secrets];
+  const redact = createSecretRedactor(secrets);
   if (connection.protocol !== "typesafe")
     throw new ModelError("invalidProtocol");
   const timeout = AbortSignal.timeout(30000);
@@ -48,11 +52,11 @@ export async function callDecision(
       credentials: "omit",
       cache: "no-store",
     });
-    await checkResponse(response);
+    await checkResponse(response, secrets);
     const data = await response.json().catch(() => {
       throw new ModelError("invalidDecision");
     });
-    onOutput(JSON.stringify(data, null, 2));
+    onOutput(redact.text(JSON.stringify(data, null, 2)));
     if (data?.usage)
       onUsage({ tokens: normalizeUsage(data.usage, "typesafe"), final: true });
     const answers: Record<string, ChoiceAnswer> = {};
@@ -84,8 +88,7 @@ export async function callDecision(
     if (signal.aborted) throw new ModelError("cancelled");
     if (timeout.aborted) throw new ModelError("timeout");
     if (caught instanceof ModelError) {
-      if (key) caught.message = caught.message.replaceAll(key, "[redacted]");
-      throw caught;
+      throw new ModelError(caught.code, redact.text(caught.message));
     }
     throw new ModelError("networkError");
   }

@@ -167,6 +167,7 @@ export interface Daily {
   date: string | null;
 }
 export interface StoreData {
+  configurationRecords?: import("./sync-records.js").SyncReplica;
   settings: Settings;
   credentials: Record<string, string>;
   collection: CollectionItem[];
@@ -282,6 +283,18 @@ export interface PublicConfig extends PublicSettings {
   };
 }
 export interface RequestMap {
+  "sync.status": { payload: {}; result: import("./config-sync.js").SyncStatus };
+  "sync.connect": {
+    payload: {
+      passphrase: string;
+      action: import("./config-sync.js").SyncConnect;
+      revision: string | null;
+    };
+    result: import("./config-sync.js").SyncStatus;
+  };
+  "sync.run": { payload: {}; result: import("./config-sync.js").SyncStatus };
+  "sync.stop": { payload: {}; result: import("./config-sync.js").SyncStatus };
+  "sync.clear": { payload: {}; result: import("./config-sync.js").SyncStatus };
   snapshot: { payload: {}; result: Snapshot };
   "settings.public": { payload: {}; result: PublicConfig };
   "settings.open": {

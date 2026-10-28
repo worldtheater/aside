@@ -5,6 +5,115 @@ import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
 const base = {
+  sync: {
+    devicesTitle: "Tham gia trên thiết bị khác",
+    joinSteps: [
+      "Đăng nhập cùng tài khoản Chrome và bật đồng bộ hóa Chrome.",
+      "Mở trang Đồng bộ của Aside và tham gia bằng cùng cụm mật khẩu.",
+      "Cho phép thiết bị truy cập dịch vụ mô hình khi được nhắc.",
+    ],
+    mergeTitle: "Cách hợp nhất thay đổi",
+    mergeRules: [
+      {
+        title: "Mục mới",
+        description: "Giữ các mục được tạo trên mọi thiết bị.",
+      },
+      {
+        title: "Chỉnh sửa",
+        description: "Dùng phiên bản được lưu gần nhất của cùng một mục.",
+      },
+      {
+        title: "Xóa",
+        description:
+          "Áp dụng trên mọi thiết bị; chỉnh sửa cũ không khôi phục mục đã xóa.",
+      },
+      {
+        title: "Mô hình mặc định",
+        description:
+          "Chỉ dùng lựa chọn đã đồng bộ nếu thiết bị này chưa đặt mặc định.",
+      },
+    ],
+    manageTitle: "Quản lý đồng bộ",
+    stopHelp: "Giữ cài đặt cục bộ. Các thiết bị khác tiếp tục đồng bộ.",
+    clearHelp:
+      "Xóa bản sao dùng chung và giữ cài đặt cục bộ. Các thiết bị khác cần thiết lập lại đồng bộ.",
+    accessTitle: "Cho phép truy cập dịch vụ mô hình",
+    accessHelp:
+      "Trước khi sử dụng mô hình, hãy cho phép trình duyệt này truy cập các dịch vụ bên dưới.",
+    allowAccess: "Cho phép truy cập",
+    accessReady:
+      "Trình duyệt này đã được cấp quyền truy cập mọi địa chỉ dịch vụ mô hình.",
+    accessDenied:
+      "Chưa được cấp quyền truy cập. Bạn có thể thử lại; cài đặt đã đồng bộ vẫn được giữ nguyên.",
+    joinExisting: "Tham gia đồng bộ hiện có",
+    waitingHelp:
+      "Chưa nhận được cài đặt đồng bộ. Nếu đã bật đồng bộ trên thiết bị khác, hãy dùng cùng tài khoản Chrome, bật đồng bộ Chrome và chờ. Khi cài đặt được chuyển đến, bạn có thể nhập cụm mật khẩu hiện có để tham gia.",
+    firstSetup: "Thiết lập lần đầu",
+    checkAgain: "Kiểm tra lại",
+    forgotPassphrase: "Quên mật khẩu?",
+    resetSync: "Đặt lại đồng bộ",
+    resetText:
+      "Không thể khôi phục mật khẩu cũ. Việc đặt lại sẽ xóa cài đặt đã đồng bộ trên đám mây nhưng giữ nguyên cài đặt và khóa API trên từng thiết bị. Hãy thiết lập lại đồng bộ bằng mật khẩu mới trên thiết bị vẫn còn đầy đủ cài đặt. Các thiết bị khác cũng cần dùng mật khẩu mới để tiếp tục đồng bộ. Cài đặt chỉ còn trên đám mây sẽ không thể khôi phục.",
+    scopeTitle: "Được đồng bộ",
+    localOnlyTitle: "Chỉ trên thiết bị này",
+    createHelp:
+      "Chỉ đặt cụm mật khẩu mới nếu chưa bật đồng bộ trên bất kỳ thiết bị nào. Các thiết bị khác sẽ dùng cùng cụm mật khẩu để tham gia.",
+    joinHelp:
+      "Nhập đúng mật khẩu đồng bộ đã đặt trên thiết bị khác. Dùng cùng tài khoản Chrome và bật đồng bộ Chrome.",
+    details: "Chi tiết và quản lý đồng bộ",
+    scope: ["Kết nối mô hình và khóa API", "Thao tác", "Cài đặt tạo suy ngẫm"],
+    localOnly: [
+      "Bộ sưu tập và suy ngẫm đã tạo",
+      "Lịch sử yêu cầu và bộ nhớ đệm",
+      "Ngôn ngữ, giao diện và tùy chọn thiết bị",
+    ],
+    join: "Tham gia đồng bộ",
+    joinTitle: "Hợp nhất cấu hình?",
+    joinText:
+      "Gộp cài đặt của thiết bị này với cài đặt đã đồng bộ? Một số cài đặt có thể được cập nhật. Kết nối và tác vụ chỉ có trên thiết bị này sẽ được giữ lại. Bộ sưu tập và tùy chọn cá nhân không bị ảnh hưởng.",
+    title: "Đồng bộ",
+    intro:
+      "Đồng bộ cài đặt được mã hóa giữa các thiết bị qua tài khoản Chrome.",
+    requirements:
+      "Chrome truyền thay đổi trong nền. Nếu chưa nhận được, hãy kiểm tra đồng bộ hóa Chrome và kết nối mạng.",
+    passphrase: "Cụm mật khẩu đồng bộ",
+    confirmPassphrase: "Xác nhận cụm mật khẩu",
+    passphraseHelp:
+      "Hãy giữ mật khẩu này vì không thể khôi phục. Bạn cần nhập lại sau khi khởi động lại Chrome hoặc tải lại tiện ích.",
+    locked:
+      "Nhập mật khẩu ban đầu để tiếp tục đồng bộ. Cài đặt trên thiết bị này vẫn dùng được.",
+    ready: "Đã bật đồng bộ cài đặt.",
+    lastSync: "Lần đồng bộ gần nhất trên thiết bị này",
+    create: "Bật đồng bộ",
+    unlock: "Mở khóa đồng bộ",
+    syncNow: "Đồng bộ ngay",
+    stop: "Dừng trên thiết bị này",
+    clear: "Xóa cài đặt đã đồng bộ",
+    clearText:
+      "Xóa cài đặt được mã hóa khỏi Chrome Sync và dừng đồng bộ trên thiết bị này? Cài đặt và khóa API cục bộ được giữ lại. Các thiết bị khác cần thiết lập lại. Nếu quên cụm mật khẩu, bạn có thể tạo bản mới sau khi xóa.",
+    stopText:
+      "Dừng đồng bộ trên thiết bị này? Cài đặt và khóa API cục bộ vẫn dùng được. Bản đồng bộ và các thiết bị khác không bị ảnh hưởng.",
+    done: "Đã cập nhật cài đặt đồng bộ",
+    working: "Đang xử lý…",
+    errors: {
+      passphraseRequired: "Nhập cụm mật khẩu đồng bộ.",
+      passphraseShort: "Dùng ít nhất {min} ký tự.",
+      mismatch: "Các cụm mật khẩu không khớp.",
+      wrongPassphrase:
+        "Cụm mật khẩu không đúng hoặc không thể xác thực dữ liệu đồng bộ.",
+      locked: "Hãy mở khóa đồng bộ bằng cụm mật khẩu trước.",
+      waiting: "Chrome đang nhận cài đặt. Hãy thử lại sau giây lát.",
+      tooLarge:
+        "Cài đặt vượt quá dung lượng đồng bộ hiện có. Hãy rút gọn hướng dẫn hoặc xóa cài đặt không dùng.",
+      version:
+        "Phiên bản cài đặt khác nhau. Hãy cập nhật Aside trên các thiết bị.",
+      invalidData: "Cài đặt đồng bộ không hợp lệ nên chưa được áp dụng.",
+      remoteMissing:
+        "Bản đồng bộ đã bị xóa. Cài đặt cục bộ vẫn còn. Hãy xóa thiết lập đồng bộ rồi bật lại.",
+      unavailable:
+        "Không thể đồng bộ. Kiểm tra Chrome Sync và kết nối mạng rồi thử lại.",
+    },
+  },
   brand: "Aside",
   about: {
     version: "Phiên bản hiện tại",
@@ -21,6 +130,7 @@ const base = {
     dompurify: "Làm sạch HTML",
   },
   nav: {
+    sync: "Đồng bộ",
     help: "Giới thiệu",
     home: "Bộ sưu tập",
     actions: "Thao tác",
@@ -496,6 +606,8 @@ const full = {
       noDecisionConnection: "Thiết lập mô hình ra quyết định mặc định trước.",
       invalidDecision: "Dịch vụ ra quyết định trả về kết quả không hợp lệ.",
       actionLimit: `Bạn có thể lưu tối đa ${MAX_ACTIONS} thao tác. Hãy xóa một thao tác tùy chỉnh không dùng trước.`,
+      recordDeleted:
+        "Mục này đã bị xóa. Hãy tạo mục mới để lưu các thay đổi này.",
       invalidAction: "Nhập cài đặt thao tác hợp lệ.",
       presetActionProtected: "Không thể xóa thao tác có sẵn.",
       sameLanguages:
@@ -508,6 +620,8 @@ const full = {
       invalidUrl:
         "Dùng URL dịch vụ HTTPS. Dịch vụ cục bộ có thể dùng localhost hoặc 127.0.0.1.",
       invalidProtocol: "Chọn giao thức API hợp lệ.",
+      credentialsUnavailable:
+        "Không thể truy cập bộ nhớ khóa API cục bộ. Hãy tải lại tiện ích rồi thử lại.",
       invalidConnection: "Nhập tên kết nối và kiểm tra cài đặt.",
       modelRequired:
         "Kiểm tra kết nối và chọn mô hình từ danh sách được trả về.",

@@ -5,6 +5,121 @@ import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
 const base = {
+  sync: {
+    devicesTitle: "Em outro dispositivo",
+    joinSteps: [
+      "Entre na mesma conta do Chrome e ative a sincronização do Chrome.",
+      "Abra a página de sincronização do Aside e entre com a mesma frase secreta.",
+      "Permita o acesso aos serviços de modelos quando solicitado nesse dispositivo.",
+    ],
+    mergeTitle: "Como as alterações são combinadas",
+    mergeRules: [
+      {
+        title: "Novos itens",
+        description: "Itens criados em qualquer dispositivo são mantidos.",
+      },
+      {
+        title: "Edições",
+        description: "Vale a última versão salva do mesmo item.",
+      },
+      {
+        title: "Exclusões",
+        description: "São sincronizadas; edições antigas não restauram o item.",
+      },
+      {
+        title: "Modelo padrão",
+        description:
+          "A escolha sincronizada só é usada se este dispositivo não tiver uma.",
+      },
+    ],
+    manageTitle: "Gerenciar sincronização",
+    stopHelp:
+      "Mantém as configurações locais. Os outros dispositivos continuam sincronizando.",
+    clearHelp:
+      "Remove a cópia compartilhada e mantém as configurações locais. Os outros dispositivos precisam configurar a sincronização novamente.",
+    accessTitle: "Permitir acesso aos serviços de modelos",
+    accessHelp:
+      "Antes de usar seus modelos, permita que este navegador acesse os serviços abaixo.",
+    allowAccess: "Permitir acesso",
+    accessReady:
+      "Todos os endereços dos serviços de modelos estão autorizados neste navegador.",
+    accessDenied:
+      "O acesso não foi autorizado. Você pode tentar novamente; suas configurações sincronizadas serão mantidas.",
+    joinExisting: "Entrar em uma sincronização existente",
+    waitingHelp:
+      "As configurações sincronizadas ainda não chegaram. Se a sincronização já estiver ativa em outro dispositivo, use a mesma conta do Chrome, mantenha a sincronização do Chrome ativada e aguarde. Quando as configurações chegarem, você poderá inserir sua frase secreta atual.",
+    firstSetup: "Configurar pela primeira vez",
+    checkAgain: "Verificar novamente",
+    forgotPassphrase: "Esqueceu a frase-senha?",
+    resetSync: "Redefinir sincronização",
+    resetText:
+      "A frase-senha antiga não pode ser recuperada. A redefinição exclui as configurações sincronizadas na nuvem, mas mantém as configurações e chaves de API de cada dispositivo. Configure a sincronização novamente com uma nova frase-senha em um dispositivo que ainda tenha todas as suas configurações. Os outros dispositivos também precisarão da nova frase-senha para retomar a sincronização. Configurações guardadas apenas na nuvem não poderão ser recuperadas.",
+    scopeTitle: "Sincronizado",
+    localOnlyTitle: "Somente neste dispositivo",
+    createHelp:
+      "Defina uma nova frase secreta apenas se ainda não tiver ativado a sincronização em nenhum dispositivo. Os outros dispositivos usarão a mesma frase para entrar.",
+    joinHelp:
+      "Digite a mesma frase-senha definida em outro dispositivo. Use a mesma conta do Chrome com a sincronização ativada.",
+    details: "Detalhes e gerenciamento da sincronização",
+    scope: [
+      "Conexões de modelos e chaves de API",
+      "Ações",
+      "Configurações das reflexões",
+    ],
+    localOnly: [
+      "Coleção e reflexões geradas",
+      "Histórico de solicitações e cache",
+      "Idioma, tema e preferências do dispositivo",
+    ],
+    join: "Participar da sincronização",
+    joinTitle: "Combinar configurações?",
+    joinText:
+      "Combinar as configurações deste dispositivo com as sincronizadas? Algumas poderão ser atualizadas. Conexões e ações exclusivas deste dispositivo serão mantidas. Coleções e preferências pessoais não serão afetadas.",
+    title: "Sincronização",
+    intro:
+      "Sincronize configurações criptografadas entre dispositivos com sua conta do Chrome.",
+    requirements:
+      "O Chrome transmite as alterações em segundo plano. Se não chegarem, verifique a sincronização do Chrome e a rede.",
+    passphrase: "Frase secreta de sincronização",
+    confirmPassphrase: "Confirmar frase secreta",
+    passphraseHelp:
+      "Guarde esta frase-senha: ela não pode ser recuperada. Digite-a novamente após reiniciar o Chrome ou recarregar a extensão.",
+    locked:
+      "Digite sua frase-senha original para retomar a sincronização. Suas configurações locais continuam disponíveis.",
+    ready: "A sincronização está ativada.",
+    lastSync: "Última sincronização neste dispositivo",
+    create: "Ativar sincronização",
+    unlock: "Desbloquear sincronização",
+    syncNow: "Sincronizar agora",
+    stop: "Parar neste dispositivo",
+    clear: "Excluir configurações sincronizadas",
+    clearText:
+      "Excluir as configurações criptografadas do Chrome Sync e parar a sincronização aqui? As configurações e chaves locais serão mantidas. Outros dispositivos precisarão ser configurados novamente. Se esqueceu a frase, poderá criar uma nova cópia.",
+    stopText:
+      "Parar a sincronização neste dispositivo? As configurações e chaves locais continuarão disponíveis. A cópia sincronizada e outros dispositivos não serão afetados.",
+    done: "Configurações de sincronização atualizadas",
+    working: "Processando…",
+    errors: {
+      passphraseRequired: "Digite sua frase secreta.",
+      passphraseShort: "Use pelo menos {min} caracteres.",
+      mismatch: "As frases secretas não correspondem.",
+      wrongPassphrase:
+        "A frase está incorreta ou os dados sincronizados não puderam ser autenticados.",
+      locked: "Primeiro desbloqueie a sincronização com sua frase secreta.",
+      waiting:
+        "O Chrome ainda está recebendo as configurações. Tente novamente em instantes.",
+      tooLarge:
+        "As configurações excedem o espaço de sincronização disponível. Encurte as instruções ou remova configurações não utilizadas.",
+      version:
+        "A versão das configurações é diferente. Atualize o Aside nos seus dispositivos.",
+      invalidData:
+        "As configurações sincronizadas são inválidas e não foram aplicadas.",
+      remoteMissing:
+        "A cópia sincronizada foi excluída. As configurações locais foram mantidas. Exclua a configuração de sincronização e ative novamente.",
+      unavailable:
+        "Não foi possível sincronizar. Verifique o Chrome Sync e sua conexão e tente novamente.",
+    },
+  },
   brand: "Aside",
   about: {
     version: "Versão atual",
@@ -21,6 +136,7 @@ const base = {
     dompurify: "Sanitização de HTML",
   },
   nav: {
+    sync: "Sincronização",
     help: "Sobre",
     home: "Coleção",
     actions: "Ações",
@@ -508,6 +624,8 @@ const full = {
       noDecisionConnection: "Configure primeiro um modelo de decisão padrão.",
       invalidDecision: "O serviço de decisão retornou um resultado inválido.",
       actionLimit: `Você pode salvar até ${MAX_ACTIONS} ações. Remova primeiro uma ação personalizada que não usa.`,
+      recordDeleted:
+        "Este item foi excluído. Crie um novo para salvar estas alterações.",
       invalidAction: "Insira configurações de ação válidas.",
       presetActionProtected: "As ações predefinidas não podem ser excluídas.",
       sameLanguages:
@@ -520,6 +638,8 @@ const full = {
       invalidUrl:
         "Use uma URL de serviço HTTPS. Serviços locais podem usar localhost ou 127.0.0.1.",
       invalidProtocol: "Escolha um protocolo de API válido.",
+      credentialsUnavailable:
+        "O armazenamento local de chaves de API está indisponível. Recarregue a extensão e tente novamente.",
       invalidConnection:
         "Insira um nome para a conexão e verifique as configurações.",
       modelRequired: "Teste a conexão e escolha um modelo na lista retornada.",

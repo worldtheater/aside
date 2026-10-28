@@ -905,6 +905,7 @@ fs.mkdirSync(artifacts, { recursive: true });
     await page.locator("[data-op=bookmark]").click();
     await op("home").click();
     assert.equal(await page.locator(".collection-card").count(), 1);
+    await page.locator(".daily-card").hover();
     await op("daily-refresh").click();
     await page.waitForFunction(() =>
       document
@@ -1142,7 +1143,7 @@ fs.mkdirSync(artifacts, { recursive: true });
         target: { tabId },
         func: async () => {
           try {
-            await chrome.storage.local.get("credentials");
+            await chrome.storage.local.get("protectedConfiguration");
             return false;
           } catch {
             return true;

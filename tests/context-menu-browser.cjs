@@ -9,7 +9,7 @@ module.exports = async ({ page, context, origin, calls, coldSource }) => {
     instruction: "CONTEXT_MENU_ACTION: Explain this passage.",
     kind: "custom",
     icon: "spark",
-    mode: "whole",
+    mode: "paragraph",
     placement: "panel",
     model: "default",
     quick: false,
@@ -148,19 +148,26 @@ module.exports = async ({ page, context, origin, calls, coldSource }) => {
       }
     }
     const instructions = () => calls.at(-1).body.messages[0].content;
-    for (const [id, text] of [
-      [custom.id, "Menu custom action selection"],
-      ["summary", "Menu summary action selection"],
-      ["translate", "Menu translation action selection"],
-    ]) {
+    // Longer than the paragraph unit limit and containing blank lines: selections
+    // must still reach the model intact, including actions saved in paragraph mode.
+    const passage =
+      "学而不思则罔，思而不学则殆。".repeat(320) +
+      "\n\n\n子曰：温故而知新，可以为师矣。\n末段仍属于同一篇选文。";
+    for (const id of [custom.id, "plain", "explain", "summary", "translate"]) {
+      const text = `${id}\n${passage}`;
       const before = calls.length;
       await run(id, text);
-      await host.locator("#output").filter({ hasText: text }).waitFor();
+      await host
+        .locator("#output")
+        .filter({ hasText: `Processed together: ${id}` })
+        .waitFor();
       await host
         .locator("#result-status")
         .filter({ hasText: config.strings.done })
         .waitFor();
       assert.equal(calls.length, before + 1);
+      assert.equal(calls.at(-1).body.messages.at(-1).content, text);
+      assert(!instructions().includes("Process each item independently."));
       assert(
         instructions().includes(
           config.actions.find((action) => action.id === id).instruction,
@@ -168,6 +175,39 @@ module.exports = async ({ page, context, origin, calls, coldSource }) => {
         instructions(),
       );
     }
+    const afterSelections = (
+      await page.evaluate(() =>
+        chrome.runtime.sendMessage({ type: "snapshot" }),
+      )
+    ).value;
+    for (const id of [custom.id, "plain", "translate"])
+      assert.equal(
+        afterSelections.actions.find((action) => action.id === id).mode,
+        "paragraph",
+        "Selection processing does not change the saved full-page mode",
+      );
+    // The background enforces the same contract when a sender supplies several blocks.
+    const beforeMultiBlock = calls.length;
+    const combined = await page.evaluate(async () => {
+      const { processRequest } = await import("./client.js");
+      return processRequest({
+        source: "selection",
+        actionId: "plain",
+        refresh: true,
+        stream: true,
+        blocks: [
+          { id: "a", text: "上下文相连的第一段。" },
+          { id: "b", text: "承接上一段的第二段。" },
+        ],
+      }).promise;
+    });
+    assert.equal(calls.length, beforeMultiBlock + 1);
+    assert.equal(combined.parts.length, 1);
+    assert.equal(
+      combined.parts[0].source,
+      "上下文相连的第一段。\n\n承接上一段的第二段。",
+    );
+
     const tabsBefore = context.pages().length;
     const beforeQa = calls.length;
     await run("qa", "Context menu reference quote");

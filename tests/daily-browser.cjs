@@ -9,8 +9,8 @@ module.exports = async ({
   op,
   choose,
 }) => {
-  const stored = await page.evaluate(() =>
-    chrome.storage.local.get([
+  const stored = await page.evaluate(async () =>
+    (await import("./tests/local-store-fixture.mjs")).localStore.get([
       "settings",
       "daily",
       "credentials",
@@ -43,10 +43,9 @@ module.exports = async ({
   };
   try {
     const models = await page.evaluate(async (origin) => {
-      const { settings, credentials } = await chrome.storage.local.get([
-        "settings",
-        "credentials",
-      ]);
+      const { settings, credentials } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get(["settings", "credentials"]);
       const fixture = settings.connections.find((c) =>
         c.url.startsWith(origin),
       );
@@ -59,7 +58,9 @@ module.exports = async ({
         model: "reflection-model",
       };
       const { DAILY_PROMPT } = await import("./prompts.js");
-      await chrome.storage.local.set({
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({
         settings: {
           ...settings,
           connections: [base, alternate],
@@ -224,8 +225,12 @@ module.exports = async ({
 
     // A saved specific model works even when no global default is selected.
     await page.evaluate(async () => {
-      const { settings } = await chrome.storage.local.get("settings");
-      await chrome.storage.local.set({
+      const { settings } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get("settings");
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({
         settings: { ...settings, defaultConnection: null },
       });
     });
@@ -258,9 +263,13 @@ module.exports = async ({
 
     // Editing during a pending generation cancels it and cannot apply the stale result.
     await page.evaluate(async () => {
-      const { collection } = await chrome.storage.local.get("collection");
+      const { collection } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get("collection");
       collection[0].text = "DELAY_FIXTURE saved thought";
-      await chrome.storage.local.set({ collection });
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({ collection });
     });
     await openSettings();
     const beforeSlow = calls.length;
@@ -279,8 +288,12 @@ module.exports = async ({
 
     // A provider failure stays an error and cannot replace the saved thought.
     await page.evaluate(async (id) => {
-      const { credentials } = await chrome.storage.local.get("credentials");
-      await chrome.storage.local.set({
+      const { credentials } = await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.get("credentials");
+      await (
+        await import("./tests/local-store-fixture.mjs")
+      ).localStore.set({
         credentials: { ...credentials, [id]: "invalid-fixture" },
       });
     }, models.alternate);
@@ -312,8 +325,12 @@ module.exports = async ({
     await choose("#ui-locale", "zh-CN");
     await page.evaluate(
       async ({ base, stored }) => {
-        const { settings } = await chrome.storage.local.get("settings");
-        await chrome.storage.local.set({
+        const { settings } = await (
+          await import("./tests/local-store-fixture.mjs")
+        ).localStore.get("settings");
+        await (
+          await import("./tests/local-store-fixture.mjs")
+        ).localStore.set({
           credentials: stored.credentials,
           collection: stored.collection,
           settings: {
@@ -357,7 +374,13 @@ module.exports = async ({
     );
   } finally {
     await page.setViewportSize({ width: 1440, height: 1000 });
-    await page.evaluate((stored) => chrome.storage.local.set(stored), stored);
+    await page.evaluate(
+      async (stored) =>
+        (await import("./tests/local-store-fixture.mjs")).localStore.set(
+          stored,
+        ),
+      stored,
+    );
     await page.reload();
     await page.locator("h1").waitFor();
   }

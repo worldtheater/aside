@@ -61,16 +61,6 @@
       "description": "__MSG_quickQuestion__"
     }
   },
-  "web_accessible_resources": [
-    {
-      "resources": [
-        "content-ui.css",
-        "selection-tools.css",
-        "content-themes.css"
-      ],
-      "matches": ["https://*/*", "http://*/*"]
-    }
-  ],
   "icons": {
     "16": "icons/icon-16.png",
     "32": "icons/icon-32.png",

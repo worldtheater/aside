@@ -39,10 +39,9 @@ module.exports = async ({ page, context, artifacts }) => {
     chrome.permissions.request({ origins: ["http://*/*", "https://*/*"] }),
   );
   await control.evaluate(async (origin) => {
-    const { settings, credentials } = await chrome.storage.local.get([
-      "settings",
-      "credentials",
-    ]);
+    const { settings, credentials } = await (
+      await import("./tests/local-store-fixture.mjs")
+    ).localStore.get(["settings", "credentials"]);
     settings.connections.push({
       id: "recovery-decision",
       name: "Recovery decision fixture",
@@ -56,7 +55,9 @@ module.exports = async ({ page, context, artifacts }) => {
     settings.defaultDecisionConnection = "recovery-decision";
     settings.website.sites["127.0.0.1"] = { enhance: true };
     credentials["recovery-decision"] = "local-fixture";
-    await chrome.storage.local.set({ settings, credentials });
+    await (
+      await import("./tests/local-store-fixture.mjs")
+    ).localStore.set({ settings, credentials });
   }, origin);
   const source = await context.newPage();
   const others = [];

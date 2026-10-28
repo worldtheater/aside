@@ -4,6 +4,114 @@ import type { UsageSummary } from "../types.js";
 import { LANGUAGE_NAMES } from "../locale.js";
 
 const base = {
+  sync: {
+    devicesTitle: "On another device",
+    joinSteps: [
+      "Sign in to the same Chrome account and enable Chrome sync.",
+      "Open Aside’s Sync page and join with the same passphrase.",
+      "Allow access to model services when prompted on that device.",
+    ],
+    mergeTitle: "How changes are combined",
+    mergeRules: [
+      {
+        title: "New items",
+        description: "Keep items created on either device.",
+      },
+      {
+        title: "Edits",
+        description: "Use the latest saved version of the same item.",
+      },
+      {
+        title: "Deletions",
+        description:
+          "Delete across devices; older edits cannot restore the item.",
+      },
+      {
+        title: "Default model",
+        description:
+          "Adopt the synced choice only if none is set on this device.",
+      },
+    ],
+    manageTitle: "Manage sync",
+    stopHelp: "Keep local settings. Other devices continue syncing.",
+    clearHelp:
+      "Remove the shared copy. Local settings stay; other devices need to set up sync again.",
+    accessTitle: "Allow model service access",
+    accessHelp:
+      "Before using your models, allow this browser to access the services below.",
+    allowAccess: "Allow access",
+    accessReady: "All model service addresses are authorized on this browser.",
+    accessDenied:
+      "Access was not granted. You can try again; your synced settings are kept.",
+    joinExisting: "Join existing sync",
+    waitingHelp:
+      "Synced settings have not arrived yet. If sync is already enabled on another device, use the same Chrome account with Chrome sync on and wait. You can enter your existing passphrase once the settings arrive.",
+    firstSetup: "First-time setup",
+    checkAgain: "Check again",
+    forgotPassphrase: "Forgot passphrase?",
+    resetSync: "Reset sync",
+    resetText:
+      "Your old passphrase cannot be recovered. Resetting deletes the synced settings in the cloud but keeps settings and API keys stored on each device. Set up sync again on a device that still has your complete settings, using a new passphrase. Other devices must use that new passphrase to resume syncing. Settings stored only in the cloud cannot be recovered.",
+    scopeTitle: "Synced",
+    localOnlyTitle: "Kept on this device",
+    createHelp:
+      "Only set a new passphrase if you have not enabled sync on any device. Other devices will use this same passphrase to join.",
+    joinHelp:
+      "Enter the same sync passphrase you set on another device. Use the same Chrome account with Chrome sync turned on.",
+    details: "Sync details and management",
+    scope: ["Model connections and API keys", "Actions", "Reflection settings"],
+    localOnly: [
+      "Collections and generated reflections",
+      "Request history and cache",
+      "Language, theme and device preferences",
+    ],
+    join: "Join sync",
+    joinTitle: "Merge configurations?",
+    joinText:
+      "Merge this device’s settings with the synced settings? Some settings may be updated. Connections and actions unique to this device are kept. Collections and personal preferences are unaffected.",
+    title: "Sync",
+    intro: "Use your Chrome account to sync encrypted settings across devices.",
+    requirements:
+      "Chrome delivers changes in the background. If they do not arrive, check Chrome sync and your network.",
+    passphrase: "Sync passphrase",
+    confirmPassphrase: "Confirm passphrase",
+    passphraseHelp:
+      "Keep this passphrase: it cannot be recovered. Enter it again after restarting Chrome or reloading the extension.",
+    locked:
+      "Enter your original passphrase to resume syncing. Your local settings are still available.",
+    ready: "Sync is enabled.",
+    lastSync: "Last sync on this device",
+    create: "Enable sync",
+    unlock: "Unlock sync",
+    syncNow: "Sync now",
+    stop: "Stop on this device",
+    clear: "Delete synced settings",
+    clearText:
+      "Delete the encrypted configuration from Chrome sync and stop syncing on this device? Local settings and API keys are kept. Other devices will stop syncing until set up again. If you forgot your passphrase, you can then create a new synced copy.",
+    stopText:
+      "Stop syncing on this device? Local settings and API keys stay available. The synced copy remains available to other devices.",
+    done: "Sync settings updated",
+    working: "Working…",
+    errors: {
+      passphraseRequired: "Enter your sync passphrase.",
+      passphraseShort: "Use at least {min} characters for the passphrase.",
+      mismatch: "The passphrases do not match.",
+      wrongPassphrase:
+        "The passphrase is incorrect, or the synced data could not be authenticated.",
+      locked: "Unlock sync with your passphrase first.",
+      waiting:
+        "Chrome is still receiving the synced configuration. Try again shortly.",
+      tooLarge:
+        "The configuration exceeds the available Chrome sync space. Shorten custom instructions or remove unused configurations, then retry.",
+      version:
+        "This synced configuration needs a different version of Aside. Update the extension on your devices.",
+      invalidData: "The synced configuration is invalid and was not applied.",
+      remoteMissing:
+        "The synced copy was deleted. Local settings are kept. Delete the sync setup, then enable sync again.",
+      unavailable:
+        "Sync could not complete. Check Chrome sync and your connection, then retry.",
+    },
+  },
   brand: "Aside",
   about: {
     version: "Current version",
@@ -20,6 +128,7 @@ const base = {
     dompurify: "HTML sanitization",
   },
   nav: {
+    sync: "Sync",
     help: "About",
     home: "Collection",
     actions: "Actions",
@@ -476,6 +585,8 @@ const full = {
       noDecisionConnection: "Set up a default decision model first.",
       invalidDecision: "The decision service returned an invalid result.",
       actionLimit: `You can save up to ${MAX_ACTIONS} actions. Remove an unused custom action first.`,
+      recordDeleted:
+        "This item has been deleted. Create a new one to save these changes.",
       invalidAction: "Enter valid action settings.",
       presetActionProtected: "Preset actions cannot be deleted.",
       sameLanguages:
@@ -488,6 +599,8 @@ const full = {
       invalidUrl:
         "Use an HTTPS service URL. Local services may use localhost or 127.0.0.1.",
       invalidProtocol: "Choose a valid API protocol.",
+      credentialsUnavailable:
+        "Local API key storage is unavailable. Reload the extension and try again.",
       invalidConnection:
         "Enter a connection name and check the connection settings.",
       modelRequired:

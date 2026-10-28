@@ -41,7 +41,10 @@ const root = path.resolve(__dirname, "..");
     );
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
-  const origin = "http://127.0.0.1:" + server.address().port;
+  const apiOrigin = "http://127.0.0.1:" + server.address().port;
+  // Loopback is a secure context in Chrome; use an ordinary HTTP origin to
+  // cover the same Web API availability as LAN and non-HTTPS websites.
+  const origin = "http://aside-http.test:" + server.address().port;
   const profile = fs.mkdtempSync(
     path.join(os.tmpdir(), "pagework-content-recovery-"),
   );
@@ -53,7 +56,11 @@ const root = path.resolve(__dirname, "..");
     viewport: { width: 1200, height: 850 },
     locale: "zh-CN",
     ignoreDefaultArgs: ["--disable-extensions"],
-    args: ["--enable-unsafe-extension-debugging"],
+    args: [
+      "--enable-unsafe-extension-debugging",
+      "--host-resolver-rules=MAP aside-http.test 127.0.0.1",
+      "--no-proxy-server",
+    ],
   });
   context.setDefaultTimeout(12000);
   try {
@@ -70,17 +77,22 @@ const root = path.resolve(__dirname, "..");
       }),
     );
     await manager.evaluate(
-      ({ id, origin }) =>
-        chrome.developerPrivate.addHostPermission(id, origin + "/*"),
-      { id, origin },
+      async ({ id, origins }) => {
+        for (const origin of origins)
+          await chrome.developerPrivate.addHostPermission(id, origin + "/*");
+      },
+      { id, origins: [origin, apiOrigin] },
     );
     let app = await context.newPage();
     await app.goto(appURL);
     await app.locator("h1").waitFor();
     assert(
       await app.evaluate(
-        (origin) => chrome.permissions.request({ origins: [origin + "/*"] }),
-        origin,
+        (origins) =>
+          chrome.permissions.request({
+            origins: origins.map((origin) => origin + "/*"),
+          }),
+        [origin, apiOrigin],
       ),
     );
     await app.evaluate(async (origin) => {
@@ -103,7 +115,7 @@ const root = path.resolve(__dirname, "..");
           preferences: { locale: "zh-CN", theme: "light", palette: "graphite" },
         },
       });
-    }, origin);
+    }, apiOrigin);
     const appCDP = await context.newCDPSession(app),
       versions = new Map();
     appCDP.on("ServiceWorker.workerVersionUpdated", ({ versions: updated }) =>
@@ -124,7 +136,26 @@ const root = path.resolve(__dirname, "..");
     const source = await context.newPage(),
       errors = [];
     source.on("pageerror", (error) => errors.push(error.message));
+    const sourceCDP = await context.newCDPSession(source);
+    sourceCDP.on("Runtime.exceptionThrown", ({ exceptionDetails }) =>
+      errors.push(
+        exceptionDetails.exception?.description || exceptionDetails.text,
+      ),
+    );
+    await sourceCDP.send("Runtime.enable");
+    source.on("requestfailed", (request) => {
+      if (request.url().startsWith(`chrome-extension://${id}/`))
+        errors.push(`${request.url()}: ${request.failure()?.errorText}`);
+    });
     await source.goto(origin + "/article");
+    assert.deepEqual(
+      await source.evaluate(() => ({
+        secure: isSecureContext,
+        uuid: typeof crypto.randomUUID,
+        random: typeof crypto.getRandomValues,
+      })),
+      { secure: false, uuid: "undefined", random: "function" },
+    );
     for (
       let i = 0;
       i < 100 &&
@@ -281,12 +312,57 @@ const root = path.resolve(__dirname, "..");
     await source.evaluate(() => document.exitFullscreen());
     await source.waitForFunction(() => !document.fullscreenElement);
     assert.equal(await host.count(), 1);
+    await source.reload();
+    await host.waitFor({ state: "attached" });
+    await inspectUI(source);
+    assert.equal(await host.count(), 1);
+    assert.equal(await host.locator('link[rel="stylesheet"]').count(), 0);
+    assert.equal(
+      await host
+        .locator("#dock")
+        .evaluate((node) => getComputedStyle(node).position),
+      "fixed",
+      "The bundle applies styles on ordinary HTTP without extension resource URLs",
+    );
+    await source.locator("#first").evaluate((node) => {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      getSelection().removeAllRanges();
+      getSelection().addRange(range);
+    });
+    const rect = await source.locator("#first").boundingBox();
+    await source.mouse.move(rect.x + 10, rect.y + 10);
+    await source.mouse.up();
+    const bar = host.locator("#selection");
+    await bar.locator("[data-selection-command=expand]").click();
+    await bar.locator("[data-selection-command=add]").click();
+    await bar.locator("[data-selection-field=name]").fill("HTTP action");
+    await bar
+      .locator("[data-selection-field=instruction]")
+      .fill("Explain the key idea.");
+    await bar.locator("[data-selection-command=save]").click();
+    await bar.locator("[data-selection-command=expand]").waitFor();
+    const custom = (await request("snapshot")).actions.find(
+      (action) => action.name === "HTTP action",
+    );
+    assert(custom, "Creating a persistent action works on HTTP pages");
+    assert.match(
+      custom.id,
+      /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+    );
+    await manager.evaluate((id) => chrome.management.setEnabled(id, false), id);
+    await source.evaluate(() => {
+      const host = document.querySelector("[data-pagework=ui]");
+      host.remove();
+      document.documentElement.append(host);
+    });
+    await source.waitForTimeout(200);
     assert.deepEqual(errors, []);
     await source.screenshot({
       path: path.join(root, "artifacts/content-entry-recovery.png"),
     });
     console.log(
-      "PASS: interrupted startup retries in the same page; toolbar and translation work; extension reload disposes old controls/observers and automatically restores one working floating entry; form/scroll/document state stays intact; Q&A quotes, explicit submission and output work; fullscreen cannot resurrect stale controls.",
+      "PASS: ordinary HTTP startup, page reload, custom action UUIDs and styles after context removal; interrupted startup retries in the same page; toolbar and translation work; extension reload disposes old controls/observers and automatically restores one working floating entry; form/scroll/document state stays intact; Q&A quotes, explicit submission and output work; fullscreen cannot resurrect stale controls.",
     );
   } finally {
     await context.close();

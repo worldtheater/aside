@@ -4,6 +4,100 @@ import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
 const base = {
+  sync: {
+    devicesTitle: "在其他设备上接入",
+    joinSteps: [
+      "登录同一个 Chrome 账号，并开启 Chrome 同步。",
+      "打开旁白的「同步」页面，使用同一个口令加入。",
+      "按页面提示，允许这台设备访问模型服务。",
+    ],
+    mergeTitle: "更改如何合并",
+    mergeRules: [
+      {
+        title: "新增",
+        description: "各设备新建的内容都会保留。",
+      },
+      {
+        title: "修改",
+        description: "同一项采用最后保存的版本。",
+      },
+      {
+        title: "删除",
+        description: "删除会同步，旧修改不会恢复已删除项。",
+      },
+      {
+        title: "默认模型",
+        description: "仅在本机尚未选择时，采用同步中的选择。",
+      },
+    ],
+    manageTitle: "同步管理",
+    stopHelp: "保留本机配置，其他设备继续同步。",
+    clearHelp: "移除共享副本，保留本机配置；其他设备需重新接入同步。",
+    accessTitle: "授权模型服务",
+    accessHelp: "使用模型前，请在这台浏览器允许访问以下服务。",
+    allowAccess: "允许访问",
+    accessReady: "本机已授权所有模型服务地址。",
+    accessDenied: "尚未获得访问权限，可重新授权。已同步的配置会保留。",
+    joinExisting: "加入已有同步",
+    waitingHelp:
+      "尚未收到同步配置。如果已在其他设备启用，请登录同一个 Chrome 账号并保持 Chrome 同步开启。配置到达后，即可输入原口令加入。",
+    firstSetup: "首次启用同步",
+    checkAgain: "重新检查",
+    forgotPassphrase: "忘记口令？",
+    resetSync: "重置同步",
+    resetText:
+      "无法找回旧口令。重置会删除云端同步配置，保留各设备的本机配置和 API Key。请在仍有完整配置的设备上重新启用同步并设置新口令，其他设备随后使用新口令恢复同步。只保存在云端的配置将无法恢复。",
+    scopeTitle: "同步内容",
+    localOnlyTitle: "留在本机",
+    createHelp:
+      "仅在所有设备都尚未启用同步时设置新口令，其他设备将使用同一个口令加入。",
+    joinHelp:
+      "输入你在其他设备设置的同一个同步口令。各设备需登录同一个 Chrome 账号并开启同步。",
+    details: "同步说明与管理",
+    scope: ["模型连接与 API Key", "处理方式", "随想生成设置"],
+    localOnly: ["收藏与已生成的随想", "请求记录与缓存", "语言、主题等本机偏好"],
+    join: "加入同步",
+    joinTitle: "合并配置？",
+    joinText:
+      "这台设备的配置会与同步配置合并，部分设置可能更新。本机独有的模型连接和处理方式会保留，收藏与个人偏好不受影响。",
+    title: "同步",
+    intro: "通过 Chrome 账号，在设备之间同步加密的配置。",
+    requirements:
+      "更改由 Chrome 在后台传递。若迟迟未收到，请检查 Chrome 同步与网络连接。",
+    passphrase: "同步口令",
+    confirmPassphrase: "确认口令",
+    passphraseHelp:
+      "请记住这个口令，遗忘后无法找回。重启 Chrome 或重新加载插件后需再次输入。",
+    locked: "输入原来的同步口令，继续同步。本机配置仍可正常使用。",
+    ready: "同步已启用。",
+    lastSync: "本机上次同步",
+    create: "启用同步",
+    unlock: "解锁同步",
+    syncNow: "立即同步",
+    stop: "停止本机同步",
+    clear: "删除同步配置",
+    clearText:
+      "从 Chrome 同步中删除加密配置，并停止本机同步？本机配置和 API Key 会保留，其他设备需重新设置才能继续同步。如果忘记了口令，删除后可创建新的同步副本。",
+    stopText:
+      "停止这台设备的同步？本机配置和 API Key 仍可使用，同步副本会保留，其他设备不受影响。",
+    done: "同步设置已更新",
+    working: "处理中…",
+    errors: {
+      passphraseRequired: "请输入同步口令。",
+      passphraseShort: "同步口令至少需要 {min} 个字符。",
+      mismatch: "两次输入的口令不一致。",
+      wrongPassphrase: "口令不正确，或同步数据未通过完整性验证。",
+      locked: "请先输入口令解锁同步。",
+      waiting: "Chrome 正在接收同步配置，请稍后重试。",
+      tooLarge:
+        "配置超过 Chrome 可用同步空间，请缩短补充要求或删除不用的配置后重试。",
+      version: "同步配置需要不同版本的旁白，请更新各设备上的插件。",
+      invalidData: "同步配置无效，未应用到本机。",
+      remoteMissing:
+        "同步副本已被删除，本机配置仍保留。请删除同步设置后重新启用。",
+      unavailable: "同步未完成，请检查 Chrome 同步和网络后重试。",
+    },
+  },
   brand: "旁白",
   about: {
     version: "当前版本",
@@ -19,6 +113,7 @@ const base = {
     dompurify: "HTML 内容净化",
   },
   nav: {
+    sync: "同步",
     help: "关于",
     home: "收藏",
     actions: "处理方式",
@@ -469,6 +564,7 @@ const full = {
       noDecisionConnection: "请先配置默认决策模型。",
       invalidDecision: "决策服务返回了无效结果。",
       actionLimit: `最多保存 ${MAX_ACTIONS} 个处理方式，请先删除不再使用的自定义方式。`,
+      recordDeleted: "这条记录已被删除。请新建记录来保存这些修改。",
       invalidAction: "请填写有效的处理方式配置。",
       presetActionProtected: "预置处理方式不能删除。",
       sameLanguages: "源语言和目标语言相同，请调整后再翻译。",
@@ -478,6 +574,7 @@ const full = {
       invalidUrl:
         "请输入 HTTPS 服务地址；本地服务可使用 localhost 或 127.0.0.1。",
       invalidProtocol: "请选择有效的接口协议。",
+      credentialsUnavailable: "本机 API Key 存储不可用，请重新加载扩展后重试。",
       invalidConnection: "请填写连接名称并检查连接参数。",
       modelRequired: "请测试连接，并从返回的列表中选择模型。",
       invalidReasoning:
