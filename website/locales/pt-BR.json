@@ -81,7 +81,6 @@
   "themeDark": "Tema: escuro. Seguir o sistema.",
   "storeLink": "Adicionar ao Chrome",
   "manualInstall": "Instalar manualmente pelo GitHub",
-  "syncAvailability": "Disponível na próxima atualização da Chrome Web Store",
   "syncTitle": "Suas configurações, em cada dispositivo.",
   "syncText": "Sincronize opcionalmente conexões de modelos, ações de leitura e configurações de reflexão pelo Chrome. As configurações são criptografadas com uma frase secreta escolhida por você antes de saírem do dispositivo.",
   "syncJoinTitle": "A mesma frase secreta em cada dispositivo.",

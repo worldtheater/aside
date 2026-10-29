@@ -196,7 +196,7 @@ GitHub Pages 从 `main` 分支的 `docs/` 提供静态页面。首页使用 `web
 
 部署后，在 Search Console 使用 URL 前缀 `https://worldtheater.github.io/aside/` 验证所有权，再提交 <https://worldtheater.github.io/aside/sitemap.xml>。`robots.txt` 只在域名根目录生效；本仓库的 `/aside/` 是项目子路径，无需在此放置无效的 robots 文件。网站验证和结构化数据不保证收录、排名或 AI 引用。
 
-首页主安装入口指向 Chrome Web Store，GitHub 手动安装步骤收在折叠区。`website/release.json` 单独记录已公开的版本，用于页面版本、结构化数据与 ZIP 下载链接；它不随 `package.json` 中的待发布版本自动变化。草稿验收并公开发布后，再更新该文件和 README 下载链接，运行 `npm run build:site` 并推送。同步功能在商店上线前保留下一次更新的提示，见[自动发布](#自动发布)。
+首页主安装入口指向 Chrome Web Store，GitHub 手动安装步骤收在折叠区。`website/release.json` 单独记录已公开的版本，用于页面版本、结构化数据与 ZIP 下载链接；它不随 `package.json` 中的待发布版本自动变化。草稿验收并公开发布后，再更新该文件和 README 下载链接，运行 `npm run build:site` 并推送。发布流程见[自动发布](#自动发布)。
 
 使用 `node scripts/store-assets.mjs --website` 重新生成首页截图。它复用商店素材的隔离浏览器与本地模拟服务，以 2 倍像素密度直接截取真实插件界面，并为首屏提供移动端版本，为首屏、选文问答和收藏提供亮暗色版本。无参数运行仍只生成商店素材。截图内容、显示比例与预览交互遵循设计规范。
 

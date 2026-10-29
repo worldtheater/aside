@@ -14,7 +14,7 @@ A Chrome extension for translating, understanding, and collecting what you read 
 - **Reading tools:** A selection toolbar and floating menu, with configurable color palettes and result styles.
 - **Website dark mode:** Powered by [Dark Reader](https://github.com/darkreader/darkreader), with per-site settings.
 - **Collections and reflections:** Save, search, and copy results. Generate a short reflection with your chosen model, optionally drawing on saved passages.
-- **Encrypted configuration sync (next store update):** Sync model connections, API keys, reading actions, and reflection settings through your Chrome account using a shared passphrase. Collections and request history stay on each device.
+- **Encrypted configuration sync:** Sync model connections, reading actions, and reflection settings through your Chrome account using a shared passphrase. Collections and request history stay on each device.
 - **Models and usage:** Configure model services, reasoning levels, and output languages; review usage and manage the local result cache.
 
 ## Installation
@@ -29,7 +29,7 @@ After installing, open Aside’s **Settings → Model connections**, add your mo
 
 Alternatively, load the packaged extension from GitHub Releases. No Node.js is required.
 
-1. [Download Aside 0.1.1](https://github.com/worldtheater/aside/releases/download/v0.1.1/aside-0.1.1.zip) from GitHub Releases. Use the extension ZIP, not the automatically generated “Source code” archive.
+1. [Download Aside 0.1.2](https://github.com/worldtheater/aside/releases/download/v0.1.2/aside-0.1.2.zip) from GitHub Releases. Use the extension ZIP, not the automatically generated “Source code” archive.
 2. Extract the ZIP to a permanent folder.
 3. Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the extracted folder containing `manifest.json`.
 4. Open Aside’s **Settings**, add your service URL, API key, and protocol in **Model connections**, test the connection, choose a model, and save.
@@ -88,8 +88,6 @@ On macOS, Alt is Option. The **Keyboard shortcuts** page in the sidebar shows Ch
 Quick Q&A is unavailable on extension pages, blank pages, browser-internal pages, and pages where Chrome blocks script injection. Recent-tab switching does not require page injection. After restarting the browser or reloading the extension, visit two tabs to establish a new recent-tab history.
 
 ## Configuration sync
-
-Available in the current source build; planned for the next Chrome Web Store update. The currently published store version does not include sync.
 
 Open **Settings → Sync** to enable optional sync through your existing Chrome account. The page waits for existing synced settings by default. Only on the first device, choose **First-time setup** and set a passphrase of at least 12 characters. On another device, sign in to the same Chrome account, enable Chrome sync, install Aside with the same extension ID, and wait for the synced settings to arrive, then enter that passphrase to join. Do not select first-time setup again while waiting for delivery. Chrome controls delivery; Aside cannot detect whether your account sync is enabled or confirm delivery to another device.
 

@@ -81,7 +81,6 @@
   "themeDark": "主題：深色。點擊切換為跟隨系統。",
   "storeLink": "新增至 Chrome",
   "manualInstall": "從 GitHub 手動安裝",
-  "syncAvailability": "下一次 Chrome Web Store 更新提供",
   "syncTitle": "換台裝置，沿用熟悉的設定。",
   "syncText": "可選擇透過 Chrome 同步模型連線、處理方式和隨想生成設定。設定在離開裝置前，會以你設定的通關密語加密。",
   "syncJoinTitle": "各裝置，使用同一組通關密語。",

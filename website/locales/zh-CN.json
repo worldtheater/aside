@@ -81,7 +81,6 @@
   "themeDark": "主题：深色。点击切换为跟随系统。",
   "storeLink": "添加至 Chrome",
   "manualInstall": "从 GitHub 手动安装",
-  "syncAvailability": "下一次 Chrome Web Store 更新提供",
   "syncTitle": "换台设备，沿用熟悉的设置。",
   "syncText": "可选择通过 Chrome 同步模型连接、处理方式和随想生成设置。配置在离开设备前，使用你设置的口令加密。",
   "syncJoinTitle": "各设备，使用同一个口令。",

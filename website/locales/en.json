@@ -81,7 +81,6 @@
   "themeDark": "Theme: Dark. Follow system.",
   "storeLink": "Add to Chrome",
   "manualInstall": "Install manually from GitHub",
-  "syncAvailability": "Coming in the next Chrome Web Store update",
   "syncTitle": "Your setup, on every device.",
   "syncText": "Optionally sync model connections, reading actions, and reflection settings through Chrome. Your configuration is encrypted with a passphrase you choose before it leaves your device.",
   "syncJoinTitle": "One passphrase, each device.",

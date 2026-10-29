@@ -408,11 +408,6 @@ kbd {
   padding-block: 64px;
   border-bottom: 1px solid var(--line);
 }
-.sync-availability {
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 16px;
-}
 .sync-description {
   margin-top: 20px;
   color: var(--muted);

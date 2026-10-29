@@ -81,7 +81,6 @@
   "themeDark": "テーマ：ダーク。システム設定に従う。",
   "storeLink": "Chrome に追加",
   "manualInstall": "GitHub から手動でインストール",
-  "syncAvailability": "次回の Chrome Web Store 更新で提供予定",
   "syncTitle": "いつもの設定を、別の端末でも。",
   "syncText": "モデル接続、処理方法、随想の生成設定を Chrome 経由で同期できます。設定は端末から送信される前に、自分で決めたパスフレーズで暗号化されます。",
   "syncJoinTitle": "どの端末でも、同じパスフレーズ。",
