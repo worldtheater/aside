@@ -748,6 +748,18 @@ fs.mkdirSync(artifacts, { recursive: true });
       assert.deepEqual(errors, []);
       return;
     }
+    if (process.argv.includes("--text-translation-only")) {
+      await require("./text-translation-browser.cjs")({
+        page,
+        context,
+        origin,
+        calls,
+        streams,
+        artifacts,
+      });
+      assert.deepEqual(errors, []);
+      return;
+    }
     if (process.argv.includes("--qa-only")) {
       await require("./qa-browser.cjs")({
         page,
@@ -1677,6 +1689,14 @@ fs.mkdirSync(artifacts, { recursive: true });
       op,
       choose,
       setResultText,
+    });
+    await require("./text-translation-browser.cjs")({
+      page,
+      context,
+      origin,
+      calls,
+      streams,
+      artifacts,
     });
     await require("./radial-hover-browser.cjs")({
       context,

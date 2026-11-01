@@ -133,7 +133,9 @@ export type WebsitePatch = {
 export type EnhanceStatus =
   "off" | "ready" | "analyzing" | "done" | "partial" | "error" | "noModel";
 export interface WebsiteSettings {
-  sites: Record<string, Partial<WebsiteFeatures>>;
+  toolbar?: boolean;
+  floating?: boolean;
+  sites: Record<string, Partial<Pick<WebsiteFeatures, "lights" | "enhance">>>;
 }
 export type LightsStatus = "off" | "active" | "native" | "external";
 export interface Settings {
@@ -190,6 +192,7 @@ export type UsageSource =
   | "preview"
   | "page"
   | "selection"
+  | "text"
   | "daily"
   | "processing";
 export interface Tokens {

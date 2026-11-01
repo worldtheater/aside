@@ -155,6 +155,11 @@ const base = {
         description:
           "Tersedia di halaman web biasa. Kutip teks yang dipilih, atau seluruh halaman jika tidak ada pilihan. Ketik pertanyaan untuk memulai jawaban.",
       },
+      "text-translate": {
+        name: "Terjemahan teks",
+        description:
+          "Di halaman web biasa, buka panel terjemahan untuk mengetik atau menempelkan teks.",
+      },
     },
   },
   settings: "Pengaturan",
@@ -580,6 +585,11 @@ const full = {
     clearQuestionQuote: "Hapus kutipan",
     questionPlaceholder: "Apa yang ingin Anda tanyakan?",
     answerQuestion: "Jawab",
+    textTranslation: "Terjemahan teks",
+    textTranslationPlaceholder:
+      "Ketik atau tempel teks yang ingin diterjemahkan.",
+    textTranslationEmpty: "Hasil terjemahan akan muncul di sini.",
+    translateText: "Terjemahkan",
     translatePage: "Terjemahkan halaman ini",
     lightsEnabled: "Mode gelap: Aktif",
     lightsDisabled: "Mode gelap: Nonaktif",
@@ -724,6 +734,7 @@ const usage = {
   note: "Setiap baris adalah satu permintaan model; batch membuat catatan terpisah. Total hanya mencakup penggunaan yang diterima. Pembacaan dan penulisan cache termasuk dalam masukan dan tidak dihitung dua kali. OpenAI memasukkan penalaran ke keluaran; Gemini melaporkannya terpisah. Total mengutamakan nilai dari layanan. — berarti layanan tidak melaporkan nilainya.",
   unreported: "Tidak dilaporkan oleh layanan",
   sources: {
+    text: "Terjemahan teks",
     connectionTest: "Uji koneksi",
     trial: "Uji coba",
     preview: "Pratinjau web",
@@ -749,10 +760,13 @@ const usage = {
 };
 
 const popup = {
+  lightsModes: { off: "Halaman asli", on: "Gelap", system: "Ikuti sistem" },
+  lightsHint: (current: string, next: string) =>
+    `Situs ini: ${current}. Klik untuk beralih ke ${next}.`,
   currentPage: "Halaman saat ini",
   process: "Proses konten",
   features: "Alat cepat",
-  siteOnly: "Hanya situs ini",
+  allSites: "Berlaku untuk semua situs web",
   toolbar: "Bilah pilihan",
   floating: "Tombol mengambang",
 };

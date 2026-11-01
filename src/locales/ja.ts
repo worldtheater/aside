@@ -150,6 +150,11 @@ const base = {
         description:
           "通常のウェブページで使えます。選択したテキスト、未選択の場合はページ全体を引用します。質問を入力すると回答が始まります。",
       },
+      "text-translate": {
+        name: "テキスト翻訳",
+        description:
+          "通常のウェブページで翻訳パネルを開き、翻訳するテキストを入力または貼り付けます。",
+      },
     },
   },
   settings: "設定",
@@ -558,6 +563,11 @@ const full = {
     clearQuestionQuote: "引用をクリア",
     questionPlaceholder: "何を聞きたいですか？",
     answerQuestion: "回答",
+    textTranslation: "テキスト翻訳",
+    textTranslationPlaceholder:
+      "翻訳するテキストを入力または貼り付けてください。",
+    textTranslationEmpty: "翻訳結果がここに表示されます。",
+    translateText: "翻訳",
     translatePage: "このページを翻訳",
     lightsEnabled: "ダークモード：オン",
     lightsDisabled: "ダークモード：オフ",
@@ -697,6 +707,7 @@ const usage = {
   note: "各行は1回のモデルリクエストで、バッチは別々に記録します。合計には受信した使用量のみを含みます。キャッシュの読み書きは入力に含まれ、二重加算しません。OpenAI は推論を出力に含め、Gemini は別に報告します。合計はサービスの値を優先し、「—」は未報告を表します。",
   unreported: "サービスから未報告",
   sources: {
+    text: "テキスト翻訳",
     connectionTest: "接続テスト",
     trial: "試しに実行",
     preview: "ウェブプレビュー",
@@ -722,10 +733,13 @@ const usage = {
 };
 
 const popup = {
+  lightsModes: { off: "元のページ", on: "ダーク", system: "システムに従う" },
+  lightsHint: (current: string, next: string) =>
+    `このサイト：${current}。クリックで「${next}」に切り替えます。`,
   currentPage: "現在のページ",
   process: "コンテンツを処理",
   features: "クイックツール",
-  siteOnly: "このサイトのみ",
+  allSites: "すべてのサイトに適用",
   toolbar: "選択ツールバー",
   floating: "フローティングボタン",
 };

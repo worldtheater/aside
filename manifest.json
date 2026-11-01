@@ -59,6 +59,13 @@
         "mac": "Alt+Q"
       },
       "description": "__MSG_quickQuestion__"
+    },
+    "text-translate": {
+      "suggested_key": {
+        "default": "Alt+T",
+        "mac": "Alt+T"
+      },
+      "description": "__MSG_textTranslation__"
     }
   },
   "icons": {

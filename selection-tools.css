@@ -338,7 +338,8 @@
 .selection-tools [hidden] {
   display: none !important;
 }
-:host([data-theme="dark"]) .selection-tools {
+:host([data-theme="dark"]) .selection-tools,
+:host([data-theme="dark"]) .panel.result {
   --danger: #f0a398;
 }
 

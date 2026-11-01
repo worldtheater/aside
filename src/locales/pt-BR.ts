@@ -161,6 +161,11 @@ const base = {
         description:
           "Disponível em páginas da web comuns. Usa o texto selecionado ou a página inteira se nada estiver selecionado. Digite uma pergunta para receber a resposta.",
       },
+      "text-translate": {
+        name: "Tradução de texto",
+        description:
+          "Em uma página da web comum, abra o painel de tradução para digitar ou colar texto.",
+      },
     },
   },
   settings: "Configurações",
@@ -586,6 +591,10 @@ const full = {
     clearQuestionQuote: "Limpar citação",
     questionPlaceholder: "O que você gostaria de perguntar?",
     answerQuestion: "Responder",
+    textTranslation: "Tradução de texto",
+    textTranslationPlaceholder: "Digite ou cole o texto que deseja traduzir.",
+    textTranslationEmpty: "A tradução aparecerá aqui.",
+    translateText: "Traduzir",
     translatePage: "Traduzir esta página",
     lightsEnabled: "Modo escuro: Ativado",
     lightsDisabled: "Modo escuro: Desativado",
@@ -731,6 +740,7 @@ const usage = {
   note: "Cada linha é uma solicitação ao modelo; lotes geram registros separados. Os totais incluem apenas o uso recebido. Leituras e gravações de cache fazem parte da entrada e não são somadas duas vezes. A OpenAI inclui o raciocínio na saída; o Gemini o informa separadamente. Os totais priorizam valores do serviço. — indica que o serviço não informou um valor.",
   unreported: "Não informado pelo serviço",
   sources: {
+    text: "Tradução de texto",
     connectionTest: "Teste de conexão",
     trial: "Teste",
     preview: "Prévia da web",
@@ -760,10 +770,13 @@ const usage = {
 };
 
 const popup = {
+  lightsModes: { off: "Página original", on: "Escuro", system: "Sistema" },
+  lightsHint: (current: string, next: string) =>
+    `Este site: ${current}. Clique para mudar para ${next}.`,
   currentPage: "Página atual",
   process: "Processar conteúdo",
   features: "Ferramentas rápidas",
-  siteOnly: "Somente este site",
+  allSites: "Aplica-se a todos os sites",
   toolbar: "Barra de seleção",
   floating: "Botão flutuante",
 };

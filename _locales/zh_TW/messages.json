@@ -13,5 +13,8 @@
   },
   "quickQuestion": {
     "message": "開啟快問快答"
+  },
+  "textTranslation": {
+    "message": "開啟文字翻譯"
   }
 }

@@ -329,25 +329,17 @@ module.exports = async ({
     "Running from the browser popup does not open the page controls",
   );
   assert.equal(await dock.getAttribute("aria-expanded"), "false");
-  assert(await host.locator("#result.panel").isVisible());
-  assert.equal(
-    await source.locator("[data-pagework=result]").count(),
-    0,
-    "The popup opens a result panel instead of inserting translations into the page",
-  );
-  assert.equal(
-    await host
-      .locator(".result .selection-result-body")
-      .evaluate((node) => getComputedStyle(node).paddingTop),
-    "0px",
+  assert(await host.locator("#result").isHidden());
+  assert(
+    await source.locator("#first > [data-pagework=result]").count(),
+    "The popup follows the translation action's inline placement",
   );
   assert(
-    (await host.locator(".original").textContent()).includes(
-      "Reading is active thinking.",
-    ),
-  );
-  assert(
-    !(await host.locator(".original").textContent()).includes("Navigation"),
+    (
+      await source
+        .locator("#first > [data-pagework=result]")
+        .evaluate((node) => node.shadowRoot.textContent)
+    ).includes("Reading is active thinking."),
   );
   await source.screenshot({
     path: path.join(artifacts, "popup-translated-page.png"),
@@ -375,6 +367,10 @@ module.exports = async ({
     await source.locator("nav [data-pagework=result]").count(),
     0,
     "The popup processes the main content, excluding navigation",
+  );
+  await page.evaluate(
+    (tabId) => chrome.runtime.sendMessage({ type: "tab.restore", tabId }),
+    tabId,
   );
   await page.evaluate(async (saved) => {
     const { settings } = await chrome.storage.local.get("settings");
@@ -656,6 +652,22 @@ module.exports = async ({
     assert(streams.length > start, "The controlled model stream was started");
     return streams.at(-1);
   };
+  // Explicit panel settings still apply to every action when run from the popup.
+  const savedActions = await page.evaluate(async () => {
+    const snapshot = (await chrome.runtime.sendMessage({ type: "snapshot" }))
+      .value;
+    const result = await chrome.runtime.sendMessage({
+      type: "settings.save",
+      patch: {
+        actions: snapshot.actions.map((action) => ({
+          ...action,
+          placement: "panel",
+        })),
+      },
+    });
+    if (!result.ok) throw Error(JSON.stringify(result));
+    return snapshot.actions;
+  });
   for (const action of ["translate", "plain", "explain", "summary"]) {
     const text = `STREAM_FIXTURE_WAIT popup-${action}`;
     await source.locator("main").evaluate((main, text) => {
@@ -755,10 +767,15 @@ module.exports = async ({
   for (let i = 0; i < 30 && !regenerate.closed; i++)
     await source.waitForTimeout(50);
   assert(regenerate.closed, "Stopping the panel aborts the upstream request");
+  await page.evaluate(
+    (actions) =>
+      chrome.runtime.sendMessage({ type: "settings.save", patch: { actions } }),
+    savedActions,
+  );
   await cdp.detach();
   assert.deepEqual(errors, []);
   await source.close();
   console.log(
-    "PASS: automatic floating entry, drag/snap, keyboard/collapse, narrow viewport, reload; actual Chrome popup Q&A waits for an explicit question with selected/page quotes; all four processing actions open a panel before the first byte and stream without DOM replacement; source starts at the top; regenerate/stop; popup output language/main-content scope; toolbar and saved action unchanged.",
+    "PASS: automatic floating entry, drag/snap, keyboard/collapse, narrow viewport, reload; actual Chrome popup Q&A waits for an explicit question with selected/page quotes; default translation stays inline; explicitly configured panel actions open before the first byte and stream without DOM replacement; source starts at the top; regenerate/stop; popup output language/main-content scope; toolbar and saved action unchanged.",
   );
 };

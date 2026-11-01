@@ -82,10 +82,11 @@ The engine runs locally and may fetch stylesheets or images referenced by the pa
 | --- | --- | --- |
 | Recent tabs | `Alt+W` | Switch back and forth between the two most recently visited tabs in the current window |
 | Quick Q&A | `Alt+Q` | Quote selected text, or page content if nothing is selected, and open the question panel |
+| Text translation | `Alt+T` | Open a panel to type or paste text to translate, even when the floating menu is hidden |
 
 On macOS, Alt is Option. The **Keyboard shortcuts** page in the sidebar shows Chrome's actual bindings and opens `chrome://extensions/shortcuts` for editing. Reassign a shortcut there if another extension already uses it.
 
-Quick Q&A is unavailable on extension pages, blank pages, browser-internal pages, and pages where Chrome blocks script injection. Recent-tab switching does not require page injection. After restarting the browser or reloading the extension, visit two tabs to establish a new recent-tab history.
+Quick Q&A and text translation are unavailable on extension pages, blank pages, browser-internal pages, and pages where Chrome blocks script injection. Recent-tab switching does not require page injection. After restarting the browser or reloading the extension, visit two tabs to establish a new recent-tab history.
 
 ## Configuration sync
 

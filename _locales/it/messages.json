@@ -13,5 +13,8 @@
   },
   "quickQuestion": {
     "message": "Apri Domanda rapida"
+  },
+  "textTranslation": {
+    "message": "Apri la traduzione del testo"
   }
 }

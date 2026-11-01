@@ -316,7 +316,7 @@ chrome.commands.onCommand.addListener(async (command, sourceTab) => {
     await switchRecentTab(sourceTab?.windowId);
     return;
   }
-  if (command !== "quick-question") return;
+  if (command !== "quick-question" && command !== "text-translate") return;
   const tab =
     sourceTab ||
     (await chrome.tabs.query({ active: true, currentWindow: true }))[0];
@@ -324,23 +324,24 @@ chrome.commands.onCommand.addListener(async (command, sourceTab) => {
   try {
     await initialize();
     const { settings } = await readStore();
+    const kind = command === "text-translate" ? "translate" : "qa";
     const actionId = settings.actions.find(
-      (action) => action.kind === "qa",
+      (action) => action.kind === kind,
     )?.id;
     if (!actionId) {
       await openSettings(tab.id, "actions");
       return;
     }
     await inject(tab.id);
-    await chrome.tabs.sendMessage(tab.id, {
-      type: "page.run",
-      actionId,
-      scope: "body",
-      panel: true,
-    });
+    await chrome.tabs.sendMessage(
+      tab.id,
+      command === "text-translate"
+        ? { type: "text-translation.open" }
+        : { type: "page.run", actionId, scope: "body", panel: true },
+    );
   } catch (error) {
     // Chrome can also reject injection on protected HTTP(S) pages.
-    console.info("Aside could not open Quick Q&A:", error);
+    console.info("Aside could not open the shortcut panel:", error);
   }
 });
 chrome.runtime.onMessage.addListener(
@@ -360,33 +361,36 @@ chrome.runtime.onMessage.addListener(
             !["on", "off", "system"].includes(message.patch.lights as string)
           )
             throw new ModelError("notAllowed");
-          // Keep this request in the click's message gesture, before store reads.
-          if (
-            message.patch.lights !== "off" &&
-            !(await chrome.permissions.request({
-              origins: ["http://*/*", "https://*/*"],
-            }))
-          )
-            throw new ModelError("permissionRequired");
         }
+        // Both entry points request CSS access in the click's message gesture.
+        if (
+          ["on", "system"].includes(message.patch?.lights as string) &&
+          !(await chrome.permissions.request({
+            origins: ["http://*/*", "https://*/*"],
+          }))
+        )
+          throw new ModelError("permissionRequired");
         await initialize();
         if (!DECISION_MODELS_ENABLED && message.patch?.enhance === true)
           throw new ModelError("notAllowed");
-        const tabId = fromPage ? sender.tab?.id : message.tabId;
-        if (tabId === undefined) throw new ModelError("invalidInput");
-        const hostname = websiteHostname(
-          fromPage
-            ? sender.tab!.url!
-            : (await chrome.tabs.get(tabId)).url || "",
-        );
-        const website = await mutate((data) => {
-          updateWebsite(data.settings.website, hostname, message.patch);
-          return data.settings.website;
-        });
         const lightsChanged =
           message.patch === null ||
           Object.hasOwn(message.patch, "lights") ||
           Object.hasOwn(message.patch, "enhance");
+        const tabId = fromPage ? sender.tab?.id : message.tabId;
+        let hostname: string | undefined;
+        if (lightsChanged) {
+          if (tabId === undefined) throw new ModelError("invalidInput");
+          hostname = websiteHostname(
+            fromPage
+              ? sender.tab!.url!
+              : (await chrome.tabs.get(tabId)).url || "",
+          );
+        }
+        const website = await mutate((data) => {
+          updateWebsite(data.settings.website, hostname, message.patch);
+          return data.settings.website;
+        });
         await broadcastSettings(
           (await readStore()).settings,
           lightsChanged ? hostname : undefined,
@@ -1009,13 +1013,17 @@ chrome.runtime.onConnect.addListener((port) => {
           key = data.credentials[connection.id!] || "";
         const source: UsageSource = payload.daily
           ? "daily"
-          : ["page", "selection", "trial"].includes(payload.source || "")
+          : ["page", "selection", "text", "trial"].includes(
+                payload.source || "",
+              )
             ? payload.source!
             : "processing";
         const output = await processContent({
-          // A selection is one passage, even when the action divides full pages.
+          // Selected or typed text is one passage, even when full pages are divided.
           action:
-            source === "selection" ? { ...action, mode: "whole" } : action,
+            source === "selection" || source === "text"
+              ? { ...action, mode: "whole" }
+              : action,
           blocks,
           connection,
           key,

@@ -149,6 +149,11 @@ const base = {
         description:
           "일반 웹페이지에서 사용할 수 있습니다. 선택한 텍스트를 인용하며, 선택한 내용이 없으면 전체 페이지를 인용합니다. 질문을 입력하면 답변을 시작합니다.",
       },
+      "text-translate": {
+        name: "텍스트 번역",
+        description:
+          "일반 웹페이지에서 번역 패널을 열고 번역할 텍스트를 입력하거나 붙여넣으세요.",
+      },
     },
   },
   settings: "설정",
@@ -555,6 +560,10 @@ const full = {
     clearQuestionQuote: "인용문 지우기",
     questionPlaceholder: "무엇이 궁금한가요?",
     answerQuestion: "답변",
+    textTranslation: "텍스트 번역",
+    textTranslationPlaceholder: "번역할 텍스트를 입력하거나 붙여넣으세요.",
+    textTranslationEmpty: "번역 결과가 여기에 표시됩니다.",
+    translateText: "번역",
     translatePage: "이 페이지 번역",
     lightsEnabled: "다크 모드: 켬",
     lightsDisabled: "다크 모드: 끔",
@@ -695,6 +704,7 @@ const usage = {
   note: "각 행은 한 번의 모델 요청이며 배치는 별도로 기록됩니다. 합계에는 받은 사용량만 포함합니다. 캐시 읽기와 쓰기는 입력에 포함되어 중복 합산하지 않습니다. OpenAI는 추론을 출력에 포함하고 Gemini는 별도로 보고합니다. 총량은 서비스가 보고한 값을 우선 사용하며 ‘—’는 값이 보고되지 않았음을 뜻합니다.",
   unreported: "서비스에서 보고하지 않음",
   sources: {
+    text: "텍스트 번역",
     connectionTest: "연결 테스트",
     trial: "시험 실행",
     preview: "웹 미리보기",
@@ -720,10 +730,13 @@ const usage = {
 };
 
 const popup = {
+  lightsModes: { off: "원래 페이지", on: "다크", system: "시스템 설정" },
+  lightsHint: (current: string, next: string) =>
+    `현재 사이트: ${current}. 클릭하면 ${next}(으)로 전환합니다.`,
   currentPage: "현재 페이지",
   process: "콘텐츠 처리",
   features: "빠른 도구",
-  siteOnly: "이 사이트에만 적용",
+  allSites: "모든 웹사이트에 적용",
   toolbar: "텍스트 선택 도구 모음",
   floating: "플로팅 버튼",
 };

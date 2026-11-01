@@ -10,7 +10,7 @@ module.exports = async ({ context, origin, calls, artifacts }) => {
     const host = source.locator("[data-pagework=ui]");
     const dock = host.locator("#dock");
     const radial = host.locator("#radial");
-    const pin = radial.locator("[data-op=dock-pin]");
+    const textTranslate = radial.locator("[data-op=text-translate]");
     const tip = radial.locator(".hover-tip");
     const settle = async (locator) => {
       await locator.evaluate((node) =>
@@ -119,7 +119,7 @@ module.exports = async ({ context, origin, calls, artifacts }) => {
         "page-translate",
         "toggle-lights",
         "quick-question",
-        "dock-pin",
+        "text-translate",
       ];
       assert.equal(
         motions.length,
@@ -195,7 +195,7 @@ module.exports = async ({ context, origin, calls, artifacts }) => {
       assert.equal(
         await radial.locator("button:hover").count(),
         0,
-        "Resting over the dock never hovers Pin",
+        "Resting over the dock never hovers Text translation",
       );
       assert.equal(await radial.locator("button:focus-visible").count(), 0);
       assert.equal(
@@ -203,9 +203,9 @@ module.exports = async ({ context, origin, calls, artifacts }) => {
         0,
         "Opening at the centre never shows a menu tip",
       );
-      assert.equal(await pin.getAttribute("aria-pressed"), "false");
+      assert.equal(await textTranslate.getAttribute("aria-pressed"), null);
       assert(
-        await pin.evaluate(
+        await textTranslate.evaluate(
           (node) =>
             getComputedStyle(node).backgroundColor ===
             getComputedStyle(
@@ -242,26 +242,26 @@ module.exports = async ({ context, origin, calls, artifacts }) => {
       "page-translate",
       "toggle-lights",
       "quick-question",
-      "dock-pin",
+      "text-translate",
     ])
       await expectTip(radial.locator(`[data-op=${op}]`));
     await source.screenshot({
       path: path.join(artifacts, "radial-hover-tip.png"),
       clip: { x: 1120, y: 340, width: 320, height: 360 },
     });
-    await settle(pin);
-    assert(await pin.evaluate((node) => node.matches(":hover")));
+    await settle(textTranslate);
+    assert(await textTranslate.evaluate((node) => node.matches(":hover")));
     assert.equal(
-      await pin.getAttribute("title"),
+      await textTranslate.getAttribute("title"),
       null,
       "Menu buttons do not show native tips",
     );
     assert(
-      await pin.getAttribute("aria-label"),
-      "Pin keeps its accessible name",
+      await textTranslate.getAttribute("aria-label"),
+      "Text translation keeps its accessible name",
     );
     assert(
-      await pin.evaluate(
+      await textTranslate.evaluate(
         (node) =>
           getComputedStyle(node).backgroundColor !==
           getComputedStyle(
@@ -273,9 +273,9 @@ module.exports = async ({ context, origin, calls, artifacts }) => {
     await radial
       .locator(".hover-tip:popover-open")
       .waitFor({ state: "hidden" });
-    assert.equal(await pin.getAttribute("aria-describedby"), null);
-    await settle(pin);
-    assert(await pin.evaluate((node) => !node.matches(":hover")));
+    assert.equal(await textTranslate.getAttribute("aria-describedby"), null);
+    await settle(textTranslate);
+    assert(await textTranslate.evaluate((node) => !node.matches(":hover")));
     // Disabled controls never show a custom or native tooltip.
     const translate = radial.locator("[data-op=page-translate]");
     await translate.evaluate((button) => (button.disabled = true));
@@ -314,15 +314,10 @@ module.exports = async ({ context, origin, calls, artifacts }) => {
         await source.screenshot({
           path: path.join(artifacts, "radial-lights-tip-narrow.png"),
         });
-      await expectTip(pin);
+      await expectTip(textTranslate);
       await source.screenshot({
         path: path.join(artifacts, `radial-tip-${side}-${colorScheme}.png`),
       });
-      await pin.click();
-      assert.equal(await pin.getAttribute("aria-pressed"), "true");
-      await expectTip(pin);
-      await pin.click();
-      assert.equal(await pin.getAttribute("aria-pressed"), "false");
       await closeAtCentre();
     }
     await dock.focus();
@@ -356,11 +351,11 @@ module.exports = async ({ context, origin, calls, artifacts }) => {
     assert.equal(
       calls.length,
       before,
-      "Opening, hovering and pinning never call a model",
+      "Opening and hovering never call a model",
     );
     assert.deepEqual(errors, []);
     console.log(
-      "PASS: original flyout animation retained; dock-centre opening never hits or hovers Pin; all five localized custom hover tips and state updates, disabled/closed tip suppression, viewport bounds, keyboard focus, both sides, narrow/dark and reduced-motion layouts remain functional.",
+      "PASS: original flyout animation retained; dock-centre opening never hits or hovers Text translation; all five localized custom hover tips and state updates, disabled/closed tip suppression, viewport bounds, keyboard focus, both sides, narrow/dark and reduced-motion layouts remain functional.",
     );
   } finally {
     await source.close();

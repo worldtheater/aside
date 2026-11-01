@@ -191,9 +191,13 @@ module.exports = async ({
       assert.equal(await popup.locator("html").getAttribute("lang"), locale);
       assert.equal(
         await popup.locator("#feature-scope").innerText(),
-        C.popup.siteOnly,
+        C.popup.allSites,
       );
       assert.equal(await popup.locator('[data-op="run"]').innerText(), C.start);
+      assert.equal(
+        await popup.locator("#website-lights").getAttribute("aria-label"),
+        C.popup.lightsHint(C.popup.lightsModes.off, C.popup.lightsModes.on),
+      );
       assert.equal(
         calls.length,
         beforeSwitch,

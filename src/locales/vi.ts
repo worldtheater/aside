@@ -155,6 +155,11 @@ const base = {
         description:
           "Dùng được trên trang web thông thường. Trích dẫn văn bản đã chọn hoặc toàn bộ trang nếu chưa chọn gì. Nhập câu hỏi để bắt đầu nhận câu trả lời.",
       },
+      "text-translate": {
+        name: "Dịch văn bản",
+        description:
+          "Trên trang web thông thường, mở bảng dịch để nhập hoặc dán văn bản.",
+      },
     },
   },
   settings: "Cài đặt",
@@ -569,6 +574,10 @@ const full = {
     clearQuestionQuote: "Xóa trích dẫn",
     questionPlaceholder: "Bạn muốn hỏi gì?",
     answerQuestion: "Trả lời",
+    textTranslation: "Dịch văn bản",
+    textTranslationPlaceholder: "Nhập hoặc dán văn bản cần dịch.",
+    textTranslationEmpty: "Bản dịch sẽ xuất hiện ở đây.",
+    translateText: "Dịch",
     translatePage: "Dịch trang này",
     lightsEnabled: "Chế độ tối: Bật",
     lightsDisabled: "Chế độ tối: Tắt",
@@ -708,6 +717,7 @@ const usage = {
   note: "Mỗi dòng là một yêu cầu mô hình; xử lý theo đợt tạo các bản ghi riêng. Tổng chỉ tính dữ liệu sử dụng nhận được. Đọc và ghi bộ nhớ đệm nằm trong đầu vào, không tính hai lần. OpenAI tính suy luận trong đầu ra; Gemini báo cáo riêng. Tổng ưu tiên giá trị do dịch vụ báo cáo. — nghĩa là dịch vụ không báo cáo giá trị.",
   unreported: "Dịch vụ không báo cáo",
   sources: {
+    text: "Dịch văn bản",
     connectionTest: "Kiểm tra kết nối",
     trial: "Chạy thử",
     preview: "Xem trước trang web",
@@ -733,10 +743,13 @@ const usage = {
 };
 
 const popup = {
+  lightsModes: { off: "Trang gốc", on: "Tối", system: "Theo hệ thống" },
+  lightsHint: (current: string, next: string) =>
+    `Trang web này: ${current}. Nhấp để chuyển sang ${next}.`,
   currentPage: "Trang hiện tại",
   process: "Xử lý nội dung",
   features: "Công cụ nhanh",
-  siteOnly: "Chỉ trang web này",
+  allSites: "Áp dụng cho tất cả trang web",
   toolbar: "Thanh chọn văn bản",
   floating: "Nút nổi",
 };

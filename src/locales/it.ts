@@ -162,6 +162,11 @@ const base = {
         description:
           "Disponibile sulle normali pagine web. Cita il testo selezionato o l’intera pagina se non c’è una selezione. Inserisci una domanda per avviare la risposta.",
       },
+      "text-translate": {
+        name: "Traduzione del testo",
+        description:
+          "Su una normale pagina web, apri il pannello di traduzione per digitare o incollare del testo.",
+      },
     },
   },
   settings: "Impostazioni",
@@ -589,6 +594,10 @@ const full = {
     clearQuestionQuote: "Rimuovi citazione",
     questionPlaceholder: "Cosa vorresti chiedere?",
     answerQuestion: "Rispondi",
+    textTranslation: "Traduzione del testo",
+    textTranslationPlaceholder: "Scrivi o incolla il testo da tradurre.",
+    textTranslationEmpty: "La traduzione apparirà qui.",
+    translateText: "Traduci",
     translatePage: "Traduci questa pagina",
     lightsEnabled: "Modalità scura: Attiva",
     lightsDisabled: "Modalità scura: Disattiva",
@@ -740,6 +749,7 @@ const usage = {
   note: "Ogni riga è una richiesta al modello; i batch creano record separati. I totali includono solo l’utilizzo ricevuto. Letture e scritture della cache sono incluse nell’input e non vengono contate due volte. OpenAI include il ragionamento nell’output; Gemini lo comunica a parte. I totali privilegiano i valori del servizio. — indica un valore non comunicato.",
   unreported: "Non comunicato dal servizio",
   sources: {
+    text: "Traduzione del testo",
     connectionTest: "Verifica della connessione",
     trial: "Prova",
     preview: "Anteprima web",
@@ -769,10 +779,13 @@ const usage = {
 };
 
 const popup = {
+  lightsModes: { off: "Pagina originale", on: "Scuro", system: "Sistema" },
+  lightsHint: (current: string, next: string) =>
+    `Questo sito: ${current}. Fai clic per passare a ${next}.`,
   currentPage: "Pagina attuale",
   process: "Elabora contenuto",
   features: "Strumenti rapidi",
-  siteOnly: "Solo questo sito",
+  allSites: "Si applica a tutti i siti web",
   toolbar: "Barra di selezione",
   floating: "Pulsante mobile",
 };

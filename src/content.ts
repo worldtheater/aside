@@ -1,3 +1,4 @@
+import { TextTranslationPanel } from "./text-translation.js";
 import contentStyles from "../content-ui.css";
 import themeStyles from "../content-themes.css";
 import selectionStyles from "../selection-tools.css";
@@ -5,7 +6,7 @@ import { resolveLocale } from "./locale.js";
 import { escapeHtml as escape } from "./html.js";
 import { HoverTips } from "./hover-tips.js";
 import { resultColor } from "./theme.js";
-import { resolveWebsite } from "./website.js";
+import { nextLightsMode, resolveWebsite } from "./website.js";
 import brandMark from "../icons/brand-mark.svg";
 import {
   request as send,
@@ -89,6 +90,7 @@ async function initializePagework() {
     pin: "m16 3 5 5-4 3-.5 4.5-2 2-8-8 2-2L13 7l3-4ZM10.5 13.5 4 20",
     refresh: "M20 11a8 8 0 1 0-2.4 6M20 4v7h-7",
     down: "m6 9 6 6 6-6",
+    text: "M4 5h16M12 5v14M8 19h8M4 5v3M20 5v3",
     page: "M6 3h9l4 4v14H6ZM14 3v5h5M9 12h7M9 16h5",
     play: "M8 5v14l11-7Z",
     stop: "M9 7h6a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2Z",
@@ -110,8 +112,7 @@ async function initializePagework() {
     list: "M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01",
   };
   let radialOpen = false,
-    lightsBusy = false,
-    dockPinned = false;
+    lightsBusy = false;
   const icon = (id: string) =>
     `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="${paths[id] || paths.spark}"/></svg>`;
   const button = (
@@ -181,6 +182,12 @@ async function initializePagework() {
     () => selectionTools.updateSelection(),
     { signal },
   );
+  const textTranslation = new TextTranslationPanel({
+    config: () => config,
+    error: errorText,
+    notify,
+  });
+  shadow.append(textTranslation.element);
   const panelResize = new ResizeObserver(() => {
     positionSelection();
     positionTools();
@@ -297,7 +304,7 @@ async function initializePagework() {
   );
   const dockSheet = new CSSStyleSheet();
   dockSheet.replaceSync(
-    `.dock{opacity:.45;transition:transform .22s cubic-bezier(.34,1.56,.64,1),opacity .18s,background-color .16s,color .16s}.dock[data-side=right]{transform:translateX(35%)}.dock[data-side=left]{transform:translateX(-35%)}.dock:hover,.dock:focus-visible,.dock.radial-open,.dock[aria-expanded=true],.dock[data-dragging]{opacity:1;transform:none}.dock.pinned{opacity:1;transform:none}.radial .lights-toggle.system>svg{fill:none;stroke-width:1.6}@media(prefers-reduced-motion:reduce){.dock{transition:opacity .18s}}`,
+    `.dock{opacity:.45;transition:transform .22s cubic-bezier(.34,1.56,.64,1),opacity .18s,background-color .16s,color .16s}.dock[data-side=right]{transform:translateX(35%)}.dock[data-side=left]{transform:translateX(-35%)}.dock:hover,.dock:focus-visible,.dock.radial-open,.dock[aria-expanded=true],.dock[data-dragging]{opacity:1;transform:none}.radial .lights-toggle.system>svg{fill:none;stroke-width:1.6}@media(prefers-reduced-motion:reduce){.dock{transition:opacity .18s}}`,
   );
   shadow.adoptedStyleSheets = [
     ...shadow.adoptedStyleSheets,
@@ -308,6 +315,19 @@ async function initializePagework() {
     config.actions.find((a) => a.kind === "translate");
   const questionAction = () =>
     config.actions.find((action) => action.kind === "qa");
+  async function openTextTranslation() {
+    if (!hasDefaultModel(config)) {
+      await send("settings.open", { route: "connections" });
+      return;
+    }
+    const translate = translateAction();
+    if (!translate) return;
+    showRadial(false);
+    showTools(false);
+    closeResult();
+    $("selection").hidden = true;
+    textTranslation.open(translate);
+  }
   function openQuestion(
     quote = selectedPageText(),
     qa = questionAction(),
@@ -482,11 +502,11 @@ async function initializePagework() {
           configured && qa ? "" : "disabled",
         ),
         button(
-          "dock-pin",
-          dockPinned ? S.unpin : S.pin,
-          dockPinned ? "on" : "",
-          "pin",
-          `aria-pressed="${dockPinned}" ${configured ? "" : "disabled"}`,
+          "text-translate",
+          S.textTranslation,
+          "",
+          "text",
+          configured && tr ? "" : "disabled",
         ),
       ];
     radialEl.innerHTML = slots
@@ -564,8 +584,7 @@ async function initializePagework() {
   document.addEventListener(
     "pointerdown",
     (event) => {
-      if (radialOpen && !dockPinned && !event.composedPath().includes(host))
-        showRadial(false);
+      if (radialOpen && !event.composedPath().includes(host)) showRadial(false);
     },
     { capture: true, signal },
   );
@@ -714,6 +733,7 @@ async function initializePagework() {
     pageStatus(true);
   }
   function resetPageTools() {
+    textTranslation.close();
     selectedText = "";
     selectedRect = null;
     selectionPanelTop = selectionPanelLeft = null;
@@ -1469,9 +1489,7 @@ async function initializePagework() {
         await submitQuestion();
       } else if (op === "toggle-lights") {
         if (lightsBusy) return;
-        const current = websiteFeatures().lights;
-        const lights =
-          current === "off" ? "on" : current === "on" ? "system" : "off";
+        const lights = nextLightsMode(websiteFeatures().lights);
         const restoreFocus = shadow.activeElement === target;
         lightsBusy = true;
         radial();
@@ -1487,11 +1505,8 @@ async function initializePagework() {
                 ?.focus();
           }
         }
-      } else if (op === "dock-pin") {
-        dockPinned = !dockPinned;
-        $("dock").classList.toggle("pinned", dockPinned);
-        radial();
-        radialEl.querySelector<HTMLElement>("[data-op=dock-pin]")?.focus();
+      } else if (op === "text-translate") {
+        await openTextTranslation();
       } else if (op === "hide-toolbar") showTools(false, true);
       else if (op === "open-settings")
         await send("settings.open", { route: "connections" });
@@ -1634,19 +1649,25 @@ async function initializePagework() {
     },
     { capture: true, signal },
   );
-  document.addEventListener(
-    "keydown",
-    (event) => {
-      if (event.key === "Escape") {
-        if (resultKind === "selection" && !$("result").hidden) closeResult();
-        $("selection").hidden = true;
-        if (radialOpen && !dockPinned) showRadial(false, true);
-        if (!$("toolbar").hidden) showTools(false, true);
-        if ($("actions")) $("actions").hidden = true;
-      }
-    },
-    { signal },
-  );
+  function dismissWithEscape(event: KeyboardEvent) {
+    if (event.key !== "Escape" || event.isComposing) return;
+    textTranslation.close();
+    if (resultKind === "selection" && !$("result").hidden) closeResult();
+    $("selection").hidden = true;
+    if (radialOpen) showRadial(false, true);
+    if (!$("toolbar").hidden) showTools(false, true);
+    if ($("actions")) $("actions").hidden = true;
+  }
+  // Shadow DOM retargets controls to the host DIV, so site hotkey handlers
+  // cannot recognize them as inputs. Keep their keys inside the extension UI,
+  // after its own controls run, without suppressing native editing behavior.
+  for (const type of ["keydown", "keypress", "keyup"]) {
+    shadow.addEventListener(type, (event) => {
+      if (type === "keydown") dismissWithEscape(event as KeyboardEvent);
+      event.stopPropagation();
+    });
+  }
+  document.addEventListener("keydown", dismissWithEscape, { signal });
   $("dock").addEventListener("pointerdown", (event) => {
     if (event.button !== 0) return;
     const dock = $("dock"),
@@ -1699,6 +1720,7 @@ async function initializePagework() {
       positionTools();
       positionSelection();
       positionResult();
+      textTranslation.position();
       document
         .querySelectorAll<HTMLElement>('[data-pagework="result"]')
         .forEach((result) => {
@@ -1772,6 +1794,7 @@ async function initializePagework() {
         "ui.show",
         "page.run",
         "selection.process",
+        "text-translation.open",
         "page.restore",
       ].includes(message.type)
     )
@@ -1809,6 +1832,11 @@ async function initializePagework() {
             fitPageResult(result);
           });
         if ($("output")) resultStyle($("output"), "selection");
+        return true;
+      }
+      if (message.type === "text-translation.open") {
+        await refresh();
+        await openTextTranslation();
         return true;
       }
       if (message.type === "ui.show") {
@@ -1858,6 +1886,7 @@ async function initializePagework() {
     () => {
       lifetime.abort();
       panelResize.disconnect();
+      textTranslation.destroy();
       selectionTools.destroy();
       radialTips.destroy();
       restore();

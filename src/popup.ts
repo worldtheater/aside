@@ -1,3 +1,4 @@
+import { icon } from "./ui.js";
 import { HoverTips } from "./hover-tips.js";
 import { escapeHtml as escape } from "./html.js";
 import brandMark from "../icons/brand-mark.svg";
@@ -6,7 +7,7 @@ import { ModelError, modelError, hasDefaultModel } from "./providers.js";
 import { C, locale, setLocale, localizeAction } from "./copy.js";
 import { request } from "./client.js";
 import { enhanceSelects } from "./controls.js";
-import { resolveWebsite, websiteHostname } from "./website.js";
+import { nextLightsMode, resolveWebsite, websiteHostname } from "./website.js";
 import type { WebsitePatch, PublicSettings } from "./types.js";
 
 const data = await request("snapshot");
@@ -17,7 +18,8 @@ const P = C.popup;
 const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 const supported = /^https?:/.test(tab?.url || "");
 const hostname = supported ? websiteHostname(tab.url!) : "";
-let featureBusy = false;
+let featureBusy = false,
+  lightsBusy = false;
 const favicon = new URL(chrome.runtime.getURL("/_favicon/"));
 favicon.searchParams.set("pageUrl", tab?.url || "");
 favicon.searchParams.set("size", "32");
@@ -29,8 +31,10 @@ const root = document.querySelector<HTMLElement>("#popup")!;
 root.innerHTML = `<header class="popup-header"><span class="popup-brand">${brandMark}<strong>${C.brand}</strong></span><button class="selection-button" id="settings" aria-label="${C.settings}">${settingsIcon}</button></header>
   <main class="popup-body">
     <section class="popup-page" aria-label="${P.currentPage}">
-      <div class="popup-page-site">${supported ? `<img src="${escape(favicon.href)}" alt="" width="18" height="18">` : ""}<span>${P.currentPage}</span>${supported ? `<strong>${escape(hostname)}</strong>` : ""}</div>
-      <p class="popup-title">${escape(supported ? tab.title : C.real.unsupportedPage)}</p>
+      <div class="popup-page-summary"><div class="popup-page-site">${supported ? `<img src="${escape(favicon.href)}" alt="" width="18" height="18">` : ""}<span>${P.currentPage}</span>${supported ? `<strong>${escape(hostname)}</strong>` : ""}</div>
+      <p class="popup-title">${escape(supported ? tab.title : C.real.unsupportedPage)}</p></div>
+      <button type="button" class="selection-button" id="website-lights"></button>
+      <p class="popup-status" id="lights-status" role="status"></p>
     </section>
     <section class="popup-process selection-settings" aria-label="${P.process}">
       <div class="popup-process-options"><label class="field"><span class="field-label">${C.chooseAction}</span><select id="action">${data.actions
@@ -43,24 +47,30 @@ root.innerHTML = `<header class="popup-header"><span class="popup-brand">${brand
       <div class="popup-process-actions"><button class="btn primary" data-op="run" ${supported ? "" : "disabled"}>${playIcon}${C.start}</button><button class="btn ghost" data-op="restore" ${supported ? "" : "disabled"}>${C.restore}</button></div>
       <p class="popup-status" id="status" role="status">${data.connections.some((c) => c.protocol !== "typesafe") ? C.processingNotice : C.real.noConnection}</p>
     </section>
-    <section class="popup-features" aria-label="${P.features}" aria-describedby="feature-scope"><div id="feature-controls"></div><p class="popup-status" id="feature-scope">${P.siteOnly}</p><p class="popup-status" id="feature-status" role="status"></p></section>
+    <section class="popup-features" aria-label="${P.features}" aria-describedby="feature-scope"><div id="feature-controls"></div><p class="popup-status" id="feature-scope">${P.allSites}</p><p class="popup-status" id="feature-status" role="status"></p></section>
   </main>`;
 const settingsButton = root.querySelector<HTMLElement>("#settings")!;
-const settingsTips = new HoverTips(root, "#settings");
+const lightsButton = root.querySelector<HTMLButtonElement>("#website-lights")!;
+const popupTips = new HoverTips(root, "#settings, #website-lights");
 function updateSetupHint(
   settings: Pick<PublicSettings, "connections" | "defaultConnection">,
 ) {
   const needsSetup = !hasDefaultModel(settings);
   settingsButton.classList.toggle("model-setup-needed", needsSetup);
-  settingsTips.setHint(
+  popupTips.setHint(
     needsSetup ? settingsButton : null,
     C.real.configureModelHint,
   );
 }
 updateSetupHint(data);
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes.settings?.newValue)
-    updateSetupHint(changes.settings.newValue as PublicSettings);
+  if (area === "local" && changes.settings?.newValue) {
+    const settings = changes.settings.newValue as PublicSettings;
+    updateSetupHint(settings);
+    data.website = settings.website;
+    if (!featureBusy) renderFeatures();
+    renderLights();
+  }
 });
 const chosen = () =>
   data.actions.find(
@@ -88,9 +98,49 @@ function renderLanguages() {
   enhanceSelects(root);
   updateRunState();
 }
+function renderLights() {
+  const mode = resolveWebsite(data.website, hostname).lights;
+  const hint = P.lightsHint(
+    P.lightsModes[mode],
+    P.lightsModes[nextLightsMode(mode)],
+  );
+  lightsButton.disabled = !supported || lightsBusy;
+  lightsButton.dataset.mode = mode;
+  lightsButton.setAttribute("aria-label", hint);
+  lightsButton.setAttribute("aria-pressed", String(mode !== "off"));
+  lightsButton.setAttribute("aria-busy", String(lightsBusy));
+  lightsButton.innerHTML = icon(
+    mode === "off" ? "sun" : mode === "on" ? "moon" : "system",
+  );
+  popupTips.refresh();
+}
+async function cycleLights() {
+  if (!supported || lightsBusy || tab?.id === undefined) return;
+  const lights = nextLightsMode(resolveWebsite(data.website, hostname).lights);
+  const field = root.querySelector<HTMLElement>("#lights-status")!;
+  field.textContent = "";
+  lightsBusy = true;
+  renderLights();
+  try {
+    data.website = await request("website.update", {
+      tabId: tab.id,
+      patch: { lights },
+    });
+  } catch (caught) {
+    const error = modelError(caught);
+    field.textContent =
+      error.code === "permissionRequired"
+        ? C.real.lightsPermissionNeeded
+        : C.real.errors[error.code as keyof typeof C.real.errors] ||
+          error.message;
+  } finally {
+    lightsBusy = false;
+    renderLights();
+  }
+}
 function renderFeatures() {
   const effective = resolveWebsite(data.website, hostname);
-  const disabled = featureBusy || !supported ? "disabled" : "";
+  const disabled = featureBusy ? "disabled" : "";
   const controls = (["toolbar", "floating"] as const)
     .map(
       (key) => `<label class="popup-feature-row" data-feature-group="${key}">
@@ -102,7 +152,7 @@ function renderFeatures() {
     controls;
 }
 async function saveFeatures(patch: Pick<WebsitePatch, "toolbar" | "floating">) {
-  if (featureBusy || !supported) return;
+  if (featureBusy) return;
   featureBusy = true;
   // Preserve the checkbox's new state while saving instead of rebuilding it
   // from the previous snapshot. Failed saves render that saved snapshot again.
@@ -114,10 +164,7 @@ async function saveFeatures(patch: Pick<WebsitePatch, "toolbar" | "floating">) {
   const field = document.querySelector<HTMLElement>("#feature-status")!;
   field.textContent = "";
   try {
-    data.website = await request("website.update", {
-      tabId: tab.id!,
-      patch,
-    });
+    data.website = await request("website.update", { patch });
   } catch (caught) {
     const error = modelError(caught);
     field.textContent =
@@ -130,6 +177,8 @@ async function saveFeatures(patch: Pick<WebsitePatch, "toolbar" | "floating">) {
 }
 renderLanguages();
 renderFeatures();
+renderLights();
+lightsButton.addEventListener("click", () => void cycleLights());
 document.addEventListener("change", (event) => {
   const target = event.target as HTMLInputElement;
   if (target.dataset.feature) {
@@ -162,7 +211,6 @@ document.addEventListener("click", async (event) => {
         tabId: tab.id,
         actionId: chosen()!.id,
         scope: "body",
-        panel: true,
         translation:
           chosen()?.kind === "translate"
             ? {

@@ -163,6 +163,11 @@ const base = {
         description:
           "Auf normalen Webseiten verfügbar. Verwendet markierten Text oder ohne Auswahl die ganze Seite als Zitat. Erst nach Eingabe einer Frage beginnt die Antwort.",
       },
+      "text-translate": {
+        name: "Textübersetzung",
+        description:
+          "Öffne auf einer normalen Webseite das Übersetzungsfenster, um Text einzugeben oder einzufügen.",
+      },
     },
   },
   settings: "Einstellungen",
@@ -590,6 +595,10 @@ const full = {
     clearQuestionQuote: "Zitat entfernen",
     questionPlaceholder: "Was möchtest du fragen?",
     answerQuestion: "Antworten",
+    textTranslation: "Textübersetzung",
+    textTranslationPlaceholder: "Text zum Übersetzen eingeben oder einfügen.",
+    textTranslationEmpty: "Die Übersetzung erscheint hier.",
+    translateText: "Übersetzen",
     translatePage: "Diese Seite übersetzen",
     lightsEnabled: "Dunkelmodus: Ein",
     lightsDisabled: "Dunkelmodus: Aus",
@@ -741,6 +750,7 @@ const usage = {
   note: "Jede Zeile entspricht einer Modellanfrage; Stapel werden getrennt erfasst. Summen enthalten nur gemeldete Werte. Cache-Lese- und Schreibvorgänge zählen zur Eingabe und werden nicht doppelt addiert. OpenAI zählt Denken zur Ausgabe, Gemini meldet es separat. Gemeldete Gesamtwerte haben Vorrang. — bedeutet, dass kein Wert gemeldet wurde.",
   unreported: "Vom Dienst nicht gemeldet",
   sources: {
+    text: "Textübersetzung",
     connectionTest: "Verbindungstest",
     trial: "Testlauf",
     preview: "Webvorschau",
@@ -770,10 +780,13 @@ const usage = {
 };
 
 const popup = {
+  lightsModes: { off: "Originalseite", on: "Dunkel", system: "System" },
+  lightsHint: (current: string, next: string) =>
+    `Diese Website: ${current}. Klicken, um zu ${next} zu wechseln.`,
   currentPage: "Aktuelle Seite",
   process: "Inhalt verarbeiten",
   features: "Schnellwerkzeuge",
-  siteOnly: "Nur diese Website",
+  allSites: "Gilt für alle Websites",
   toolbar: "Textauswahlleiste",
   floating: "Schwebende Schaltfläche",
 };

@@ -38,7 +38,11 @@ module.exports = async ({
       "shortcuts",
     );
     const commands = await page.evaluate(() => chrome.commands.getAll());
-    const listedCommands = ["switch-recent-tab", "quick-question"];
+    const listedCommands = [
+      "switch-recent-tab",
+      "quick-question",
+      "text-translate",
+    ];
     assert.deepEqual(
       await page
         .locator("[data-command-binding]")
@@ -60,6 +64,10 @@ module.exports = async ({
     assert.equal(
       await actualShortcut("quick-question"),
       process.platform === "darwin" ? "⌥Q" : "Alt+Q",
+    );
+    assert.equal(
+      await actualShortcut("text-translate"),
+      process.platform === "darwin" ? "⌥T" : "Alt+T",
     );
     await page.reload();
     await binding("quick-question").waitFor();
@@ -181,16 +189,17 @@ module.exports = async ({
     const pagesBeforeBlocked = (
       await page.evaluate(() => chrome.tabs.query({}))
     ).length;
-    await page.evaluate(async () =>
-      globalThis.shortcutCommand(
-        "quick-question",
-        await chrome.tabs.getCurrent(),
-      ),
-    );
+    await page.evaluate(async () => {
+      for (const command of ["quick-question", "text-translate"])
+        await globalThis.shortcutCommand(
+          command,
+          await chrome.tabs.getCurrent(),
+        );
+    });
     assert.equal(
       (await page.evaluate(() => chrome.tabs.query({}))).length,
       pagesBeforeBlocked,
-      "Q&A on the extension page does not open another tab",
+      "Page tools on the extension page do not open another tab",
     );
     assert.equal(await page.locator("[data-pagework=ui]").count(), 0);
     for (const url of [
@@ -204,14 +213,13 @@ module.exports = async ({
       );
       const count = (await page.evaluate(() => chrome.tabs.query({}))).length;
       try {
-        await page.evaluate(
-          async (id) =>
-            globalThis.shortcutCommand(
-              "quick-question",
+        await page.evaluate(async (id) => {
+          for (const command of ["quick-question", "text-translate"])
+            await globalThis.shortcutCommand(
+              command,
               await chrome.tabs.get(id),
-            ),
-          tab.id,
-        );
+            );
+        }, tab.id);
         assert.equal(
           (await page.evaluate(() => chrome.tabs.query({}))).length,
           count,
@@ -235,14 +243,11 @@ module.exports = async ({
         (await chrome.tabs.query({})).find((tab) => tab.url === url).id,
       source.url(),
     );
-    const trigger = () =>
+    const trigger = (command = "quick-question") =>
       page.evaluate(
-        async (id) =>
-          globalThis.shortcutCommand(
-            "quick-question",
-            await chrome.tabs.get(id),
-          ),
-        tabId,
+        async ({ id, command }) =>
+          globalThis.shortcutCommand(command, await chrome.tabs.get(id)),
+        { id: tabId, command },
       );
     const selected = await source.locator("#first").innerText();
     await source.locator("#first").evaluate((node) => {
@@ -251,10 +256,90 @@ module.exports = async ({
       getSelection().removeAllRanges();
       getSelection().addRange(range);
     });
-    const before = calls.length;
-    await trigger();
+    let before = calls.length;
+    const features = stored.settings.website;
+    await page.evaluate(() =>
+      chrome.runtime.sendMessage({
+        type: "website.update",
+        patch: { toolbar: false, floating: false },
+      }),
+    );
+    await trigger("text-translate");
     if (coldSource) await require("./inspect-ui.cjs").inspectUI(source);
     const host = source.locator("[data-pagework=ui]");
+    const textPanel = host.locator("#text-translation");
+    const textInput = textPanel.locator("textarea");
+    await textPanel.waitFor();
+    assert(await host.locator("#dock").isHidden());
+    assert(await host.locator("#selection").isHidden());
+    assert.equal(
+      await textInput.inputValue(),
+      "",
+      "The shortcut does not quote the page selection",
+    );
+    assert(
+      await textInput.evaluate(
+        (node) => node.getRootNode().activeElement === node,
+      ),
+    );
+    assert.equal(
+      calls.length,
+      before,
+      "Opening text translation never sends a request",
+    );
+    await source.keyboard.type("A draft to keep.");
+    await textPanel
+      .locator("[data-text-language=targetLanguage]")
+      .selectOption("fr");
+    await trigger("text-translate");
+    assert.equal(await textInput.inputValue(), "A draft to keep.");
+    assert.equal(
+      await textPanel
+        .locator("[data-text-language=targetLanguage]")
+        .inputValue(),
+      "fr",
+    );
+    assert(
+      await textInput.evaluate(
+        (node) => node.getRootNode().activeElement === node,
+      ),
+    );
+    assert.equal(calls.length, before);
+    await source.keyboard.press("Escape");
+    assert(await textPanel.isHidden());
+    await trigger("text-translate");
+    await textPanel.waitFor();
+    assert.equal(await textInput.inputValue(), "");
+    await source.keyboard.type("Shortcut text translation. SHORTCUT_TEXT");
+    await textPanel.locator("[data-text-command=run]").click();
+    await textPanel
+      .locator(".output")
+      .filter({ hasText: "SHORTCUT_TEXT" })
+      .waitFor();
+    assert.equal(calls.length, before + 1);
+    const textRequest = JSON.stringify(calls.at(-1).body);
+    assert(!textRequest.includes(selected), "Only typed text is sent");
+    await textPanel.locator("[data-text-command=close]").click();
+    await page.evaluate(
+      (website) =>
+        chrome.runtime.sendMessage({
+          type: "website.update",
+          patch: {
+            toolbar: website.toolbar ?? true,
+            floating: website.floating ?? true,
+          },
+        }),
+      features,
+    );
+    before = calls.length;
+    // Restore the page selection that clicking the translation input cleared.
+    await source.locator("#first").evaluate((node) => {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      getSelection().removeAllRanges();
+      getSelection().addRange(range);
+    });
+    await trigger();
     await host.locator("#result #question").waitFor();
     assert.equal(await host.locator("#question-quote").innerText(), selected);
     assert.equal(
@@ -348,7 +433,7 @@ module.exports = async ({
       "Whole-page content stays cleared when the question is submitted",
     );
     console.log(
-      "PASS: shortcuts navigation/deep link, actual bindings and settings refresh, responsive themes; Q&A command cold-page entry, selection-first/full-page quotes, focused composer and explicit submission.",
+      "PASS: shortcuts navigation/deep link, actual bindings and settings refresh, responsive themes; text translation cold-page entry, hidden dock, draft preservation and typed-only submission; Q&A command cold-page entry, selection-first/full-page quotes, focused composer and explicit submission.",
     );
   } finally {
     if (settingsFocusSession) await settingsFocusSession.detach();

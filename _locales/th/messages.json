@@ -13,5 +13,8 @@
   },
   "quickQuestion": {
     "message": "เปิดถามตอบด่วน"
+  },
+  "textTranslation": {
+    "message": "เปิดการแปลข้อความ"
   }
 }

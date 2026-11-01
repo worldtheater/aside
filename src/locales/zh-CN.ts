@@ -137,6 +137,10 @@ const base = {
         description:
           "仅在普通网页中使用。优先引用选中文字，未选中时引用整页；输入问题后再回答。",
       },
+      "text-translate": {
+        name: "文本翻译",
+        description: "在普通网页中打开文本翻译面板，输入或粘贴要翻译的文字。",
+      },
     },
   },
   settings: "设置",
@@ -529,6 +533,10 @@ const full = {
     clearQuestionQuote: "清空引文",
     questionPlaceholder: "输入你想问的问题…",
     answerQuestion: "回答",
+    textTranslation: "文本翻译",
+    textTranslationPlaceholder: "输入或粘贴要翻译的文字。",
+    textTranslationEmpty: "译文将在这里显示",
+    translateText: "翻译",
     translatePage: "翻译当前网页",
     lightsEnabled: "暗色模式-开",
     lightsDisabled: "暗色模式-关",
@@ -653,6 +661,7 @@ const usage = {
   note: "每条记录对应一次模型请求，分批处理会产生多条记录。汇总仅包含已收到的用量；缓存命中和写入已计入输入，总计不重复相加。OpenAI 推理量已包含在输出中，Gemini 则单列；总计优先采用服务上报值。— 表示服务未返回该项。",
   unreported: "服务未上报",
   sources: {
+    text: "文本翻译",
     connectionTest: "连接测试",
     trial: "试运行",
     preview: "网页预览",
@@ -678,10 +687,13 @@ const usage = {
 };
 
 const popup = {
+  lightsModes: { off: "原网页", on: "暗色", system: "跟随系统" },
+  lightsHint: (current: string, next: string) =>
+    `当前网站：${current}；点击切换为${next}`,
   currentPage: "当前网页",
   process: "处理内容",
   features: "快捷工具",
-  siteOnly: "仅对当前网站生效",
+  allSites: "对所有网站生效",
   toolbar: "划词工具条",
   floating: "悬浮球",
 };

@@ -158,6 +158,11 @@ const base = {
         description:
           "Normal web sayfalarında kullanılabilir. Seçili metin, seçim yoksa tüm sayfa alıntılanır. Yanıt almak için bir soru yazın.",
       },
+      "text-translate": {
+        name: "Metin çevirisi",
+        description:
+          "Normal bir web sayfasında çeviri panelini açıp metin yazın veya yapıştırın.",
+      },
     },
   },
   settings: "Ayarlar",
@@ -576,6 +581,10 @@ const full = {
     clearQuestionQuote: "Alıntıyı temizle",
     questionPlaceholder: "Ne sormak istersiniz?",
     answerQuestion: "Yanıtla",
+    textTranslation: "Metin çevirisi",
+    textTranslationPlaceholder: "Çevrilecek metni yazın veya yapıştırın.",
+    textTranslationEmpty: "Çeviri burada görünecek.",
+    translateText: "Çevir",
     translatePage: "Bu sayfayı çevir",
     lightsEnabled: "Koyu mod: Açık",
     lightsDisabled: "Koyu mod: Kapalı",
@@ -719,6 +728,7 @@ const usage = {
   note: "Her satır bir model isteğidir; gruplar ayrı kayıtlar oluşturur. Toplamlar yalnızca alınan kullanım verilerini içerir. Önbellek okuma ve yazmaları girdiye dahildir, iki kez sayılmaz. OpenAI akıl yürütmeyi çıktıya dahil eder; Gemini ayrı bildirir. Toplamlarda hizmetin bildirdiği değerler önceliklidir. — hizmetin değer bildirmediği anlamına gelir.",
   unreported: "Hizmet tarafından bildirilmedi",
   sources: {
+    text: "Metin çevirisi",
     connectionTest: "Bağlantı testi",
     trial: "Deneme",
     preview: "Web önizlemesi",
@@ -748,10 +758,13 @@ const usage = {
 };
 
 const popup = {
+  lightsModes: { off: "Özgün sayfa", on: "Koyu", system: "Sistem" },
+  lightsHint: (current: string, next: string) =>
+    `Bu site: ${current}. ${next} moduna geçmek için tıklayın.`,
   currentPage: "Geçerli sayfa",
   process: "İçeriği işle",
   features: "Hızlı araçlar",
-  siteOnly: "Yalnızca bu site",
+  allSites: "Tüm web sitelerinde geçerli",
   toolbar: "Seçim çubuğu",
   floating: "Yüzen düğme",
 };

@@ -152,6 +152,11 @@ const base = {
         description:
           "Available on regular web pages. Quote selected text, or the whole page if nothing is selected. Enter a question to start the answer.",
       },
+      "text-translate": {
+        name: "Text translation",
+        description:
+          "Available on regular web pages. Open the translation panel to type or paste text.",
+      },
     },
   },
   settings: "Settings",
@@ -547,6 +552,10 @@ const full = {
     clearQuestionQuote: "Clear quote",
     questionPlaceholder: "What would you like to ask?",
     answerQuestion: "Answer",
+    textTranslation: "Text translation",
+    textTranslationPlaceholder: "Type or paste text to translate.",
+    textTranslationEmpty: "Your translation will appear here.",
+    translateText: "Translate",
     translatePage: "Translate this page",
     lightsEnabled: "Dark mode: On",
     lightsDisabled: "Dark mode: Off",
@@ -688,6 +697,7 @@ const usage = {
   note: "Each row is one model request; batches create separate records. Totals include received usage only. Cache reads and writes are included in input and are not added twice. OpenAI includes reasoning in output; Gemini reports it separately. Totals prefer service-reported values. — means the service did not report a value.",
   unreported: "Not reported by the service",
   sources: {
+    text: "Text translation",
     connectionTest: "Connection test",
     trial: "Test run",
     preview: "Web preview",
@@ -713,10 +723,13 @@ const usage = {
 };
 
 const popup = {
+  lightsModes: { off: "Original page", on: "Dark", system: "System" },
+  lightsHint: (current: string, next: string) =>
+    `This site: ${current}. Click to switch to ${next}.`,
   currentPage: "Current page",
   process: "Process content",
   features: "Quick tools",
-  siteOnly: "This site only",
+  allSites: "Applies to all websites",
   toolbar: "Selection toolbar",
   floating: "Floating button",
 };

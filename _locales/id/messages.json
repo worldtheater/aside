@@ -13,5 +13,8 @@
   },
   "quickQuestion": {
     "message": "Buka tanya jawab cepat"
+  },
+  "textTranslation": {
+    "message": "Buka terjemahan teks"
   }
 }

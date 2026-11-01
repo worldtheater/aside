@@ -13,5 +13,8 @@
   },
   "quickQuestion": {
     "message": "Hızlı soru-cevabı aç"
+  },
+  "textTranslation": {
+    "message": "Metin çevirisini aç"
   }
 }

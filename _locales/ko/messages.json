@@ -13,5 +13,8 @@
   },
   "quickQuestion": {
     "message": "빠른 질문 열기"
+  },
+  "textTranslation": {
+    "message": "텍스트 번역 열기"
   }
 }

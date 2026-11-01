@@ -164,7 +164,7 @@ module.exports = async ({ page, context, origin, artifacts }) => {
     await popup.locator("[data-feature=toolbar]").uncheck();
     await page.waitForFunction(async () => {
       const r = await chrome.runtime.sendMessage({ type: "snapshot" });
-      return r.value.website.sites["127.0.0.1"]?.toolbar === false;
+      return r.value.website.toolbar === false;
     });
     await source.locator("#first").evaluate((node) => {
       const range = document.createRange();
@@ -177,7 +177,81 @@ module.exports = async ({ page, context, origin, artifacts }) => {
     assert(await bar.isHidden());
     await popup.locator("[data-feature=floating]").uncheck();
     await dock.waitFor({ state: "hidden" });
-    // Both reopening the popup and navigating within this site remember the switches.
+    // The website button stays available with both tools hidden and no model.
+    const lightsButton = popup.locator("#website-lights");
+    await page.evaluate(() =>
+      chrome.runtime.sendMessage({
+        type: "settings.save",
+        patch: { defaultConnection: null },
+      }),
+    );
+    assert(await lightsButton.isEnabled());
+    assert.equal(await lightsButton.getAttribute("data-mode"), "off");
+    const worker = context
+      .serviceWorkers()
+      .find((worker) => worker.url().endsWith("/background.js"));
+    await worker.evaluate(() => {
+      globalThis.originalPermissionsRequest = chrome.permissions.request;
+      chrome.permissions.request = async () => false;
+    });
+    try {
+      await lightsButton.click();
+      await popup
+        .locator("#lights-status")
+        .filter({ hasText: "开启暗色模式需要读取网页样式" })
+        .waitFor();
+      assert.equal(await lightsButton.getAttribute("data-mode"), "off");
+      assert.equal((await status()).mode, "off");
+    } finally {
+      await worker.evaluate(() => {
+        chrome.permissions.request = globalThis.originalPermissionsRequest;
+        delete globalThis.originalPermissionsRequest;
+      });
+    }
+    const waitMode = (mode) =>
+      popup.waitForFunction((mode) => {
+        const button = document.querySelector("#website-lights");
+        return button.dataset.mode === mode && !button.disabled;
+      }, mode);
+    await lightsButton.click();
+    await waitMode("on");
+    await waitDark();
+    assert.equal(await popup.locator("#lights-status").textContent(), "");
+    assert(await dock.isHidden());
+    await source.bringToFront();
+    await popup.reload();
+    await waitMode("on");
+    await source.emulateMedia({ colorScheme: "light" });
+    await lightsButton.click();
+    await waitMode("system");
+    await source.waitForFunction(
+      () => !document.documentElement.dataset.darkreaderMode,
+    );
+    await source.emulateMedia({ colorScheme: "dark" });
+    await waitDark();
+    await lightsButton.click();
+    await waitMode("off");
+    await source.waitForFunction(
+      () => !document.documentElement.dataset.darkreaderMode,
+    );
+    await source.emulateMedia({ colorScheme: null });
+    // Changes from the other entry point update the popup without reopening it.
+    await page.evaluate(
+      (defaultConnection) =>
+        chrome.runtime.sendMessage({
+          type: "settings.save",
+          patch: { defaultConnection },
+        }),
+      original.defaultConnection,
+    );
+    await update({ lights: "on" });
+    await waitMode("on");
+    await lightsButton.click();
+    await waitMode("system");
+    assert.equal((await status()).mode, "system");
+    await lightsButton.click();
+    await waitMode("off");
+    // Both reopening the popup and navigating remember the global switches.
     await source.reload();
     await dock.waitFor({ state: "attached" });
     assert(await dock.isHidden());
@@ -214,6 +288,7 @@ module.exports = async ({ page, context, origin, artifacts }) => {
         '<g fill="var(--series-a)"><rect id="series-a" x="20" y="50" width="50" height="150"/></g><g fill="var(--series-b)"><rect id="series-b" x="20" y="30" width="50" height="20"/></g>';
       document.querySelector("main").append(chart);
     });
+    const unavailableBefore = unavailableReads;
     const unavailableLog = source.waitForEvent("console", {
       predicate: (message) =>
         message.text().includes("Lights resource HTTP 418"),
@@ -231,7 +306,7 @@ module.exports = async ({ page, context, origin, artifacts }) => {
         .includes("https://styles.example.com/unavailable.css"),
     );
     assert(!loggedResource.text().includes("private-value"));
-    assert.equal(unavailableReads, 1);
+    assert.equal(unavailableReads, unavailableBefore + 1);
     await waitDark();
     await source.evaluate(() => {
       scrollBy(0, 10);
@@ -241,7 +316,7 @@ module.exports = async ({ page, context, origin, artifacts }) => {
     await source.waitForTimeout(350);
     assert.equal(
       unavailableReads,
-      1,
+      unavailableBefore + 1,
       "Scrolling and DOM updates do not retry the failed resource",
     );
     assert.equal(
@@ -531,13 +606,58 @@ module.exports = async ({ page, context, origin, artifacts }) => {
       "test-owner",
     );
     assert.equal(await source.locator("style.darkreader").count(), 0);
-    // A different hostname keeps the default tools when this site disables them.
-    await update({ toolbar: false, floating: false, lights: "off" });
+    // Existing and newly loaded pages share the tool switches across hostnames.
     const other = await context.newPage();
     await other.goto(origin.replace("127.0.0.1", "localhost") + "/other-site");
-    await other.locator("[data-pagework=ui]").waitFor({ state: "attached" });
-    await other.locator("[data-pagework=ui]").locator("#dock").waitFor();
+    const otherHost = other.locator("[data-pagework=ui]");
+    const otherDock = otherHost.locator("#dock");
+    const otherBar = otherHost.locator("#selection");
+    const selectOther = async () => {
+      await other.locator("#first").evaluate((node) => {
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        getSelection().removeAllRanges();
+        getSelection().addRange(range);
+      });
+      await other.mouse.move(45, 150);
+      await other.mouse.up();
+    };
+    await otherDock.waitFor();
+    await selectOther();
+    await otherBar.waitFor();
+    await update({ toolbar: false, floating: false, lights: "off" });
+    await dock.waitFor({ state: "hidden" });
+    await otherDock.waitFor({ state: "hidden" });
+    await otherBar.waitFor({ state: "hidden" });
+    await other.reload();
+    await otherHost.waitFor({ state: "attached" });
+    assert(await otherDock.isHidden());
     assert.equal(await other.locator(".darkreader").count(), 0);
+    await update({ toolbar: true, floating: true, lights: "on" });
+    await dock.waitFor();
+    await otherDock.waitFor();
+    await selectOther();
+    await otherBar.waitFor();
+    assert.equal(
+      await other.locator(".darkreader").count(),
+      0,
+      "Dark mode remains scoped to its own hostname",
+    );
+    await update({ lights: "off" });
+    // Page content still cannot use the endpoint to change global preferences.
+    const [{ result }] = await page.evaluate(
+      (tabId) =>
+        chrome.scripting.executeScript({
+          target: { tabId },
+          func: () =>
+            chrome.runtime.sendMessage({
+              type: "website.update",
+              patch: { floating: false },
+            }),
+        }),
+      tabId,
+    );
+    assert.equal(result.error, "notAllowed");
     await other.close();
     await source
       .locator('meta[name="darkreader"]')
@@ -581,10 +701,7 @@ module.exports = async ({ page, context, origin, artifacts }) => {
       for (const on of [false, true]) {
         await popup.locator("[data-feature=toolbar]").click();
         await popup.waitForFunction(() => Boolean(featureTest.reply));
-        assert.equal(
-          (await snapshot()).website.sites["127.0.0.1"]?.toolbar ?? true,
-          on,
-        );
+        assert.equal((await snapshot()).website.toolbar ?? true, on);
         assert.equal(
           await popup.locator("[data-feature=toolbar]").isChecked(),
           on,
@@ -614,10 +731,7 @@ module.exports = async ({ page, context, origin, artifacts }) => {
         await popup.locator("[data-feature=toolbar]").isChecked(),
         "Failed saves restore the last saved state",
       );
-      assert.equal(
-        (await snapshot()).website.sites["127.0.0.1"]?.toolbar ?? true,
-        true,
-      );
+      assert.equal((await snapshot()).website.toolbar ?? true, true);
       assert(
         (await popup.locator("#feature-status").textContent()).trim(),
         "Save errors remain visible",
@@ -666,11 +780,34 @@ module.exports = async ({ page, context, origin, artifacts }) => {
     await internal.bringToFront();
     await popup.reload();
     await popup.locator("[data-feature=toolbar]").waitFor();
-    for (const key of ["toolbar", "floating"])
-      assert(await popup.locator(`[data-feature=${key}]`).isDisabled());
+    assert(
+      await popup.locator("#website-lights").isDisabled(),
+      "Internal pages cannot switch website dark mode",
+    );
+    for (const key of ["toolbar", "floating"]) {
+      assert(await popup.locator(`[data-feature=${key}]`).isEnabled());
+      await popup.locator(`[data-feature=${key}]`).uncheck();
+      await popup.waitForFunction(
+        (key) => !document.querySelector(`[data-feature=${key}]`).disabled,
+        key,
+      );
+      assert.equal(
+        (await snapshot()).website[key],
+        false,
+        "Global switches work even when the active tab is unsupported",
+      );
+    }
+    await dock.waitFor({ state: "hidden" });
+    await update({ toolbar: true, floating: true });
+    await popup.waitForFunction(() =>
+      ["toolbar", "floating"].every(
+        (key) => document.querySelector(`[data-feature=${key}]`).checked,
+      ),
+    );
+    await dock.waitFor();
     await internal.close();
     console.log(
-      "PASS: popup hierarchy, live toolbar/dock toggles, remembered independent site switches, local dark engine, cross-origin CSS, strict CSP/CSSOM, native dark detection, parent-site iframe policy, external-engine coexistence, dynamic DOM, image preservation and restore.",
+      "PASS: popup hierarchy, live toolbar/dock toggles, remembered global switches, three-state popup lights without a model/dock, permission refusal and linked controls, local dark engine, cross-origin CSS, strict CSP/CSSOM, native dark detection, parent-site iframe policy, external-engine coexistence, dynamic DOM, image preservation and restore.",
     );
   } catch (error) {
     console.log(

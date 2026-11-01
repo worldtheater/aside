@@ -164,6 +164,11 @@ const base = {
         description:
           "Disponible sur les pages web classiques. Cite le texte sélectionné, ou la page entière sans sélection. Saisissez une question pour lancer la réponse.",
       },
+      "text-translate": {
+        name: "Traduction de texte",
+        description:
+          "Sur une page web, ouvrez le panneau de traduction pour saisir ou coller du texte.",
+      },
     },
   },
   settings: "Paramètres",
@@ -589,6 +594,10 @@ const full = {
     clearQuestionQuote: "Effacer la citation",
     questionPlaceholder: "Que souhaitez-vous demander ?",
     answerQuestion: "Répondre",
+    textTranslation: "Traduction de texte",
+    textTranslationPlaceholder: "Saisissez ou collez le texte à traduire.",
+    textTranslationEmpty: "Votre traduction apparaîtra ici.",
+    translateText: "Traduire",
     translatePage: "Traduire cette page",
     lightsEnabled: "Mode sombre : activé",
     lightsDisabled: "Mode sombre : désactivé",
@@ -737,6 +746,7 @@ const usage = {
   note: "Chaque ligne correspond à une requête ; les lots sont enregistrés séparément. Seuls les usages reçus sont totalisés. Les lectures et écritures du cache sont incluses dans l’entrée, sans double comptage. OpenAI inclut le raisonnement dans la sortie ; Gemini le déclare séparément. Le total déclaré par le service est prioritaire. — indique une valeur non fournie.",
   unreported: "Non communiqué par le service",
   sources: {
+    text: "Traduction de texte",
     connectionTest: "Test de connexion",
     trial: "Essai",
     preview: "Aperçu web",
@@ -762,10 +772,13 @@ const usage = {
 };
 
 const popup = {
+  lightsModes: { off: "Page d’origine", on: "Sombre", system: "Système" },
+  lightsHint: (current: string, next: string) =>
+    `Ce site : ${current}. Cliquez pour passer à ${next}.`,
   currentPage: "Page actuelle",
   process: "Traiter le contenu",
   features: "Outils rapides",
-  siteOnly: "Ce site uniquement",
+  allSites: "S’applique à tous les sites",
   toolbar: "Barre de sélection",
   floating: "Bouton flottant",
 };

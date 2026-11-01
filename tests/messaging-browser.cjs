@@ -178,6 +178,17 @@ module.exports = async ({ page, context, origin, stalledSource }) => {
         tabId,
       );
     await page.evaluate(
+      (website) =>
+        chrome.runtime.sendMessage({
+          type: "website.update",
+          patch: {
+            toolbar: website.toolbar ?? null,
+            floating: website.floating ?? null,
+          },
+        }),
+      original.website,
+    );
+    await page.evaluate(
       (original) =>
         chrome.runtime.sendMessage({
           type: "settings.save",

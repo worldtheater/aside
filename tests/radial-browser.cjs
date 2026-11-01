@@ -87,7 +87,7 @@ module.exports = async ({
       "page-translate",
       "toggle-lights",
       "quick-question",
-      "dock-pin",
+      "text-translate",
     ],
   );
   const tabId = await page.evaluate(
@@ -256,13 +256,29 @@ module.exports = async ({
       .getAttribute("aria-pressed"),
     "true",
   );
-  // The popup contains quick-tool switches only. Lights remains in the dock.
+  // The popup keeps global tool switches separate from the per-site lights button.
   const popup = await context.newPage();
   await source.bringToFront();
   await popup.goto(page.url().split("/").slice(0, 3).join("/") + "/popup.html");
   await popup.locator("#feature-controls").waitFor();
   assert.equal(await popup.locator("[data-feature=lights]").count(), 0);
   assert.equal(await popup.locator("[data-feature-group]").count(), 2);
+  assert.equal(
+    await popup.locator("#website-lights").getAttribute("data-mode"),
+    "on",
+  );
+  await popup.locator("#website-lights").click();
+  await waitLights(false, "system");
+  await lights.click();
+  await waitLights(false);
+  await popup.waitForFunction(
+    () => document.querySelector("#website-lights").dataset.mode === "off",
+  );
+  await lights.click();
+  await waitLights(true);
+  await popup.waitForFunction(
+    () => document.querySelector("#website-lights").dataset.mode === "on",
+  );
   await popup.close();
   await source.bringToFront();
   await lights.click();
@@ -314,13 +330,12 @@ module.exports = async ({
   await source.screenshot({
     path: path.join(artifacts, "radial-lights-off-mobile.png"),
   });
-  // Pinned radial controls remain expanded when clicking ordinary page content.
-  await radial.locator("[data-op=dock-pin]").click();
-  await source.mouse.click(15, 500);
-  assert(await radial.evaluate((n) => n.classList.contains("open")));
-  assert.equal(await dock.getAttribute("aria-expanded"), "true");
-  await radial.locator("[data-op=dock-pin]").click();
+  // The menu now opens a text translator instead of pinning itself.
+  await radial.locator("[data-op=text-translate]").click();
+  await host.locator("#text-translation").waitFor();
+  assert.equal(await dock.getAttribute("aria-expanded"), "false");
   await source.keyboard.press("Escape");
+  await host.locator("#text-translation").waitFor({ state: "hidden" });
   // Keep every radial action reachable near viewport corners.
   for (const [x, y] of [
     [15, 320],

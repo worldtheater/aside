@@ -162,6 +162,11 @@ const base = {
         description:
           "Disponible en páginas web normales. Cita el texto seleccionado o toda la página si no hay selección. Escribe una pregunta para iniciar la respuesta.",
       },
+      "text-translate": {
+        name: "Traducción de texto",
+        description:
+          "En una página web normal, abre el panel de traducción para escribir o pegar texto.",
+      },
     },
   },
   settings: "Ajustes",
@@ -587,6 +592,10 @@ const full = {
     clearQuestionQuote: "Borrar cita",
     questionPlaceholder: "¿Qué te gustaría preguntar?",
     answerQuestion: "Responder",
+    textTranslation: "Traducción de texto",
+    textTranslationPlaceholder: "Escribe o pega el texto que quieras traducir.",
+    textTranslationEmpty: "La traducción aparecerá aquí.",
+    translateText: "Traducir",
     translatePage: "Traducir esta página",
     lightsEnabled: "Modo oscuro: activado",
     lightsDisabled: "Modo oscuro: desactivado",
@@ -737,6 +746,7 @@ const usage = {
   note: "Cada fila es una solicitud; los lotes se registran por separado. Los totales incluyen solo el uso recibido. Las lecturas y escrituras de caché se incluyen en la entrada y no se suman dos veces. OpenAI incluye el razonamiento en la salida; Gemini lo informa por separado. Se prioriza el total del servicio. — indica que no se informó un valor.",
   unreported: "No informado por el servicio",
   sources: {
+    text: "Traducción de texto",
     connectionTest: "Prueba de conexión",
     trial: "Prueba",
     preview: "Vista previa web",
@@ -762,10 +772,13 @@ const usage = {
 };
 
 const popup = {
+  lightsModes: { off: "Página original", on: "Oscuro", system: "Sistema" },
+  lightsHint: (current: string, next: string) =>
+    `Este sitio: ${current}. Haz clic para cambiar a ${next}.`,
   currentPage: "Página actual",
   process: "Procesar contenido",
   features: "Herramientas rápidas",
-  siteOnly: "Solo este sitio",
+  allSites: "Se aplica a todos los sitios web",
   toolbar: "Barra de selección",
   floating: "Botón flotante",
 };

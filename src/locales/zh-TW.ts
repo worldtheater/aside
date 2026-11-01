@@ -141,6 +141,10 @@ const base = {
         description:
           "僅適用於一般網頁。優先引用選取的文字，未選取時引用整頁；輸入問題後才開始回答。",
       },
+      "text-translate": {
+        name: "文字翻譯",
+        description: "在一般網頁中開啟文字翻譯面板，輸入或貼上要翻譯的文字。",
+      },
     },
   },
   settings: "設定",
@@ -535,6 +539,10 @@ const full = {
     clearQuestionQuote: "清除引文",
     questionPlaceholder: "輸入想問的問題…",
     answerQuestion: "回答",
+    textTranslation: "文字翻譯",
+    textTranslationPlaceholder: "輸入或貼上要翻譯的文字。",
+    textTranslationEmpty: "譯文將在這裡顯示",
+    translateText: "翻譯",
     translatePage: "翻譯此網頁",
     lightsEnabled: "暗色模式：開啟",
     lightsDisabled: "暗色模式：關閉",
@@ -661,6 +669,7 @@ const usage = {
   note: "每列代表一次模型請求；分批處理會分別記錄。總量只包含已收到的用量。快取讀寫已計入輸入，不重複加總。OpenAI 的推理量包含於輸出，Gemini 則分開回報。總計優先使用服務回報值。「—」表示服務未回報該數值。",
   unreported: "服務未回報",
   sources: {
+    text: "文字翻譯",
     connectionTest: "連線測試",
     trial: "試執行",
     preview: "網頁預覽",
@@ -686,10 +695,13 @@ const usage = {
 };
 
 const popup = {
+  lightsModes: { off: "原網頁", on: "深色", system: "跟隨系統" },
+  lightsHint: (current: string, next: string) =>
+    `目前網站：${current}；點擊切換為${next}`,
   currentPage: "目前網頁",
   process: "處理內容",
   features: "快速工具",
-  siteOnly: "僅適用於目前網站",
+  allSites: "套用至所有網站",
   toolbar: "劃詞工具列",
   floating: "懸浮按鈕",
 };

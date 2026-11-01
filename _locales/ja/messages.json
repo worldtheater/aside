@@ -13,5 +13,8 @@
   },
   "quickQuestion": {
     "message": "クイック質問を開く"
+  },
+  "textTranslation": {
+    "message": "テキスト翻訳を開く"
   }
 }
