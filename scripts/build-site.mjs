@@ -90,6 +90,7 @@ for (const language of languages) {
       '<a href="https://github.com/darkreader/darkreader">Dark Reader</a>',
     tabsShortcut: "<kbd>Alt</kbd> + <kbd>W</kbd>",
     qaShortcut: "<kbd>Alt</kbd> + <kbd>Q</kbd>",
+    textShortcut: "<kbd>Alt</kbd> + <kbd>T</kbd>",
     ollamaLink:
       '<a href="https://docs.ollama.com/api/openai-compatibility">Ollama</a>',
     privacyLink: `<a href="${prefix}privacy.html">${escape(copy.privacyRead)}</a>`,

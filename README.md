@@ -29,7 +29,7 @@ After installing, open Aside’s **Settings → Model connections**, add your mo
 
 Alternatively, load the packaged extension from GitHub Releases. No Node.js is required.
 
-1. [Download Aside 0.1.2](https://github.com/worldtheater/aside/releases/download/v0.1.2/aside-0.1.2.zip) from GitHub Releases. Use the extension ZIP, not the automatically generated “Source code” archive.
+1. [Download Aside 0.1.4](https://github.com/worldtheater/aside/releases/download/v0.1.4/aside-0.1.4.zip) from GitHub Releases. Use the extension ZIP, not the automatically generated “Source code” archive.
 2. Extract the ZIP to a permanent folder.
 3. Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the extracted folder containing `manifest.json`.
 4. Open Aside’s **Settings**, add your service URL, API key, and protocol in **Model connections**, test the connection, choose a model, and save.
@@ -117,7 +117,7 @@ The public `key` in `manifest.json` keeps the extension ID consistent across sou
 ```sh
 npm test               # Type checking, build, and core tests
 npm run test:browser   # Browser regression tests using local Chrome
-npm run package        # Create artifacts/aside-0.1.2.zip; requires Python 3
+npm run package        # Create artifacts/aside-0.1.4.zip; requires Python 3
 ```
 
 Browser tests use isolated profiles and local mock model services. They do not read your personal Chrome profile or call paid models. Install Google Chrome locally, or set `CHROME_PATH` to a custom executable path.
