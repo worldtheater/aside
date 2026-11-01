@@ -270,6 +270,7 @@ module.exports = async ({
     const textPanel = host.locator("#text-translation");
     const textInput = textPanel.locator("textarea");
     await textPanel.waitFor();
+    const shortcutTextBounds = await textPanel.boundingBox();
     assert(await host.locator("#dock").isHidden());
     assert(await host.locator("#selection").isHidden());
     assert.equal(
@@ -341,7 +342,23 @@ module.exports = async ({
     });
     await trigger();
     await host.locator("#result #question").waitFor();
-    assert.equal(await host.locator("#question-quote").innerText(), selected);
+    const questionBounds = await host.locator("#result").boundingBox();
+    assert(
+      Math.abs(
+        questionBounds.x +
+          questionBounds.width -
+          (shortcutTextBounds.x + shortcutTextBounds.width),
+      ) < 1 &&
+        Math.abs(
+          questionBounds.y +
+            questionBounds.height -
+            (shortcutTextBounds.y + shortcutTextBounds.height),
+        ) < 1,
+      "Both keyboard shortcuts open their panels at the same bottom-right anchor",
+    );
+    assert.equal(await host.locator("#question-quote").count(), 0);
+    assert.equal(questionBounds.width, shortcutTextBounds.width);
+    assert.equal(questionBounds.height, shortcutTextBounds.height);
     assert.equal(
       await host.locator("#result .header strong").innerText(),
       "快问快答",
@@ -363,13 +380,14 @@ module.exports = async ({
     });
     await host
       .locator("#question-input")
-      .fill("Explain this selected passage. SHORTCUT_SELECTION");
+      .fill("Why do leaves change color? SHORTCUT_SELECTION");
     await host.locator("#question-input").press("Control+Enter");
     await host
       .locator("#output")
       .filter({ hasText: "SHORTCUT_SELECTION" })
       .waitFor();
     assert.equal(calls.length, before + 1);
+    assert(!JSON.stringify(calls.at(-1).body).includes(selected));
 
     await host.locator('[data-op="close-result"]').click();
     await source.evaluate(() => {
@@ -382,58 +400,23 @@ module.exports = async ({
     });
     await trigger();
     await host.locator("#result #question").waitFor();
-    const quote = await host.locator("#question-quote").innerText();
-    assert(quote.includes(selected));
-    assert(quote.includes(await source.locator("#second").innerText()));
-    assert(
-      quote.includes("OFFSCREEN_SHORTCUT_REFERENCE"),
-      "Whole-page Q&A includes content below the viewport",
-    );
+    assert.equal(await host.locator("#question-quote").count(), 0);
     assert.equal(await host.locator("#question-input").inputValue(), "");
     assert.equal(calls.length, before + 1);
     await host
       .locator("#question-input")
-      .fill("Summarize the quoted page. SHORTCUT_PAGE");
+      .fill("Why does ice float? SHORTCUT_PAGE");
     await host.locator('[data-op="question-run"]').click();
     await host
       .locator("#output")
       .filter({ hasText: "SHORTCUT_PAGE" })
       .waitFor();
     assert.equal(calls.length, before + 2);
-    assert(
-      JSON.stringify(calls.at(-1).body).includes(
-        "OFFSCREEN_SHORTCUT_REFERENCE",
-      ),
-    );
-    await host.locator('[data-op="close-result"]').click();
-    await trigger();
-    await host.locator("#result #question").waitFor();
-    await host.locator('[data-op="question-clear-quote"]').press("Enter");
-    assert.equal(await host.locator("#question-quote").count(), 0);
-    assert(await host.locator('[data-op="question-run"]').isDisabled());
-    assert(
-      await host
-        .locator("#question-input")
-        .evaluate((node) => node.getRootNode().activeElement === node),
-    );
-    assert.equal(calls.length, before + 2);
-    await host
-      .locator("#question-input")
-      .fill("An independent question. SHORTCUT_CLEARED");
-    await host.locator('[data-op="question-run"]').click();
-    await host
-      .locator("#output")
-      .filter({ hasText: "SHORTCUT_CLEARED" })
-      .waitFor();
-    assert.equal(calls.length, before + 3);
-    const clearedRequest = JSON.stringify(calls.at(-1).body);
-    assert(!clearedRequest.includes("OFFSCREEN_SHORTCUT_REFERENCE"));
-    assert(
-      !clearedRequest.includes(selected),
-      "Whole-page content stays cleared when the question is submitted",
-    );
+    const request = JSON.stringify(calls.at(-1).body);
+    assert(!request.includes("OFFSCREEN_SHORTCUT_REFERENCE"));
+    assert(!request.includes(selected), "Only the typed question is submitted");
     console.log(
-      "PASS: shortcuts navigation/deep link, actual bindings and settings refresh, responsive themes; text translation cold-page entry, hidden dock, draft preservation and typed-only submission; Q&A command cold-page entry, selection-first/full-page quotes, focused composer and explicit submission.",
+      "PASS: shortcuts navigation/deep link, actual bindings and settings refresh, responsive themes; text translation cold-page entry, hidden dock, draft preservation and typed-only submission; Q&A command cold-page entry, no automatic quotes, matching panel sizes, focused composer and explicit submission.",
     );
   } finally {
     if (settingsFocusSession) await settingsFocusSession.detach();

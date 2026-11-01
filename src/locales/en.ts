@@ -150,7 +150,7 @@ const base = {
       "quick-question": {
         name: "Quick Q&A",
         description:
-          "Available on regular web pages. Quote selected text, or the whole page if nothing is selected. Enter a question to start the answer.",
+          "Open Quick Q&A on regular web pages. Enter a question directly.",
       },
       "text-translate": {
         name: "Text translation",

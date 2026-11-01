@@ -409,7 +409,7 @@ svg {
   background-color: var(--hover);
 }
 
-.selection-tools.selection-from-dock {
+.panel.result.selection-from-dock {
   max-width: calc(100vw - 64px);
 }
 .question-panel {
@@ -420,7 +420,7 @@ svg {
   min-height: 0;
   width: 100%;
 }
-.question-panel .selection-settings-footer [data-op="question-close"] {
+.question-panel [data-op="question-close"] {
   color: var(--muted);
 }
 .question-panel [data-op="question-run"] {
@@ -489,9 +489,9 @@ svg {
 }
 
 /* A standalone workspace for text supplied directly by the reader. */
-.panel.result.text-translation {
-  width: var(--selection-panel-width, 520px);
-  height: var(--selection-panel-height, 560px);
+.panel.result.text-input-panel {
+  width: var(--selection-panel-width, 440px);
+  height: var(--selection-panel-height, 440px);
   max-height: calc(100vh - 24px);
   min-height: min(340px, calc(100vh - 24px));
 }
@@ -499,7 +499,8 @@ svg {
   flex: 0 1 auto;
   overflow: auto;
 }
-.text-translation .text-translation-form textarea {
+.panel.result.text-input-panel .selection-settings textarea {
+  field-sizing: fixed;
   height: 124px;
   min-height: 80px;
   max-height: none;

@@ -161,7 +161,7 @@ const base = {
       "quick-question": {
         name: "Schnellfrage",
         description:
-          "Auf normalen Webseiten verfügbar. Verwendet markierten Text oder ohne Auswahl die ganze Seite als Zitat. Erst nach Eingabe einer Frage beginnt die Antwort.",
+          "Öffnen Sie die Schnellfrage auf einer normalen Webseite und geben Sie Ihre Frage direkt ein.",
       },
       "text-translate": {
         name: "Textübersetzung",

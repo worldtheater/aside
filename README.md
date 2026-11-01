@@ -10,7 +10,7 @@ A Chrome extension for translating, understanding, and collecting what you read 
 
 - **Inline translation:** Translate the visible area with a small preload margin, then process more content as you scroll or the page changes. Keep the original text and restore it at any time.
 - **Reading actions:** Translate, explain classical texts across languages, clarify content, extract key points, or define your own actions. Summary actions process the full page.
-- **Quick Q&A:** Ask about selected text or page content, or clear the quote to ask an independent question. Answers stream after you submit your question.
+- **Quick Q&A:** Ask a question directly from the floating menu or keyboard shortcut, or ask about selected text using the selection toolbar. Answers stream after you submit your question.
 - **Reading tools:** A selection toolbar and floating menu, with configurable color palettes and result styles.
 - **Website dark mode:** Powered by [Dark Reader](https://github.com/darkreader/darkreader), with per-site settings.
 - **Collections and reflections:** Save, search, and copy results. Generate a short reflection with your chosen model, optionally drawing on saved passages.
@@ -81,7 +81,7 @@ The engine runs locally and may fetch stylesheets or images referenced by the pa
 | Feature | Default shortcut | Behavior |
 | --- | --- | --- |
 | Recent tabs | `Alt+W` | Switch back and forth between the two most recently visited tabs in the current window |
-| Quick Q&A | `Alt+Q` | Quote selected text, or page content if nothing is selected, and open the question panel |
+| Quick Q&A | `Alt+Q` | Open the question panel and type a question |
 | Text translation | `Alt+T` | Open a panel to type or paste text to translate, even when the floating menu is hidden |
 
 On macOS, Alt is Option. The **Keyboard shortcuts** page in the sidebar shows Chrome's actual bindings and opens `chrome://extensions/shortcuts` for editing. Reassign a shortcut there if another extension already uses it.

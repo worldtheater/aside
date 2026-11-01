@@ -16,6 +16,7 @@ import {
 import {
   SelectionTools,
   bindPanelGeometry,
+  dockPanelPosition,
   panelResizeButton,
   selectedPageText,
   selectionResultMarkup,
@@ -269,9 +270,9 @@ async function initializePagework() {
     const open =
       radialOpen ||
       !$("toolbar").hidden ||
-      (resultKind === "selection" &&
-        !$("selection").hidden &&
-        !$("result").hidden);
+      (!$("result").hidden &&
+        ($("result").classList.contains("selection-from-dock") ||
+          (resultKind === "selection" && !$("selection").hidden)));
     $("dock").setAttribute("aria-expanded", String(open));
     $("dock").setAttribute("aria-label", open ? S.collapseTools : S.openTools);
   }
@@ -315,7 +316,7 @@ async function initializePagework() {
     config.actions.find((a) => a.kind === "translate");
   const questionAction = () =>
     config.actions.find((action) => action.kind === "qa");
-  async function openTextTranslation() {
+  async function openTextTranslation(fromDock = false) {
     if (!hasDefaultModel(config)) {
       await send("settings.open", { route: "connections" });
       return;
@@ -326,16 +327,18 @@ async function initializePagework() {
     showTools(false);
     closeResult();
     $("selection").hidden = true;
-    textTranslation.open(translate);
+    textTranslation.open(translate, fromDock ? $("dock") : undefined);
   }
   function openQuestion(
     quote = selectedPageText(),
     qa = questionAction(),
-    source: "selection" | "dock" | "page" = "selection",
+    source: "selection" | "dock" | "page" | "shortcut" = "selection",
   ) {
     if (!qa) return;
-    const integrated = source !== "page",
+    const integrated = source === "selection",
       fromDock = source === "dock";
+    if (fromDock || source === "shortcut") quote = "";
+    textTranslation.close();
     const tools = $("selection");
     const anchor = !tools.hidden ? tools.getBoundingClientRect() : null;
     showRadial(false);
@@ -348,29 +351,25 @@ async function initializePagework() {
     resultKind = "selection";
     parts = [];
     selectionPanelTop = selectionPanelLeft = null;
-    tools.classList.toggle("selection-from-dock", fromDock);
     tools.style.maxHeight = "";
     const panel = $("result");
+    if (fromDock || source === "shortcut") panel.style.cssText = "";
+    panel.classList.toggle("selection-from-dock", fromDock);
     panel.innerHTML =
-      (integrated ? "" : resultHeader(qa.name)) +
-      `<div id="question" class="question-panel" data-action-id="${escape(qa.id)}"><div class="selection-settings">${quote ? `<div class="question-reference"><div class="question-reference-heading"><span class="field-label">${escape(S.questionQuote)}</span>${button("question-clear-quote", S.clearQuestionQuote, "selection-button selection-text-button")}</div><blockquote id="question-quote">${escape(quote)}</blockquote></div>` : ""}<label><span class="field-label">${escape(S.questionLabel)}</span><textarea id="question-input" aria-label="${escape(S.questionLabel)}" placeholder="${escape(S.questionPlaceholder)}"></textarea></label></div><div class="selection-settings-footer">${button("question-close", S.cancel, "selection-button selection-text-button")}${button("question-run", S.answerQuestion, "selection-button selection-text-button", "", 'disabled aria-keyshortcuts="Meta+Enter Control+Enter"')}</div></div>`;
-    mountResult(integrated);
+      (integrated ? "" : resultHeader(qa.name, false)) +
+      `<div id="question" class="question-panel" data-action-id="${escape(qa.id)}"><div class="selection-settings">${quote ? `<div class="question-reference"><div class="question-reference-heading"><span class="field-label">${escape(S.questionQuote)}</span>${button("question-clear-quote", S.clearQuestionQuote, "selection-button selection-text-button")}</div><blockquote id="question-quote">${escape(quote)}</blockquote></div>` : ""}<label><span class="field-label">${escape(S.questionLabel)}</span><textarea id="question-input" aria-label="${escape(S.questionLabel)}" placeholder="${escape(S.questionPlaceholder)}"></textarea></label></div><div class="${integrated ? "selection-settings-footer" : "selection-result-footer"}">${button("question-close", S.cancel, "selection-button selection-text-button")}${integrated ? "" : '<div class="selection-result-meta"></div>'}${button("question-run", S.answerQuestion, "selection-button selection-text-button", "", 'disabled aria-keyshortcuts="Meta+Enter Control+Enter"')}</div></div>`;
+    mountResult(integrated, true);
     if (integrated) {
       const bounds = tools.getBoundingClientRect();
-      const dock = $("dock").getBoundingClientRect();
       selectionPanelTop = Math.max(
         10,
-        Math.min(
-          fromDock ? dock.top : (anchor?.top ?? bounds.top),
-          innerHeight - bounds.height - 10,
-        ),
+        Math.min(anchor?.top ?? bounds.top, innerHeight - bounds.height - 10),
       );
-      selectionPanelLeft = fromDock
-        ? dockSide === "left"
-          ? dock.right + 8
-          : dock.left - bounds.width - 8
-        : (anchor?.left ?? bounds.left);
+      selectionPanelLeft = anchor?.left ?? bounds.left;
       positionSelection();
+    } else {
+      const position = fromDock ? dockPanelPosition(panel, $("dock")) : null;
+      positionResult(position?.left, position?.top);
     }
     toolbar();
     panel.querySelector<HTMLTextAreaElement>("textarea")!.focus();
@@ -745,7 +744,6 @@ async function initializePagework() {
     restore();
     $("result").replaceChildren();
     $("selection").hidden = true;
-    $("selection").classList.remove("selection-from-dock");
     selectionTools.reset();
     showTools(false);
     showRadial(false);
@@ -1265,14 +1263,18 @@ async function initializePagework() {
       }
     }
   }
-  function resultHeader(title = "") {
-    return `<div class="header"><strong>${escape(title)}</strong>${button("pin", pinned ? S.unpin : S.pin, "selection-button", "pin", `aria-pressed="${pinned}"`)}${button("close-result", S.close, "selection-button", "close")}</div>`;
+  function resultHeader(title = "", pinnable = true) {
+    return `<div class="header"><strong>${escape(title)}</strong>${pinnable ? button("pin", pinned ? S.unpin : S.pin, "selection-button", "pin", `aria-pressed="${pinned}"`) : ""}${button("close-result", S.close, "selection-button", "close")}</div>`;
   }
-  function mountResult(integrated: boolean) {
+  function mountResult(integrated: boolean, question = false) {
     const panel = $("result");
     if (integrated || !panel.classList.contains("result"))
       panel.style.cssText = "";
-    panel.className = integrated ? "selection-result" : "panel result";
+    const fromDock =
+      question && panel.classList.contains("selection-from-dock");
+    panel.className = integrated
+      ? "selection-result"
+      : `panel result${question ? " text-input-panel" : ""}${fromDock ? " selection-from-dock" : ""}`;
     panel.hidden = false;
     $("selection").hidden = !integrated;
     if (integrated) selectionTools.setResult(panel);
@@ -1287,13 +1289,15 @@ async function initializePagework() {
   function showResult(busy = false, integrated = resultKind === "selection") {
     const panel = $("result");
     panel.innerHTML =
-      (integrated ? "" : resultHeader(action()?.name || S.output)) +
+      (integrated
+        ? ""
+        : resultHeader(action()?.name || S.output, action()?.kind !== "qa")) +
       selectionResultMarkup(
         `${integrated ? "" : `<div class="original">${escape(original)}</div>`}<div class="output" id="output"></div>`,
         `<span class="selection-result-status" id="result-status" role="status"></span>`,
         `<div class="selection-result-actions">${button("stop-result", S.stop, "icon", "stop")}${button("bookmark", S.bookmark, "icon", "book")}${button("copy", S.copy, "icon", "copy")}${button("refresh-result", S.regenerate, "icon", "refresh")}</div>`,
       );
-    mountResult(integrated);
+    mountResult(integrated, action()?.kind === "qa");
     renderMarkdown(
       $("output"),
       integrated ? "" : parts.map((p) => p.text).join("\n\n"),
@@ -1455,17 +1459,12 @@ async function initializePagework() {
           event.timeStamp - draggedAt < 250
         )
           return;
-        const dockPanel = $("selection");
-        if (
-          !$("toolbar").hidden ||
-          (!dockPanel.hidden &&
-            dockPanel.classList.contains("selection-from-dock"))
-        ) {
-          if (
-            !dockPanel.hidden &&
-            dockPanel.classList.contains("selection-from-dock")
-          )
-            closeResult();
+        const dockPanel = $("result");
+        const questionOpen =
+          !dockPanel.hidden &&
+          dockPanel.classList.contains("selection-from-dock");
+        if (!$("toolbar").hidden || questionOpen) {
+          if (questionOpen) closeResult();
           showTools(false);
           showRadial(false, (event as MouseEvent).detail === 0);
         } else {
@@ -1479,7 +1478,7 @@ async function initializePagework() {
           await runPage();
         }
       } else if (op === "quick-question") {
-        openQuestion(selectedPageText(), questionAction(), "dock");
+        openQuestion("", questionAction(), "dock");
       } else if (op === "question-clear-quote") {
         target.closest(".question-reference")?.remove();
         $("question-input").focus();
@@ -1506,7 +1505,7 @@ async function initializePagework() {
           }
         }
       } else if (op === "text-translate") {
-        await openTextTranslation();
+        await openTextTranslation(true);
       } else if (op === "hide-toolbar") showTools(false, true);
       else if (op === "open-settings")
         await send("settings.open", { route: "connections" });
@@ -1606,10 +1605,9 @@ async function initializePagework() {
       getSelection()?.toString().trim() !== snapshot
     )
       return;
-    if (!pinned) $("result").hidden = true;
     if (!pinned) {
+      $("result").hidden = true;
       selectionPanelTop = selectionPanelLeft = null;
-      $("selection").classList.remove("selection-from-dock");
     }
     $("selection").hidden = false;
     selectionTools.reset();
@@ -1795,6 +1793,7 @@ async function initializePagework() {
         "page.run",
         "selection.process",
         "text-translation.open",
+        "question.open",
         "page.restore",
       ].includes(message.type)
     )
@@ -1834,9 +1833,14 @@ async function initializePagework() {
         if ($("output")) resultStyle($("output"), "selection");
         return true;
       }
-      if (message.type === "text-translation.open") {
+      if (
+        message.type === "text-translation.open" ||
+        message.type === "question.open"
+      ) {
         await refresh();
-        await openTextTranslation();
+        if (message.type === "question.open")
+          openQuestion("", questionAction(), "shortcut");
+        else await openTextTranslation();
         return true;
       }
       if (message.type === "ui.show") {

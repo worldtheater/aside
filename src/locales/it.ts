@@ -160,7 +160,7 @@ const base = {
       "quick-question": {
         name: "Domanda rapida",
         description:
-          "Disponibile sulle normali pagine web. Cita il testo selezionato o l’intera pagina se non c’è una selezione. Inserisci una domanda per avviare la risposta.",
+          "Apri le domande rapide su una pagina web e inserisci direttamente la tua domanda.",
       },
       "text-translate": {
         name: "Traduzione del testo",

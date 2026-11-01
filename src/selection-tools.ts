@@ -43,6 +43,19 @@ export function panelResizeButton(label: string, hidden = false) {
   return `<button type="button" class="selection-resize" aria-label="${escape(label)}" ${hidden ? "hidden" : ""}><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="m5 11 6-6m-2 6 2-2"/></svg></button>`;
 }
 
+// Menu-launched panels share the dock anchor, regardless of their contents.
+export function dockPanelPosition(panel: HTMLElement, dock: HTMLElement) {
+  const bounds = panel.getBoundingClientRect();
+  const anchor = dock.getBoundingClientRect();
+  return {
+    left:
+      dock.dataset.side === "left"
+        ? anchor.right + 8
+        : anchor.left - bounds.width - 8,
+    top: Math.max(10, Math.min(anchor.top, innerHeight - bounds.height - 10)),
+  };
+}
+
 // Selection and independent result panels share drag and resize behavior.
 export function bindPanelGeometry(
   root: HTMLElement,

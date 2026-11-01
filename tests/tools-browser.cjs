@@ -473,12 +473,10 @@ module.exports = async ({
   );
   const grownInput = await input.boundingBox();
   assert(
-    grownInput.height > initialInput.height + 80,
-    "Question input grows with its content",
+    Math.abs(grownInput.height - initialInput.height) < 1,
+    "The standalone question input keeps its height as content grows",
   );
-  assert(
-    await input.evaluate((node) => node.scrollHeight <= node.clientHeight + 1),
-  );
+  assert(await input.evaluate((node) => node.scrollHeight > node.clientHeight));
   await input.fill("");
   assert(
     Math.abs((await input.boundingBox()).height - initialInput.height) < 1,
@@ -486,9 +484,7 @@ module.exports = async ({
   );
   const assertFooter = async (result, question = false) => {
     const geometry = await result.evaluate((node, question) => {
-      const footer = node.querySelector(
-        question ? ".selection-settings-footer" : ".selection-result-footer",
-      );
+      const footer = node.querySelector(".selection-result-footer");
       const button = footer.querySelector(
         question
           ? "[data-op=question-run]"
@@ -634,7 +630,7 @@ module.exports = async ({
   );
   const inputBox = await composer.locator("textarea").boundingBox();
   const footerBox = await composer
-    .locator(".selection-settings-footer")
+    .locator(".selection-result-footer")
     .boundingBox();
   assert(
     inputBox.height >= 96 && inputBox.y + inputBox.height <= footerBox.y,

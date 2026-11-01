@@ -337,7 +337,7 @@ chrome.commands.onCommand.addListener(async (command, sourceTab) => {
       tab.id,
       command === "text-translate"
         ? { type: "text-translation.open" }
-        : { type: "page.run", actionId, scope: "body", panel: true },
+        : { type: "question.open" },
     );
   } catch (error) {
     // Chrome can also reject injection on protected HTTP(S) pages.

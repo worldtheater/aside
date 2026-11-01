@@ -343,7 +343,7 @@ await listeners.command("quick-question", {
 });
 assert.deepEqual(sent.at(-1), {
   tabId: 17,
-  message: { type: "page.run", actionId: "qa", scope: "body", panel: true },
+  message: { type: "question.open" },
 });
 const afterCommands = injected.length;
 const messagesAfterCommands = sent.length;

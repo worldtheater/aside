@@ -153,7 +153,7 @@ const base = {
       "quick-question": {
         name: "Hỏi đáp nhanh",
         description:
-          "Dùng được trên trang web thông thường. Trích dẫn văn bản đã chọn hoặc toàn bộ trang nếu chưa chọn gì. Nhập câu hỏi để bắt đầu nhận câu trả lời.",
+          "Mở Hỏi đáp nhanh trên trang web thông thường và nhập trực tiếp câu hỏi.",
       },
       "text-translate": {
         name: "Dịch văn bản",

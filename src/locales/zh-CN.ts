@@ -134,8 +134,7 @@ const base = {
       },
       "quick-question": {
         name: "快问快答",
-        description:
-          "仅在普通网页中使用。优先引用选中文字，未选中时引用整页；输入问题后再回答。",
+        description: "在普通网页中打开快问快答面板，直接输入问题。",
       },
       "text-translate": {
         name: "文本翻译",

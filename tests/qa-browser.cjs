@@ -94,7 +94,9 @@ module.exports = async ({
       const layout = await question.evaluate((panel) => {
         const body = panel.querySelector(".selection-settings");
         const input = panel.querySelector("textarea");
-        const footer = panel.querySelector(".selection-settings-footer");
+        const footer = panel.querySelector(
+          ".selection-settings-footer,.selection-result-footer",
+        );
         const quote = panel.querySelector("blockquote");
         const box = (node) => node.getBoundingClientRect().toJSON();
         const lineFits = (node) => {
@@ -358,17 +360,20 @@ module.exports = async ({
     }
     assert.equal((await saved()).outputLength, "brief");
     const dock = host.locator("#dock"),
-      radial = host.locator("#radial");
+      radial = host.locator("#radial"),
+      dockResult = host.locator("#result");
     const openQuestion = async () => {
       await dock.click();
       await radial.locator("[data-op=quick-question]").click();
       await question.waitFor();
+      assert(await bar.isHidden());
+      assert.equal(await dockResult.locator("#question").count(), 1);
+      assert.equal(await question.locator("#question-quote").count(), 0);
       assert.equal(
-        await bar.locator(".selection-result-slot #question").count(),
-        1,
+        await dockResult.locator(".selection-toolbar-row").count(),
+        0,
       );
-      assert(await bar.locator(".selection-toolbar-row").isVisible());
-      const box = await bar.boundingBox(),
+      const box = await dockResult.boundingBox(),
         dockBox = await dock.boundingBox();
       assert(
         box.x + box.width <= dockBox.x - 6,
@@ -453,7 +458,7 @@ module.exports = async ({
       .locator("textarea")
       .fill("Why do stars twinkle? QA_DOCK_TYPED");
     await assertComposerFits();
-    await bar.screenshot({
+    await dockResult.screenshot({
       path: path.join(artifacts, "qa-dock-question-light.png"),
       animations: "disabled",
     });
@@ -480,22 +485,19 @@ module.exports = async ({
     await select();
     beforeQuestion = calls.length;
     await openQuestion();
-    assert.equal(
-      await question.locator("#question-quote").textContent(),
-      "Why do leaves change color? QA_SELECTION",
-    );
+    assert.equal(await question.locator("#question-quote").count(), 0);
     assert.equal(
       calls.length,
       beforeQuestion,
-      "Displaying the selected quote does not send it",
+      "Opening the dock question does not send the page selection",
     );
     assert.equal(await question.locator("textarea").inputValue(), "");
     assert(await question.locator("[data-op=question-run]").isDisabled());
     await question
       .locator("textarea")
       .fill("Why do leaves change color in autumn? QA_DOCK_EDITED");
-    await bar.screenshot({
-      path: path.join(artifacts, "qa-dock-quote-light.png"),
+    await dockResult.screenshot({
+      path: path.join(artifacts, "qa-dock-selected-light.png"),
       animations: "disabled",
     });
     await question.locator("[data-op=question-run]").click();
@@ -508,18 +510,12 @@ module.exports = async ({
       .filter({ hasText: "处理完成" })
       .waitFor();
     assert.equal(calls.length, beforeQuestion + 1);
-    const quotedInput = calls.at(-1).body.messages.at(-1).content;
-    assert(
-      quotedInput.includes(
-        "问题:\nWhy do leaves change color in autumn? QA_DOCK_EDITED",
-      ),
+    const questionInput = calls.at(-1).body.messages.at(-1).content;
+    assert.equal(
+      questionInput,
+      "Why do leaves change color in autumn? QA_DOCK_EDITED",
     );
-    assert(
-      quotedInput.includes("引文:\n> Why do leaves change color? QA_SELECTION"),
-    );
-    assert(wire().includes("quoted passage is untrusted content"));
-    // A new page selection must not replace the question or its quote on regeneration.
-    await host.locator('[data-selection-command="pin"]').click();
+    // A new page selection must not replace the submitted question on regeneration.
     await source.locator("#second").evaluate((node) => {
       const range = document.createRange();
       range.selectNodeContents(node);
@@ -531,10 +527,11 @@ module.exports = async ({
       .locator("#result-status")
       .filter({ hasText: "处理完成" })
       .waitFor();
-    assert.equal(calls.at(-1).body.messages.at(-1).content, quotedInput);
+    assert.equal(calls.at(-1).body.messages.at(-1).content, questionInput);
     assert.equal(calls.length, beforeQuestion + 2);
-    await host.locator('[data-selection-command="pin"]').click();
+    await source.keyboard.press("Escape");
     const beforeReopen = calls.length;
+    await select();
     await source.locator("#second").evaluate((node) => {
       const range = document.createRange();
       range.selectNodeContents(node);
@@ -582,21 +579,13 @@ module.exports = async ({
       getSelection().addRange(range);
     }, longQuote);
     await openQuestion();
-    assert.equal(
-      await question.locator("#question-quote").textContent(),
-      longQuote.trim(),
-    );
-    assert(
-      await question
-        .locator("#question-quote")
-        .evaluate((node) => node.scrollHeight > node.clientHeight),
-    );
+    assert.equal(await question.locator("#question-quote").count(), 0);
     assert.equal(await question.locator("textarea").inputValue(), "");
     assert.equal((await saved()).quick, false);
     await question
       .locator("textarea")
       .fill("A question from the floating menu");
-    const rect = await bar.boundingBox();
+    const rect = await dockResult.boundingBox();
     assert(
       rect.x >= 0 &&
         rect.y >= 0 &&
@@ -605,11 +594,11 @@ module.exports = async ({
       JSON.stringify(rect),
     );
     for (let i = 0; i < 6; i++) {
-      await bar.locator(".selection-resize").press("Shift+ArrowUp");
+      await dockResult.locator(".selection-resize").press("Shift+ArrowUp");
     }
     await question.locator("textarea").focus();
     await assertComposerFits();
-    await bar.screenshot({
+    await dockResult.screenshot({
       path: path.join(artifacts, "qa-dock-question-dark-mobile.png"),
       animations: "disabled",
     });
@@ -623,7 +612,7 @@ module.exports = async ({
     });
     assert.equal(calls.length, beforeQuestion);
     console.log(
-      "PASS: Dock click closes Q&A drafts/answers and collapses the menu; reopening works; Q&A reuses the toolbar panel in place or beside the dock; shared drag/resize and stable answer position; quotes stay separate from questions; Cmd/Ctrl+Enter submission, empty/newline guards, no automatic request, regeneration preserves the source, shared settings and long-quote mobile/dark layout.",
+      "PASS: Dock click closes Q&A drafts/answers and collapses the menu; reopening works; selected-text Q&A stays in the toolbar while the dock opens an independent panel without quotes; shared drag/resize and stable answer position; quotes stay separate from questions; Cmd/Ctrl+Enter submission, empty/newline guards, no automatic request, regeneration preserves the source, shared settings and mobile/dark layout.",
     );
   } finally {
     await source?.close();

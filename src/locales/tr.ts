@@ -156,7 +156,7 @@ const base = {
       "quick-question": {
         name: "Hızlı soru-cevap",
         description:
-          "Normal web sayfalarında kullanılabilir. Seçili metin, seçim yoksa tüm sayfa alıntılanır. Yanıt almak için bir soru yazın.",
+          "Normal bir web sayfasında Hızlı Soru-Cevap panelini açın ve sorunuzu doğrudan yazın.",
       },
       "text-translate": {
         name: "Metin çevirisi",

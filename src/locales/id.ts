@@ -153,7 +153,7 @@ const base = {
       "quick-question": {
         name: "Tanya jawab cepat",
         description:
-          "Tersedia di halaman web biasa. Kutip teks yang dipilih, atau seluruh halaman jika tidak ada pilihan. Ketik pertanyaan untuk memulai jawaban.",
+          "Buka Tanya Jawab Cepat di halaman web biasa dan langsung masukkan pertanyaan.",
       },
       "text-translate": {
         name: "Terjemahan teks",

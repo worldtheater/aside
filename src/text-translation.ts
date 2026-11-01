@@ -5,6 +5,7 @@ import { resolveLocale } from "./locale.js";
 import { renderMarkdown } from "./result-content.js";
 import {
   bindPanelGeometry,
+  dockPanelPosition,
   panelResizeButton,
   selectionResultMarkup,
 } from "./selection-tools.js";
@@ -34,7 +35,7 @@ export class TextTranslationPanel {
   ) {
     const panel = this.element;
     panel.id = "text-translation";
-    panel.className = "panel result text-translation";
+    panel.className = "panel result text-input-panel text-translation";
     panel.hidden = true;
     panel.setAttribute("role", "dialog");
     panel.setAttribute("aria-labelledby", "text-translation-title");
@@ -132,7 +133,7 @@ export class TextTranslationPanel {
     status.classList.toggle("error", error);
   }
 
-  open(action: Action) {
+  open(action: Action, dock?: HTMLElement) {
     if (!this.element.hidden) {
       (this.job ? this.command("stop") : this.input).focus({
         preventScroll: true,
@@ -177,12 +178,10 @@ export class TextTranslationPanel {
       )}`;
     this.element.append(this.tips.element);
     this.element.style.cssText = "";
+    this.element.classList.toggle("selection-from-dock", Boolean(dock));
     this.element.hidden = false;
-    const rect = this.element.getBoundingClientRect();
-    this.position(
-      (innerWidth - rect.width) / 2,
-      (innerHeight - rect.height) / 2,
-    );
+    const position = dock ? dockPanelPosition(this.element, dock) : undefined;
+    this.position(position?.left, position?.top);
     this.updateControls();
     this.input.focus();
   }

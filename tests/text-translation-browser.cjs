@@ -45,7 +45,8 @@ module.exports = async ({
       output = panel.locator(".output"),
       status = panel.locator(".text-translation-status");
     const open = async () => {
-      await dock.click();
+      await dock.focus();
+      await source.keyboard.press("Enter");
       await radial.locator("[data-op=text-translate]").click();
       await panel.waitFor();
       await radial.evaluate((node) =>
@@ -55,6 +56,17 @@ module.exports = async ({
             .map((animation) => animation.finished.catch(() => {})),
         ),
       );
+      const bounds = await panel.boundingBox();
+      const anchor = await dock.boundingBox();
+      const side = await dock.getAttribute("data-side");
+      assert(
+        side === "left"
+          ? bounds.x > anchor.x + anchor.width
+          : bounds.x + bounds.width < anchor.x,
+        "The menu opens text translation beside the dock",
+      );
+      assert(bounds.y >= 0);
+      assert(bounds.y + bounds.height <= source.viewportSize().height);
     };
     await source.locator("#first").evaluate((node) => {
       const range = document.createRange();
@@ -233,6 +245,22 @@ module.exports = async ({
       preferences: { ...original.preferences, locale: "zh-CN", theme: "dark" },
     });
     await source.setViewportSize({ width: 390, height: 640 });
+    await dock.focus();
+    await dock.evaluate(async (node) => {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      await Promise.all(
+        node.getAnimations().map((animation) => animation.finished),
+      );
+    });
+    const dockBounds = await dock.boundingBox();
+    await source.mouse.move(
+      dockBounds.x + dockBounds.width / 2,
+      dockBounds.y + dockBounds.height / 2,
+    );
+    await source.mouse.down();
+    await source.mouse.move(14, 80, { steps: 10 });
+    await source.mouse.up();
+    assert.equal(await dock.getAttribute("data-side"), "left");
     await open();
     await input.fill("A dark-mode example.");
     await run.click();

@@ -138,8 +138,7 @@ const base = {
       },
       "quick-question": {
         name: "快問快答",
-        description:
-          "僅適用於一般網頁。優先引用選取的文字，未選取時引用整頁；輸入問題後才開始回答。",
+        description: "在一般網頁中開啟快問快答面板，直接輸入問題。",
       },
       "text-translate": {
         name: "文字翻譯",
