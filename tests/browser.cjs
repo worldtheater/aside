@@ -277,7 +277,9 @@ fs.mkdirSync(artifacts, { recursive: true });
     res.end(fixture);
   });
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
-  const origin = `http://127.0.0.1:${server.address().port}`;
+  // Exercise a non-loopback HTTP service name without contacting a real server.
+  const connectionsOnly = process.argv.includes("--connections-only");
+  const origin = `http://${connectionsOnly ? "models.aside.test" : "127.0.0.1"}:${server.address().port}`;
   const profile = fs.mkdtempSync(path.join(os.tmpdir(), "pagework-browser-"));
   const context = await chromium.launchPersistentContext(profile, {
     ...(process.env.CHROME_PATH
@@ -287,7 +289,15 @@ fs.mkdirSync(artifacts, { recursive: true });
     viewport: { width: 1440, height: 1000 },
     locale: "zh-CN",
     ignoreDefaultArgs: ["--disable-extensions"],
-    args: ["--enable-unsafe-extension-debugging"],
+    args: [
+      "--enable-unsafe-extension-debugging",
+      ...(connectionsOnly
+        ? [
+            "--host-resolver-rules=MAP models.aside.test 127.0.0.1",
+            "--proxy-server=direct://",
+          ]
+        : []),
+    ],
   });
   const errors = [];
   let page;

@@ -282,6 +282,8 @@ const base = {
   duplicateConnection: "Duplicate connection",
   connectionName: "Name",
   serviceUrl: "Base URL",
+  httpServiceWarning:
+    "HTTP is not encrypted. Use trusted networks only; your API key and request content may be read by others on the network.",
   modelName: "Model name",
   apiKey: "API Key",
   connectionNote:
@@ -602,7 +604,7 @@ const full = {
         "Local cache could not be read. Check or clear it in Usage and retry.",
       sourceChanged: "The source changed. Run the action again.",
       invalidUrl:
-        "Use an HTTPS service URL. Local services may use localhost or 127.0.0.1.",
+        "Enter a valid HTTP or HTTPS service URL without credentials, query parameters, or fragments.",
       invalidProtocol: "Choose a valid API protocol.",
       credentialsUnavailable:
         "Local API key storage is unavailable. Reload the extension and try again.",

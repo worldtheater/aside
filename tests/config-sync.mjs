@@ -288,6 +288,34 @@ await assert.rejects(
   () => decryptConfiguration({ ...envelope, version: 1 }, key),
   /version/,
 );
+// HTTP connections survive encrypted sync; URL credential restrictions remain.
+for (const url of [
+  "http://10.20.30.40:8080/v1",
+  "http://models.corp.example/v1",
+  "http://[fd00::1]:8000/v1",
+]) {
+  const httpData = structuredClone(initial);
+  httpData.connections.A.value.url = url;
+  const encrypted = await encryptConfiguration(httpData, key, salt);
+  const decoded = await decryptConfiguration(encrypted, key);
+  const destination = store("http-destination");
+  applyConfiguration(destination, decoded);
+  assert.equal(
+    destination.settings.connections.find((c) => c.id === "A").url,
+    url,
+  );
+}
+for (const url of [
+  "http://user:password@models.corp.example",
+  "http://models.corp.example?key=secret",
+  "https://models.corp.example#fragment",
+  "file:///tmp/key",
+  "javascript:alert(1)",
+]) {
+  const invalidUrl = structuredClone(initial);
+  invalidUrl.connections.A.value.url = url;
+  assert.throws(() => validateConfiguration(invalidUrl), /invalidData/);
+}
 const invalid = structuredClone(initial);
 invalid.actions.translate.value.quick = true;
 assert.throws(() => validateConfiguration(invalid), /invalidData/);

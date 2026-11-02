@@ -23,7 +23,7 @@
   "directText": "请求直接发送到你选择的模型服务，没有旁白中转服务器，也不采集使用分析。收藏与请求记录保存在你的浏览器中。",
   "freeAnswer": "旁白采用 MIT 许可证，免费且开源。AI 功能需要你自行提供模型访问方式，模型服务商可能按请求计费；旁白不包含模型订阅或 API 额度。",
   "modelsAnswer": "选择支持上述四种接口之一的服务商。在“模型连接”中填写服务地址和 API Key，测试连接后选择模型。你可以保存多个连接，为不同处理方式选择不同模型。",
-  "localAnswer": "可以，只要本地服务提供兼容 API，例如 {ollamaLink}。选择 OpenAI-compatible Chat Completions，填入 localhost 地址；服务和模型须支持所用请求。本地 HTTP 连接仅限 localhost、127.0.0.1 或 [::1]。",
+  "localAnswer": "可以，只要本地服务提供兼容 API，例如 {ollamaLink}。选择 OpenAI-compatible Chat Completions，填入 localhost 地址；服务和模型须支持所用请求。 也支持 HTTP 服务地址。建议优先使用 HTTPS；HTTP 不加密 API Key 和请求内容。",
   "dataAnswer": "翻译及其他 AI 功能会将所需内容直接发送到你选择的模型服务。开启整页翻译后，滚动页面可能继续发送新的段落。配置模型后，每天首次打开收藏页会生成今日随想，也可选择参考收藏；隐藏随想区域即可停止自动生成。服务商自己的数据政策适用于其收到的请求。阅读隐私政策（英文）。",
   "installIntro": "从 Chrome Web Store 安装，连接你常用的模型服务，即可开始使用。",
   "downloadText": "点击下方按钮获取扩展 ZIP 安装包。请使用打包好的扩展，不是 GitHub 自动生成的“Source code”源码包。",

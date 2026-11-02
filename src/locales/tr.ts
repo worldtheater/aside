@@ -292,6 +292,8 @@ const base = {
   duplicateConnection: "Bağlantıyı çoğalt",
   connectionName: "Ad",
   serviceUrl: "Temel URL",
+  httpServiceWarning:
+    "HTTP aktarımı şifrelemez. Yalnızca güvenilir ağlarda kullanın; ağdaki diğer kişiler API anahtarınızı ve istek içeriğini okuyabilir.",
   modelName: "Model adı",
   apiKey: "API anahtarı",
   connectionNote:
@@ -632,7 +634,7 @@ const full = {
         "Yerel önbellek okunamadı. Kullanım bölümünde kontrol edin veya temizleyip yeniden deneyin.",
       sourceChanged: "Kaynak değişti. İşlemi yeniden çalıştırın.",
       invalidUrl:
-        "HTTPS hizmet URL’si kullanın. Yerel hizmetler localhost veya 127.0.0.1 kullanabilir.",
+        "Kimlik bilgileri, sorgu parametreleri veya parça tanımlayıcısı içermeyen geçerli bir HTTP ya da HTTPS hizmet URL’si girin.",
       invalidProtocol: "Geçerli bir API protokolü seçin.",
       credentialsUnavailable:
         "Yerel API anahtarı depolama alanı kullanılamıyor. Uzantıyı yeniden yükleyip tekrar deneyin.",

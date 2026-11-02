@@ -286,6 +286,8 @@ const base = {
   duplicateConnection: "Nhân bản kết nối",
   connectionName: "Tên",
   serviceUrl: "URL cơ sở",
+  httpServiceWarning:
+    "HTTP không mã hóa dữ liệu truyền đi. Chỉ dùng trên mạng đáng tin cậy; người khác trên mạng có thể đọc khóa API và nội dung yêu cầu của bạn.",
   modelName: "Tên mô hình",
   apiKey: "Khóa API",
   connectionNote:
@@ -624,7 +626,7 @@ const full = {
         "Không đọc được bộ nhớ đệm cục bộ. Kiểm tra hoặc xóa trong mục Mức sử dụng rồi thử lại.",
       sourceChanged: "Nguồn đã thay đổi. Hãy chạy lại thao tác.",
       invalidUrl:
-        "Dùng URL dịch vụ HTTPS. Dịch vụ cục bộ có thể dùng localhost hoặc 127.0.0.1.",
+        "Nhập URL dịch vụ HTTP hoặc HTTPS hợp lệ, không chứa thông tin đăng nhập, tham số truy vấn hay mã định danh đoạn.",
       invalidProtocol: "Chọn giao thức API hợp lệ.",
       credentialsUnavailable:
         "Không thể truy cập bộ nhớ khóa API cục bộ. Hãy tải lại tiện ích rồi thử lại.",

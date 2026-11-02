@@ -293,6 +293,8 @@ const base = {
   duplicateConnection: "Duplicar conexão",
   connectionName: "Nome",
   serviceUrl: "URL base",
+  httpServiceWarning:
+    "HTTP não criptografa a transmissão. Use apenas redes confiáveis; outras pessoas na rede podem ler sua chave de API e o conteúdo das solicitações.",
   modelName: "Nome do modelo",
   apiKey: "Chave de API",
   connectionNote:
@@ -641,7 +643,7 @@ const full = {
         "Não foi possível ler o cache local. Verifique ou limpe-o em Uso e tente novamente.",
       sourceChanged: "O conteúdo de origem mudou. Execute a ação novamente.",
       invalidUrl:
-        "Use uma URL de serviço HTTPS. Serviços locais podem usar localhost ou 127.0.0.1.",
+        "Insira uma URL de serviço HTTP ou HTTPS válida, sem credenciais, parâmetros de consulta ou fragmentos.",
       invalidProtocol: "Escolha um protocolo de API válido.",
       credentialsUnavailable:
         "O armazenamento local de chaves de API está indisponível. Recarregue a extensão e tente novamente.",

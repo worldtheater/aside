@@ -81,7 +81,7 @@ Aside supports four protocols: OpenAI Responses, OpenAI-compatible Chat Completi
 
 **Duplicate connection** opens a new draft with the current provider settings, API key, model list, and advanced settings. Choose another model and save to add a separate connection.
 
-Requests go directly from the extension to your configured service. Use an HTTPS endpoint or a supported local HTTP endpoint. Aside does not depend on another local project or background service. UI assets and runtime dependencies are bundled with the extension, without a CDN dependency.
+Requests go directly from the extension to your configured service. HTTPS is recommended. HTTP endpoints are also supported for local or company-hosted services, but HTTP does not encrypt your API key or request content; use it only on a trusted network. Aside does not depend on another local project or background service. UI assets and runtime dependencies are bundled with the extension, without a CDN dependency.
 
 ### Website dark mode
 

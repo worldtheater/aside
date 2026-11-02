@@ -311,11 +311,14 @@
           <section aria-labelledby="security">
             <h2 id="security">Security</h2>
             <p>
-              Remote model endpoints must use HTTPS. HTTP is allowed only for
-              loopback addresses on your own device. API keys are kept in
-              restricted extension storage and are not provided to web page
-              content scripts. Local storage is not an encrypted password vault;
-              protect access to your device and browser profile.
+              HTTPS is recommended for model services. You may also configure
+              HTTP endpoints, including local and company-hosted services. HTTP
+              does not encrypt API keys or request content in transit; use it
+              only on a network you trust. Local credential encryption does not
+              protect HTTP traffic. API keys are kept in restricted extension
+              storage and are not provided to web page content scripts. Local
+              storage is not an encrypted password vault; protect access to your
+              device and browser profile.
             </p>
             <p>
               Aside uses page access for reading tools and appearance changes,

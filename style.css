@@ -490,6 +490,9 @@ hr {
   color: var(--muted);
   line-height: 1.6;
 }
+.field-note.warning {
+  color: var(--tone-warm);
+}
 /* Option lists retain their subtle fill; processing modes use shared selection colors. */
 
 .mode-options {

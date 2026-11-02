@@ -231,12 +231,8 @@ export function validateConfiguration(
         text(c.key),
     );
     const url = new URL(c.url);
-    ensure(
-      url.protocol === "https:" ||
-        (url.protocol === "http:" &&
-          ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)),
-    );
-    ensure(!url.username && !url.password);
+    ensure(["https:", "http:"].includes(url.protocol));
+    ensure(!url.username && !url.password && !url.search && !url.hash);
     ensure(
       oneOf(c.protocol, [
         "responses",

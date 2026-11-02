@@ -295,6 +295,8 @@ const base = {
   duplicateConnection: "Duplicar conexión",
   connectionName: "Nombre",
   serviceUrl: "URL base",
+  httpServiceWarning:
+    "HTTP no cifra la transmisión. Úsalo solo en redes de confianza; otras personas en la red pueden leer tu clave API y el contenido de las solicitudes.",
   modelName: "Nombre del modelo",
   apiKey: "Clave API",
   connectionNote:
@@ -646,7 +648,7 @@ const full = {
       sourceChanged:
         "El texto de origen ha cambiado. Ejecuta la acción de nuevo.",
       invalidUrl:
-        "Usa una URL HTTPS. Los servicios locales pueden usar localhost o 127.0.0.1.",
+        "Introduce una URL de servicio HTTP o HTTPS válida, sin credenciales, parámetros de consulta ni fragmentos.",
       invalidProtocol: "Elige un protocolo API válido.",
       credentialsUnavailable:
         "El almacenamiento local de claves API no está disponible. Recarga la extensión e inténtalo de nuevo.",

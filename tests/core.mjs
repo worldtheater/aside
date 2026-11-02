@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   endpoint,
+  modelsEndpoint,
   requestBody,
   readResponse,
   ModelError,
@@ -48,8 +49,28 @@ assert.equal(
   "http://127.0.0.1:8000/v1/chat/completions",
 );
 for (const url of [
-  "http://api.example.com",
+  "http://10.20.30.40:8080/v1",
+  "http://192.168.1.50/v1",
+  "http://models.corp.example/v1",
+  "http://[fd00::1]:8000/v1",
+  "http://api.example.com/v1",
+]) {
+  for (const protocol of ["chat", "responses", "anthropic", "gemini"]) {
+    assert.equal(
+      new URL(endpoint({ url, protocol })).origin,
+      new URL(url).origin,
+    );
+    assert.equal(modelsEndpoint({ url, protocol }), url + "/models");
+  }
+}
+for (const url of [
   "https://name:secret@example.com",
+  "http://name:secret@models.corp.example",
+  "http://models.corp.example?key=secret",
+  "http://models.corp.example#fragment",
+  "javascript:alert(1)",
+  "ftp://models.corp.example",
+  "not a URL",
   "file:///tmp/key",
   "https://api.example.com?key=secret",
 ])

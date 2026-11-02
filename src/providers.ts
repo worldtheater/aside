@@ -116,11 +116,7 @@ export function endpoint(
     url.password ||
     url.hash ||
     url.search ||
-    !(
-      url.protocol === "https:" ||
-      (url.protocol === "http:" &&
-        ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname))
-    )
+    !["https:", "http:"].includes(url.protocol)
   )
     throw new ModelError("invalidUrl");
   const path = {

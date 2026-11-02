@@ -278,6 +278,8 @@ const base = {
   duplicateConnection: "연결 복제",
   connectionName: "이름",
   serviceUrl: "기본 URL",
+  httpServiceWarning:
+    "HTTP는 통신을 암호화하지 않습니다. 신뢰할 수 있는 네트워크에서만 사용하세요. 네트워크의 다른 사람이 API 키와 요청 내용을 읽을 수 있습니다.",
   modelName: "모델 이름",
   apiKey: "API 키",
   connectionNote:
@@ -611,7 +613,7 @@ const full = {
         "로컬 캐시를 읽을 수 없습니다. ‘사용량’에서 확인하거나 비운 뒤 다시 시도하세요.",
       sourceChanged: "원문이 변경되었습니다. 작업을 다시 실행하세요.",
       invalidUrl:
-        "HTTPS 서비스 URL을 사용하세요. 로컬 서비스는 localhost 또는 127.0.0.1을 사용할 수 있습니다.",
+        "인증 정보, 쿼리 매개변수 또는 프래그먼트가 없는 유효한 HTTP 또는 HTTPS 서비스 URL을 입력하세요.",
       invalidProtocol: "올바른 API 프로토콜을 선택하세요.",
       credentialsUnavailable:
         "로컬 API 키 저장소를 사용할 수 없습니다. 확장 프로그램을 새로고침한 후 다시 시도하세요.",

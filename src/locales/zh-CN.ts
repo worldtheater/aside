@@ -263,6 +263,8 @@ const base = {
   duplicateConnection: "复制连接",
   connectionName: "名称",
   serviceUrl: "服务地址",
+  httpServiceWarning:
+    "HTTP 不加密传输，请仅用于可信网络；API Key 和请求内容可能被网络中的其他方读取。",
   modelName: "模型名称",
   apiKey: "API Key",
   connectionNote:
@@ -577,7 +579,7 @@ const full = {
       cacheError: "本地缓存无法读取，请在用量页检查或清空缓存后重试。",
       sourceChanged: "原文发生变化，请重新处理。",
       invalidUrl:
-        "请输入 HTTPS 服务地址；本地服务可使用 localhost 或 127.0.0.1。",
+        "请输入有效的 HTTP 或 HTTPS 服务地址，勿包含用户名、密码、查询参数或片段标识。",
       invalidProtocol: "请选择有效的接口协议。",
       credentialsUnavailable: "本机 API Key 存储不可用，请重新加载扩展后重试。",
       invalidConnection: "请填写连接名称并检查连接参数。",

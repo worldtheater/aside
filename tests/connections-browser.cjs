@@ -60,7 +60,24 @@ module.exports = async ({
     await op("test-connection").click();
     await status.filter({ hasText: "连接成功" }).waitFor();
   };
+  const httpHint = page.locator("#connection-http-hint");
+  assert(
+    await httpHint.isHidden(),
+    "Default HTTPS does not show an HTTP notice",
+  );
+  await field("url").fill("http://models.corp.example/v1");
+  assert(await httpHint.isVisible());
+  assert((await httpHint.textContent()).includes("HTTP 不加密传输"));
+  assert.equal(
+    await field("url").getAttribute("aria-describedby"),
+    "connection-http-hint",
+  );
+  await field("url").fill("https://models.corp.example/v1");
+  assert(await httpHint.isHidden());
+  await field("url").fill("");
+  assert(await httpHint.isHidden());
   await field("url").fill(origin + "/v1");
+  assert(await httpHint.isVisible());
   await field("key").fill("fixture-key");
   assert.equal(await field("name").inputValue(), "");
   assert.equal(await field("model").evaluate((n) => n.tagName), "SELECT");
@@ -123,6 +140,10 @@ module.exports = async ({
   assert.equal(await field("model").inputValue(), "fixture-model");
   assert(await field("model").isEnabled());
   assert.equal(await field("key").inputValue(), "");
+  assert(
+    await httpHint.isVisible(),
+    "Saved HTTP connections retain their notice",
+  );
   assert.equal(
     await advanced.getAttribute("open"),
     null,

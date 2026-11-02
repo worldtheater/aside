@@ -266,6 +266,8 @@ const base = {
   duplicateConnection: "複製連線",
   connectionName: "名稱",
   serviceUrl: "服務網址",
+  httpServiceWarning:
+    "HTTP 不加密傳輸，請僅用於可信任的網路；API Key 和請求內容可能被網路中的其他人讀取。",
   modelName: "模型名稱",
   apiKey: "API 金鑰",
   connectionNote:
@@ -585,7 +587,7 @@ const full = {
       cacheError: "無法讀取本機快取，請至「用量」檢查或清除後重試。",
       sourceChanged: "原文已變更，請重新執行。",
       invalidUrl:
-        "請使用 HTTPS 服務網址。本機服務可使用 localhost 或 127.0.0.1。",
+        "請輸入有效的 HTTP 或 HTTPS 服務網址，勿包含使用者名稱、密碼、查詢參數或片段識別。",
       invalidProtocol: "請選擇有效的 API 協定。",
       credentialsUnavailable:
         "本機 API Key 儲存空間無法使用，請重新載入擴充功能後再試。",

@@ -1541,9 +1541,18 @@ function syncReasoningControl() {
   picker.innerHTML = reasoningPicker();
   enhanceSelects(picker);
 }
+function connectionUsesHttp() {
+  try {
+    return new URL(connectionDraft.url).protocol === "http:";
+  } catch {
+    return false;
+  }
+}
 function syncConnectionControls() {
   const picker = document.querySelector<HTMLElement>("#connection-model");
   if (!picker) return;
+  document.querySelector<HTMLElement>("#connection-http-hint")!.hidden =
+    !connectionUsesHttp();
   document.querySelector<HTMLElement>("#connection-provider")!.innerHTML =
     providerIcon(connectionDraft) || icon("plug");
   picker.innerHTML = modelPicker();
@@ -1618,7 +1627,7 @@ function renderConnections() {
       ]
         .map(
           ([key, label]) =>
-            `<label class="field"><span class="field-label">${label}</span><input data-connection="${key}" type="${key === "url" ? "url" : "text"}" value="${e(d[key as "name" | "url" | "model"])}" placeholder="${C.connectionPlaceholders[key as keyof typeof C.connectionPlaceholders]}"></label>`,
+            `<label class="field"><span class="field-label">${label}</span><input data-connection="${key}" type="${key === "url" ? "url" : "text"}" value="${e(d[key as "name" | "url" | "model"])}" placeholder="${C.connectionPlaceholders[key as keyof typeof C.connectionPlaceholders]}"${key === "url" ? ' aria-describedby="connection-http-hint"' : ""}>${key === "url" ? `<small class="field-note warning" id="connection-http-hint"${connectionUsesHttp() ? "" : " hidden"}>${C.httpServiceWarning}</small>` : ""}</label>`,
         )
         .join("")}
       <div id="connection-model">${modelPicker()}</div>

@@ -297,6 +297,8 @@ const base = {
   duplicateConnection: "Verbindung duplizieren",
   connectionName: "Name",
   serviceUrl: "Basis-URL",
+  httpServiceWarning:
+    "HTTP verschlüsselt die Übertragung nicht. Nur in vertrauenswürdigen Netzwerken verwenden; andere im Netzwerk können Ihren API-Schlüssel und Anfrageinhalte mitlesen.",
   modelName: "Modellname",
   apiKey: "API-Schlüssel",
   connectionNote:
@@ -649,7 +651,7 @@ const full = {
       sourceChanged:
         "Der Ausgangstext wurde geändert. Aktion erneut ausführen.",
       invalidUrl:
-        "Eine HTTPS-Dienstadresse verwenden. Lokale Dienste dürfen localhost oder 127.0.0.1 nutzen.",
+        "Geben Sie eine gültige HTTP- oder HTTPS-Dienstadresse ohne Zugangsdaten, Abfrageparameter oder Fragment ein.",
       invalidProtocol: "Ein gültiges API-Protokoll wählen.",
       credentialsUnavailable:
         "Der lokale API-Schlüsselspeicher ist nicht verfügbar. Laden Sie die Erweiterung neu und versuchen Sie es erneut.",

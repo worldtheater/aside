@@ -288,6 +288,8 @@ const base = {
   duplicateConnection: "Duplikat koneksi",
   connectionName: "Nama",
   serviceUrl: "URL dasar",
+  httpServiceWarning:
+    "HTTP tidak mengenkripsi transmisi. Gunakan hanya jaringan tepercaya; pihak lain di jaringan dapat membaca kunci API dan isi permintaan Anda.",
   modelName: "Nama model",
   apiKey: "Kunci API",
   connectionNote:
@@ -638,7 +640,7 @@ const full = {
         "Cache lokal tidak dapat dibaca. Periksa atau hapus di Penggunaan, lalu coba lagi.",
       sourceChanged: "Sumber berubah. Jalankan tindakan lagi.",
       invalidUrl:
-        "Gunakan URL layanan HTTPS. Layanan lokal dapat memakai localhost atau 127.0.0.1.",
+        "Masukkan URL layanan HTTP atau HTTPS yang valid tanpa kredensial, parameter kueri, atau fragmen.",
       invalidProtocol: "Pilih protokol API yang valid.",
       credentialsUnavailable:
         "Penyimpanan kunci API lokal tidak tersedia. Muat ulang ekstensi dan coba lagi.",

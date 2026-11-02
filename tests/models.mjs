@@ -14,7 +14,7 @@ for (const [protocol, path] of [
   );
 }
 for (const url of [
-  "http://models.example",
+  "ftp://models.example",
   "https://models.example?key=secret",
   "https://name:secret@models.example",
 ])

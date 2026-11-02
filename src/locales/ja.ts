@@ -278,6 +278,8 @@ const base = {
   duplicateConnection: "接続を複製",
   connectionName: "名前",
   serviceUrl: "ベース URL",
+  httpServiceWarning:
+    "HTTP は通信を暗号化しません。信頼できるネットワークでのみ使用してください。API キーとリクエスト内容を第三者に読み取られる可能性があります。",
   modelName: "モデル名",
   apiKey: "API キー",
   connectionNote:
@@ -612,7 +614,7 @@ const full = {
         "ローカルキャッシュを読み取れません。「使用量」で確認または消去し、再試行してください。",
       sourceChanged: "原文が変更されました。もう一度実行してください。",
       invalidUrl:
-        "HTTPS のサービス URL を使ってください。ローカルサービスには localhost または 127.0.0.1 を使用できます。",
+        "認証情報、クエリパラメーター、フラグメントを含まない有効な HTTP または HTTPS のサービス URL を入力してください。",
       invalidProtocol: "有効な API プロトコルを選択してください。",
       credentialsUnavailable:
         "ローカルの API キーストレージを利用できません。拡張機能を再読み込みして再試行してください。",

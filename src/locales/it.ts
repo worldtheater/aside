@@ -297,6 +297,8 @@ const base = {
   duplicateConnection: "Duplica connessione",
   connectionName: "Nome",
   serviceUrl: "URL di base",
+  httpServiceWarning:
+    "HTTP non cifra la trasmissione. Usalo solo su reti affidabili: altri sulla rete possono leggere la chiave API e il contenuto delle richieste.",
   modelName: "Nome del modello",
   apiKey: "Chiave API",
   connectionNote:
@@ -649,7 +651,7 @@ const full = {
       sourceChanged:
         "Il testo di origine è cambiato. Esegui di nuovo l’azione.",
       invalidUrl:
-        "Usa un URL HTTPS per il servizio. I servizi locali possono usare localhost o 127.0.0.1.",
+        "Inserisci un URL di servizio HTTP o HTTPS valido, senza credenziali, parametri di query o frammenti.",
       invalidProtocol: "Scegli un protocollo API valido.",
       credentialsUnavailable:
         "L’archivio locale delle chiavi API non è disponibile. Ricarica l’estensione e riprova.",
