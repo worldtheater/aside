@@ -45,7 +45,7 @@
       <div class="policy-heading">
         <h1>Privacy Policy</h1>
         <p class="updated">
-          Last updated <time datetime="2026-10-29">October 28, 2026</time>
+          Last updated <time datetime="2026-11-02">November 2, 2026</time>
         </p>
         <p class="lead">
           Your reading stays in your browser until a feature sends content to
@@ -56,7 +56,8 @@
           <a href="https://github.com/worldtheater/aside">worldtheater/aside</a
           >. This policy covers the extension and this policy page. Aside has no
           developer-operated relay, analytics service, or sync server. Optional
-          encrypted configuration sync is provided through Chrome Sync.
+          encrypted configuration sync is provided through Chrome Sync or
+          Firefox Sync, depending on your browser.
         </p>
       </div>
       <div class="policy-layout">
@@ -142,10 +143,10 @@
           <section aria-labelledby="configuration-sync">
             <h2 id="configuration-sync">Optional configuration sync</h2>
             <p>
-              When you enable Configuration sync, Aside sends an encrypted copy
-              of your model connections and API keys, actions and custom
-              instructions, and reflection settings to Chrome Sync, operated by
-              Google. Collections, generated reflections, request history,
+              When you enable Sync, Aside sends an encrypted copy of your model
+              connections and API keys, actions and custom instructions, and
+              reflection settings to Chrome Sync (Google) or Firefox Sync
+              (Mozilla). Collections, generated reflections, request history,
               caches, and discovered model lists are not included. Language,
               theme, display and site preferences, quick-action visibility and
               order also stay on each device. Default model selections are
@@ -153,8 +154,8 @@
               defaults on another device. Existing choices are kept. Record IDs,
               modification times and deletion markers are included in the
               encrypted configuration to merge changes across devices. This
-              feature uses your Chrome account; it does not create an Aside
-              account or send data to an Aside server.
+              feature uses your browser’s Google or Mozilla account; it does not
+              create an Aside account or send data to an Aside server.
             </p>
             <p>
               The configuration is compressed and encrypted on your device using
@@ -163,23 +164,28 @@
               Sync storage contains ciphertext, salt, an initialization vector,
               revision identifiers, and update timestamps. The passphrase is not
               saved or uploaded. The derived key is held in trusted extension
-              session storage and is cleared when Chrome restarts or the
+              session storage and is cleared when the browser restarts or the
               extension is reloaded. The maintainers cannot recover a forgotten
               passphrase. Local settings remain available while sync is locked.
               Local API key encryption uses the separate device key described
               above and does not depend on the sync passphrase.
             </p>
             <p>
-              Chrome manages delivery between devices according to your Chrome
-              account and sync settings. Google's handling of its service is
-              governed by the
+              Your browser manages delivery according to its account and sync
+              settings. Chrome and Firefox do not exchange synced
+              configurations. The services are governed by the
               <a href="https://policies.google.com/privacy"
                 >Google Privacy Policy</a
-              >. You can stop syncing on one device without deleting its local
-              settings. Delete synced settings removes the encrypted copy
-              through Chrome Sync; delivery of that deletion to other devices is
-              controlled by Chrome. Local settings on those devices remain, and
-              need a new sync setup to resume syncing.
+              >
+              and
+              <a href="https://www.mozilla.org/privacy/firefox/"
+                >Firefox Privacy Notice</a
+              >, respectively. You can stop syncing on one device without
+              deleting local settings. Delete synced settings removes the
+              encrypted shared copy through your browser’s sync service;
+              delivery of that deletion is controlled by the browser. Local
+              settings remain, and other devices need a new sync setup to resume
+              syncing.
             </p>
           </section>
           <section aria-labelledby="model-requests">
@@ -197,8 +203,10 @@
             <p>
               After you start inline page processing, additional visible or
               nearby passages may be sent as you scroll or the page changes.
-              Quick Q&amp;A prepares a quote from your selection or the page,
-              but does not send the question until you submit it.
+              Quick Q&amp;A opened from the floating menu or a shortcut has no
+              quote. When invoked for selected text or a page, it can include
+              that context. Questions and custom text translations are sent only
+              when you submit them.
             </p>
             <p>
               <strong>Today's thought can run automatically:</strong> with a
@@ -231,8 +239,9 @@
               Dark Reader engine locally. It may retrieve stylesheets or images
               referenced by the page from their original hosts, which receive
               normal network metadata. Dark mode does not send page content to a
-              model. Site icons are requested through Chrome's favicon
-              interface.
+              model. Chrome uses its favicon interface for site icons; Firefox
+              uses the current tab’s browser-provided icon and a local icon for
+              saved pages.
             </p>
             <p>
               <strong>This page and support.</strong> This static page is hosted
@@ -261,9 +270,9 @@
             <ul>
               <li>Delete saved passages from <strong>Collection</strong>.</li>
               <li>
-                Use <strong>Configuration sync</strong> to stop this device's
-                synchronization or delete the encrypted synced copy. Local
-                configuration is preserved.
+                Use <strong>Sync</strong> to stop this device's synchronization
+                or delete the encrypted synced copy. Local configuration is
+                preserved.
               </li>
               <li>
                 Clear request history from <strong>Usage</strong> to remove both
@@ -282,8 +291,8 @@
                 saved text or history.
               </li>
               <li>
-                Stop page processing, restrict site access in Chrome, or disable
-                the extension to stop the corresponding page features.
+                Stop page processing, restrict site access in your browser, or
+                disable the extension to stop the corresponding page features.
                 Uninstalling removes the extension's local data.
               </li>
             </ul>
@@ -308,7 +317,7 @@
             <p>
               Aside uses page access for reading tools and appearance changes,
               extension storage for local settings, data, and optional encrypted
-              Chrome Sync, and service-specific permissions for model requests.
+              browser sync, and service-specific permissions for model requests.
               It does not use these permissions to build advertising profiles.
             </p>
           </section>
