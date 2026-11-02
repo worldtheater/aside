@@ -1,3 +1,4 @@
+import { localStore, localStoreReady } from "./extension-storage.js";
 import {
   PROTECTED_CONFIGURATION,
   encryptCredentials,
@@ -28,9 +29,7 @@ import {
   usesPresetDefaults,
 } from "./copy.js";
 let writes = Promise.resolve();
-const ready = chrome.storage.local.setAccessLevel({
-  accessLevel: "TRUSTED_CONTEXTS",
-});
+const ready = localStoreReady;
 // Exact shipped defaults identify the saved preset text being replaced.
 const previousPlainInstructions = new Set([
   "将古文改写为通顺的现代白话文，忠实保留人物、情节和语气。难懂的典故可以在对应段落后简短解释。只输出白话文和必要的注释。",
@@ -46,7 +45,7 @@ export function initialize() {
 async function initializeStore() {
   await ready;
   await migrateCredentials();
-  const found = await chrome.storage.local.get<{
+  const found = await localStore.get<{
     settings?: Settings;
     qaShortcutDefaultApplied?: boolean;
   }>(["settings", "qaShortcutDefaultApplied"]);
@@ -89,7 +88,7 @@ async function initializeStore() {
       !found.settings.website ||
       !found.qaShortcutDefaultApplied
     )
-      await chrome.storage.local.set({
+      await localStore.set({
         settings: {
           ...found.settings,
           actions,
@@ -100,7 +99,7 @@ async function initializeStore() {
     return;
   }
   setLocale("system");
-  await chrome.storage.local.set({
+  await localStore.set({
     qaShortcutDefaultApplied: true,
     settings: {
       website: createWebsiteSettings(),
@@ -136,9 +135,11 @@ const protectedText = ({ credentials, configurationRecords }: StoreData) =>
 // Upgrade shipped plaintext storage once, before serving requests. Commit the
 // encrypted replacement before removing either plaintext copy of the API keys.
 async function migrateCredentials() {
-  const stored = await chrome.storage.local.get<
-    ProtectedConfiguration & StoredData
-  >(["credentials", "configurationRecords", PROTECTED_CONFIGURATION]);
+  const stored = await localStore.get<ProtectedConfiguration & StoredData>([
+    "credentials",
+    "configurationRecords",
+    PROTECTED_CONFIGURATION,
+  ]);
   if (
     stored.credentials === undefined &&
     stored.configurationRecords === undefined
@@ -151,15 +152,15 @@ async function migrateCredentials() {
       credentials: stored.credentials ?? {},
       configurationRecords: stored.configurationRecords,
     });
-    await chrome.storage.local.set({
+    await localStore.set({
       [PROTECTED_CONFIGURATION]: await encryptCredentials(text),
     });
   }
-  await chrome.storage.local.remove(["credentials", "configurationRecords"]);
+  await localStore.remove(["credentials", "configurationRecords"]);
 }
 async function storedData(): Promise<StoredData> {
   await ready;
-  return (await chrome.storage.local.get([
+  return (await localStore.get([
     "settings",
     "collection",
     "daily",
@@ -198,7 +199,7 @@ export function mutate<T>(
     const next = protectedText(data);
     // Reuse unchanged ciphertext: a fresh IV on every read/merge would emit a
     // storage change and schedule an endless sequence of no-op sync attempts.
-    await chrome.storage.local.set({
+    await localStore.set({
       ...plain,
       [PROTECTED_CONFIGURATION]:
         next === previous

@@ -1,3 +1,4 @@
+import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -6,9 +7,11 @@ import type { Copy } from "./en.js";
 
 const base = {
   sync: {
+    browserBoundary:
+      "Eşitleme yalnızca aynı tarayıcı içinde çalışır. Chrome ve Firefox ayarları birbirleriyle paylaşmaz.",
     devicesTitle: "Başka bir cihazda katılma",
     joinSteps: [
-      "Aynı Chrome hesabıyla oturum açın ve Chrome senkronizasyonunu etkinleştirin.",
+      `Aynı ${SYNC_ACCOUNT_NAME} hesabıyla oturum açın ve ${BROWSER_NAME} senkronizasyonunu etkinleştirin.`,
       "Aside’ın Senkronizasyon sayfasını açıp aynı parola ile katılın.",
       "İstendiğinde o cihazda model hizmetlerine erişim izni verin.",
     ],
@@ -47,8 +50,7 @@ const base = {
     accessDenied:
       "Erişim izni verilmedi. Yeniden deneyebilirsiniz; eşitlenen ayarlarınız korunur.",
     joinExisting: "Mevcut eşitlemeye katıl",
-    waitingHelp:
-      "Eşitlenen ayarlar henüz ulaşmadı. Eşitleme başka bir cihazda zaten etkinse aynı Chrome hesabını kullanın, Chrome eşitlemesini açık tutun ve bekleyin. Ayarlar ulaştığında mevcut parolanızı girebilirsiniz.",
+    waitingHelp: `Eşitlenen ayarlar henüz ulaşmadı. Eşitleme başka bir cihazda zaten etkinse aynı ${SYNC_ACCOUNT_NAME} hesabını kullanın, ${BROWSER_NAME} eşitlemesini açık tutun ve bekleyin. Ayarlar ulaştığında mevcut parolanızı girebilirsiniz.`,
     firstSetup: "İlk kez kur",
     checkAgain: "Yeniden kontrol et",
     forgotPassphrase: "Parolayı mı unuttunuz?",
@@ -59,8 +61,7 @@ const base = {
     localOnlyTitle: "Bu cihazda kalanlar",
     createHelp:
       "Yalnızca hiçbir cihazda eşitlemeyi etkinleştirmediyseniz yeni bir parola belirleyin. Diğer cihazlar aynı parolayla katılacaktır.",
-    joinHelp:
-      "Başka bir cihazda belirlediğiniz eşitleme parolasının aynısını girin. Aynı Chrome hesabını kullanın ve Chrome eşitlemesini etkinleştirin.",
+    joinHelp: `Başka bir cihazda belirlediğiniz eşitleme parolasının aynısını girin. Aynı ${SYNC_ACCOUNT_NAME} hesabını kullanın ve ${BROWSER_NAME} eşitlemesini etkinleştirin.`,
     details: "Eşitleme ayrıntıları ve yönetimi",
     scope: [
       "Model bağlantıları ve API anahtarları",
@@ -77,14 +78,11 @@ const base = {
     joinText:
       "Bu cihazın ayarları eşitlenen ayarlarla birleştirilsin mi? Bazı ayarlar güncellenebilir. Yalnızca bu cihazda olan bağlantılar ve eylemler korunur. Koleksiyonlar ve kişisel tercihler etkilenmez.",
     title: "Eşitleme",
-    intro:
-      "Chrome hesabınızla şifrelenmiş ayarları cihazlar arasında eşitleyin.",
-    requirements:
-      "Chrome değişiklikleri arka planda aktarır. Ulaşmazlarsa Chrome senkronizasyonunu ve ağ bağlantısını kontrol edin.",
+    intro: `${SYNC_ACCOUNT_NAME} hesabınızla şifrelenmiş ayarları cihazlar arasında eşitleyin.`,
+    requirements: `${BROWSER_NAME} değişiklikleri arka planda aktarır. Ulaşmazlarsa ${BROWSER_NAME} senkronizasyonunu ve ağ bağlantısını kontrol edin.`,
     passphrase: "Eşitleme parolası",
     confirmPassphrase: "Parolayı doğrula",
-    passphraseHelp:
-      "Bu parolayı saklayın; unutulursa kurtarılamaz. Chrome’u yeniden başlattıktan veya uzantıyı yeniden yükledikten sonra tekrar girmeniz gerekir.",
+    passphraseHelp: `Bu parolayı saklayın; unutulursa kurtarılamaz. ${BROWSER_NAME}’u yeniden başlattıktan veya uzantıyı yeniden yükledikten sonra tekrar girmeniz gerekir.`,
     locked:
       "Eşitlemeye devam etmek için ilk parolanızı girin. Yerel ayarlarınız kullanılabilir durumda kalır.",
     ready: "Ayar eşitleme etkin.",
@@ -94,8 +92,7 @@ const base = {
     syncNow: "Şimdi eşitle",
     stop: "Bu cihazda durdur",
     clear: "Eşitlenen ayarları sil",
-    clearText:
-      "Şifrelenmiş ayarlar Chrome Sync’ten silinsin ve bu cihazda eşitleme durdurulsun mu? Yerel ayarlar ve API anahtarları korunur. Diğer cihazların yeniden kurulması gerekir. Parolayı unuttuysanız sildikten sonra yeni bir kopya oluşturabilirsiniz.",
+    clearText: `Şifrelenmiş ayarlar ${BROWSER_NAME} Sync’ten silinsin ve bu cihazda eşitleme durdurulsun mu? Yerel ayarlar ve API anahtarları korunur. Diğer cihazların yeniden kurulması gerekir. Parolayı unuttuysanız sildikten sonra yeni bir kopya oluşturabilirsiniz.`,
     stopText:
       "Bu cihazda eşitleme durdurulsun mu? Yerel ayarlar ve API anahtarları kullanılabilir kalır. Eşitlenen kopya ve diğer cihazlar etkilenmez.",
     done: "Eşitleme ayarları güncellendi",
@@ -106,15 +103,14 @@ const base = {
       mismatch: "Parolalar eşleşmiyor.",
       wrongPassphrase: "Parola yanlış veya eşitlenen veriler doğrulanamadı.",
       locked: "Önce parolanızla eşitleme kilidini açın.",
-      waiting: "Chrome ayarları almaya devam ediyor. Birazdan tekrar deneyin.",
+      waiting: `${BROWSER_NAME} ayarları almaya devam ediyor. Birazdan tekrar deneyin.`,
       tooLarge:
         "Ayarlar kullanılabilir eşitleme alanını aşıyor. Talimatları kısaltın veya kullanılmayan ayarları kaldırın.",
       version: "Ayar sürümü farklı. Cihazlarınızdaki Aside’ı güncelleyin.",
       invalidData: "Eşitlenen ayarlar geçersiz olduğu için uygulanmadı.",
       remoteMissing:
         "Eşitlenen kopya silinmiş. Yerel ayarlar korunuyor. Eşitleme kurulumunu silip yeniden açın.",
-      unavailable:
-        "Eşitleme tamamlanamadı. Chrome Sync’i ve bağlantınızı kontrol edip tekrar deneyin.",
+      unavailable: `Eşitleme tamamlanamadı. ${BROWSER_NAME} Sync’i ve bağlantınızı kontrol edip tekrar deneyin.`,
     },
   },
   brand: "Aside",
@@ -146,7 +142,7 @@ const base = {
     settings: "Kısayolları ayarla",
     unset: "Ayarlanmamış",
     help: (name: string) =>
-      `“Kısayolları ayarla”ya tıklayın, Chrome’da “${name}” öğesini bulun, ardından kısayolu düzenleyip yeni tuşlara basın. Kullanılan tuşları da yeniden atayabilirsiniz.`,
+      `“Kısayolları ayarla”ya tıklayın, ${BROWSER_NAME}’da “${name}” öğesini bulun, ardından kısayolu düzenleyip yeni tuşlara basın. Kullanılan tuşları da yeniden atayabilirsiniz.`,
     items: {
       "switch-recent-tab": {
         name: "Son sekmeler arasında geçiş",
@@ -589,8 +585,9 @@ const full = {
     lightsEnabled: "Koyu mod: Açık",
     lightsDisabled: "Koyu mod: Kapalı",
     lightsSystem: "Koyu mod: Sistem",
-    lightsPermissionNeeded:
-      "Koyu modun sayfa stillerini okuyabilmesi için site erişimine izin verin.",
+    lightsPermissionNeeded: isFirefox
+      ? "Tarayıcı araç çubuğundan Aside’ı açın ve site erişimine izin vermek için panelde koyu modu etkinleştirin."
+      : "Koyu modun sayfa stillerini okuyabilmesi için site erişimine izin verin.",
     resizePanel: "Paneli yeniden boyutlandır",
     processing: "İşleniyor…",
     chooseAction: "Bir işlem seçin",

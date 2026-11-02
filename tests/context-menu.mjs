@@ -274,7 +274,7 @@ const notifications = [],
   pending = new Promise(() => {});
 chrome.tabs.query = async () => [{ id: 7 }, { id: 8 }];
 chrome.tabs.sendMessage = (tabId, message) => {
-  notifications.push({ tabId, message });
+  notifications.push({ tabId, message: structuredClone(message) });
   return tabId === 8 ? pending : Promise.resolve(true);
 };
 try {
@@ -435,3 +435,46 @@ for (const type of [
   assert.equal(response.error, "notAllowed");
 }
 console.log("PASS: sync management messages reject content-script callers.");
+
+// Dark-mode initialization uses the browser's top-level URL, never a supplied
+// hostname or the origin of a cross-origin/related child frame.
+const lightsContext = (sender) =>
+  new Promise((resolve) =>
+    listeners.message(
+      { type: "lights.context", hostname: "forged.example" },
+      { id: "fixture", ...sender },
+      resolve,
+    ),
+  );
+for (const url of [
+  "https://frames.example/embed",
+  "about:blank",
+  "blob:https://frames.example/id",
+]) {
+  const response = await lightsContext({
+    url,
+    frameId: 1,
+    tab: { id: 7, url: "https://top.example/article" },
+  });
+  assert.equal(response.ok, true);
+  assert.equal(response.value.hostname, "top.example");
+  assert.doesNotThrow(() => structuredClone(response.value));
+}
+for (const sender of [
+  { url: "https://example.com/", frameId: 0 },
+  {
+    url: "chrome://settings",
+    frameId: 0,
+    tab: { id: 7, url: "chrome://settings" },
+  },
+  {
+    url: "file:///tmp/local.html",
+    frameId: 1,
+    tab: { id: 7, url: "https://top.example" },
+  },
+]) {
+  assert.equal((await lightsContext(sender)).error, "notAllowed");
+}
+console.log(
+  "PASS: dark-mode context validates browser frame URLs and returns serializable public settings.",
+);

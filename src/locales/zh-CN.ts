@@ -1,3 +1,4 @@
+import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -5,9 +6,11 @@ import type { Copy } from "./en.js";
 
 const base = {
   sync: {
+    browserBoundary:
+      "同步仅在同一种浏览器之间进行，Chrome 与 Firefox 不能互相同步。",
     devicesTitle: "在其他设备上接入",
     joinSteps: [
-      "登录同一个 Chrome 账号，并开启 Chrome 同步。",
+      `登录同一个 ${SYNC_ACCOUNT_NAME} 账号，并开启 ${BROWSER_NAME} 同步。`,
       "打开旁白的「同步」页面，使用同一个口令加入。",
       "按页面提示，允许这台设备访问模型服务。",
     ],
@@ -39,8 +42,7 @@ const base = {
     accessReady: "本机已授权所有模型服务地址。",
     accessDenied: "尚未获得访问权限，可重新授权。已同步的配置会保留。",
     joinExisting: "加入已有同步",
-    waitingHelp:
-      "尚未收到同步配置。如果已在其他设备启用，请登录同一个 Chrome 账号并保持 Chrome 同步开启。配置到达后，即可输入原口令加入。",
+    waitingHelp: `尚未收到同步配置。如果已在其他设备启用，请登录同一个 ${SYNC_ACCOUNT_NAME} 账号并保持 ${BROWSER_NAME} 同步开启。配置到达后，即可输入原口令加入。`,
     firstSetup: "首次启用同步",
     checkAgain: "重新检查",
     forgotPassphrase: "忘记口令？",
@@ -51,8 +53,7 @@ const base = {
     localOnlyTitle: "留在本机",
     createHelp:
       "仅在所有设备都尚未启用同步时设置新口令，其他设备将使用同一个口令加入。",
-    joinHelp:
-      "输入你在其他设备设置的同一个同步口令。各设备需登录同一个 Chrome 账号并开启同步。",
+    joinHelp: `输入你在其他设备设置的同一个同步口令。各设备需登录同一个 ${SYNC_ACCOUNT_NAME} 账号并开启同步。`,
     details: "同步说明与管理",
     scope: ["模型连接与 API Key", "处理方式", "随想生成设置"],
     localOnly: ["收藏与已生成的随想", "请求记录与缓存", "语言、主题等本机偏好"],
@@ -61,13 +62,11 @@ const base = {
     joinText:
       "这台设备的配置会与同步配置合并，部分设置可能更新。本机独有的模型连接和处理方式会保留，收藏与个人偏好不受影响。",
     title: "同步",
-    intro: "通过 Chrome 账号，在设备之间同步加密的配置。",
-    requirements:
-      "更改由 Chrome 在后台传递。若迟迟未收到，请检查 Chrome 同步与网络连接。",
+    intro: `通过 ${SYNC_ACCOUNT_NAME} 账号，在设备之间同步加密的配置。`,
+    requirements: `更改由 ${BROWSER_NAME} 在后台传递。若迟迟未收到，请检查 ${BROWSER_NAME} 同步与网络连接。`,
     passphrase: "同步口令",
     confirmPassphrase: "确认口令",
-    passphraseHelp:
-      "请记住这个口令，遗忘后无法找回。重启 Chrome 或重新加载插件后需再次输入。",
+    passphraseHelp: `请记住这个口令，遗忘后无法找回。重启 ${BROWSER_NAME} 或重新加载插件后需再次输入。`,
     locked: "输入原来的同步口令，继续同步。本机配置仍可正常使用。",
     ready: "同步已启用。",
     lastSync: "本机上次同步",
@@ -76,8 +75,7 @@ const base = {
     syncNow: "立即同步",
     stop: "停止本机同步",
     clear: "删除同步配置",
-    clearText:
-      "从 Chrome 同步中删除加密配置，并停止本机同步？本机配置和 API Key 会保留，其他设备需重新设置才能继续同步。如果忘记了口令，删除后可创建新的同步副本。",
+    clearText: `从 ${BROWSER_NAME} 同步中删除加密配置，并停止本机同步？本机配置和 API Key 会保留，其他设备需重新设置才能继续同步。如果忘记了口令，删除后可创建新的同步副本。`,
     stopText:
       "停止这台设备的同步？本机配置和 API Key 仍可使用，同步副本会保留，其他设备不受影响。",
     done: "同步设置已更新",
@@ -88,14 +86,13 @@ const base = {
       mismatch: "两次输入的口令不一致。",
       wrongPassphrase: "口令不正确，或同步数据未通过完整性验证。",
       locked: "请先输入口令解锁同步。",
-      waiting: "Chrome 正在接收同步配置，请稍后重试。",
-      tooLarge:
-        "配置超过 Chrome 可用同步空间，请缩短补充要求或删除不用的配置后重试。",
+      waiting: `${BROWSER_NAME} 正在接收同步配置，请稍后重试。`,
+      tooLarge: `配置超过 ${BROWSER_NAME} 可用同步空间，请缩短补充要求或删除不用的配置后重试。`,
       version: "同步配置需要不同版本的旁白，请更新各设备上的插件。",
       invalidData: "同步配置无效，未应用到本机。",
       remoteMissing:
         "同步副本已被删除，本机配置仍保留。请删除同步设置后重新启用。",
-      unavailable: "同步未完成，请检查 Chrome 同步和网络后重试。",
+      unavailable: `同步未完成，请检查 ${BROWSER_NAME} 同步和网络后重试。`,
     },
   },
   brand: "旁白",
@@ -126,7 +123,7 @@ const base = {
     settings: "设置快捷键",
     unset: "未设置",
     help: (name: string) =>
-      `点击“设置快捷键”，在 Chrome 中找到“${name}”，点击要修改的快捷键后按下新的组合键。若按键被占用，可在该页面重新分配。`,
+      `点击“设置快捷键”，在 ${BROWSER_NAME} 中找到“${name}”，点击要修改的快捷键后按下新的组合键。若按键被占用，可在该页面重新分配。`,
     items: {
       "switch-recent-tab": {
         name: "最近两页切换",
@@ -540,8 +537,9 @@ const full = {
     lightsEnabled: "暗色模式-开",
     lightsDisabled: "暗色模式-关",
     lightsSystem: "暗色模式-跟随系统",
-    lightsPermissionNeeded:
-      "开启暗色模式需要读取网页样式，请允许网站访问权限。",
+    lightsPermissionNeeded: isFirefox
+      ? "请从浏览器工具栏打开旁白，在弹窗中开启暗色模式并允许网站访问。"
+      : "开启暗色模式需要读取网页样式，请允许网站访问权限。",
     resizePanel: "调整面板大小",
     processing: "正在处理…",
     chooseAction: "选择处理方式",

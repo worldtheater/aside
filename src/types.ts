@@ -286,6 +286,10 @@ export interface PublicConfig extends PublicSettings {
   };
 }
 export interface RequestMap {
+  "lights.context": {
+    payload: {};
+    result: { hostname: string; config: PublicConfig };
+  };
   "sync.status": { payload: {}; result: import("./config-sync.js").SyncStatus };
   "sync.connect": {
     payload: {

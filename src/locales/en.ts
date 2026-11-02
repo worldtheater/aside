@@ -1,3 +1,4 @@
+import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -5,9 +6,11 @@ import { LANGUAGE_NAMES } from "../locale.js";
 
 const base = {
   sync: {
+    browserBoundary:
+      "Sync stays within the same browser: Chrome and Firefox do not exchange settings.",
     devicesTitle: "On another device",
     joinSteps: [
-      "Sign in to the same Chrome account and enable Chrome sync.",
+      `Sign in to the same ${SYNC_ACCOUNT_NAME} account and enable ${BROWSER_NAME} sync.`,
       "Open Aside’s Sync page and join with the same passphrase.",
       "Allow access to model services when prompted on that device.",
     ],
@@ -44,8 +47,7 @@ const base = {
     accessDenied:
       "Access was not granted. You can try again; your synced settings are kept.",
     joinExisting: "Join existing sync",
-    waitingHelp:
-      "Synced settings have not arrived yet. If sync is already enabled on another device, use the same Chrome account with Chrome sync on and wait. You can enter your existing passphrase once the settings arrive.",
+    waitingHelp: `Synced settings have not arrived yet. If sync is already enabled on another device, use the same ${SYNC_ACCOUNT_NAME} account with ${BROWSER_NAME} sync on and wait. You can enter your existing passphrase once the settings arrive.`,
     firstSetup: "First-time setup",
     checkAgain: "Check again",
     forgotPassphrase: "Forgot passphrase?",
@@ -56,8 +58,7 @@ const base = {
     localOnlyTitle: "Kept on this device",
     createHelp:
       "Only set a new passphrase if you have not enabled sync on any device. Other devices will use this same passphrase to join.",
-    joinHelp:
-      "Enter the same sync passphrase you set on another device. Use the same Chrome account with Chrome sync turned on.",
+    joinHelp: `Enter the same sync passphrase you set on another device. Use the same ${SYNC_ACCOUNT_NAME} account with ${BROWSER_NAME} sync turned on.`,
     details: "Sync details and management",
     scope: ["Model connections and API keys", "Actions", "Reflection settings"],
     localOnly: [
@@ -70,13 +71,11 @@ const base = {
     joinText:
       "Merge this device’s settings with the synced settings? Some settings may be updated. Connections and actions unique to this device are kept. Collections and personal preferences are unaffected.",
     title: "Sync",
-    intro: "Use your Chrome account to sync encrypted settings across devices.",
-    requirements:
-      "Chrome delivers changes in the background. If they do not arrive, check Chrome sync and your network.",
+    intro: `Use your ${SYNC_ACCOUNT_NAME} account to sync encrypted settings across devices.`,
+    requirements: `${BROWSER_NAME} delivers changes in the background. If they do not arrive, check ${BROWSER_NAME} sync and your network.`,
     passphrase: "Sync passphrase",
     confirmPassphrase: "Confirm passphrase",
-    passphraseHelp:
-      "Keep this passphrase: it cannot be recovered. Enter it again after restarting Chrome or reloading the extension.",
+    passphraseHelp: `Keep this passphrase: it cannot be recovered. Enter it again after restarting ${BROWSER_NAME} or reloading the extension.`,
     locked:
       "Enter your original passphrase to resume syncing. Your local settings are still available.",
     ready: "Sync is enabled.",
@@ -86,8 +85,7 @@ const base = {
     syncNow: "Sync now",
     stop: "Stop on this device",
     clear: "Delete synced settings",
-    clearText:
-      "Delete the encrypted configuration from Chrome sync and stop syncing on this device? Local settings and API keys are kept. Other devices will stop syncing until set up again. If you forgot your passphrase, you can then create a new synced copy.",
+    clearText: `Delete the encrypted configuration from ${BROWSER_NAME} sync and stop syncing on this device? Local settings and API keys are kept. Other devices will stop syncing until set up again. If you forgot your passphrase, you can then create a new synced copy.`,
     stopText:
       "Stop syncing on this device? Local settings and API keys stay available. The synced copy remains available to other devices.",
     done: "Sync settings updated",
@@ -99,17 +97,14 @@ const base = {
       wrongPassphrase:
         "The passphrase is incorrect, or the synced data could not be authenticated.",
       locked: "Unlock sync with your passphrase first.",
-      waiting:
-        "Chrome is still receiving the synced configuration. Try again shortly.",
-      tooLarge:
-        "The configuration exceeds the available Chrome sync space. Shorten custom instructions or remove unused configurations, then retry.",
+      waiting: `${BROWSER_NAME} is still receiving the synced configuration. Try again shortly.`,
+      tooLarge: `The configuration exceeds the available ${BROWSER_NAME} sync space. Shorten custom instructions or remove unused configurations, then retry.`,
       version:
         "This synced configuration needs a different version of Aside. Update the extension on your devices.",
       invalidData: "The synced configuration is invalid and was not applied.",
       remoteMissing:
         "The synced copy was deleted. Local settings are kept. Delete the sync setup, then enable sync again.",
-      unavailable:
-        "Sync could not complete. Check Chrome sync and your connection, then retry.",
+      unavailable: `Sync could not complete. Check ${BROWSER_NAME} sync and your connection, then retry.`,
     },
   },
   brand: "Aside",
@@ -141,7 +136,7 @@ const base = {
     settings: "Set shortcuts",
     unset: "Not set",
     help: (name: string) =>
-      `Click “Set shortcuts”, find “${name}” in Chrome, then edit a shortcut and press your new key combination. You can also reassign keys already in use there.`,
+      `Click “Set shortcuts”, find “${name}” in ${BROWSER_NAME}, then edit a shortcut and press your new key combination. You can also reassign keys already in use there.`,
     items: {
       "switch-recent-tab": {
         name: "Switch recent tabs",
@@ -560,8 +555,9 @@ const full = {
     lightsEnabled: "Dark mode: On",
     lightsDisabled: "Dark mode: Off",
     lightsSystem: "Dark mode: System",
-    lightsPermissionNeeded:
-      "Allow website access so dark mode can read page styles.",
+    lightsPermissionNeeded: isFirefox
+      ? "Open Aside from the browser toolbar and turn on dark mode there to allow website access."
+      : "Allow website access so dark mode can read page styles.",
     resizePanel: "Resize panel",
     processing: "Processing…",
     chooseAction: "Choose an action",

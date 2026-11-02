@@ -1,3 +1,4 @@
+import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -6,9 +7,11 @@ import type { Copy } from "./en.js";
 
 const base = {
   sync: {
+    browserBoundary:
+      "Sinkronisasi hanya berlaku dalam browser yang sama. Chrome dan Firefox tidak bertukar setelan.",
     devicesTitle: "Di perangkat lain",
     joinSteps: [
-      "Masuk ke akun Chrome yang sama dan aktifkan sinkronisasi Chrome.",
+      `Masuk ke akun ${SYNC_ACCOUNT_NAME} yang sama dan aktifkan sinkronisasi ${BROWSER_NAME}.`,
       "Buka halaman Sinkronisasi di Aside dan gabung dengan frasa sandi yang sama.",
       "Izinkan akses ke layanan model saat diminta di perangkat tersebut.",
     ],
@@ -47,8 +50,7 @@ const base = {
     accessDenied:
       "Akses belum diizinkan. Anda dapat mencoba lagi; setelan yang disinkronkan tetap tersimpan.",
     joinExisting: "Gabung sinkronisasi yang sudah ada",
-    waitingHelp:
-      "Setelan sinkronisasi belum diterima. Jika sinkronisasi sudah aktif di perangkat lain, gunakan akun Chrome yang sama, aktifkan sinkronisasi Chrome, lalu tunggu. Setelah setelan tiba, Anda dapat memasukkan frasa sandi yang sudah ada.",
+    waitingHelp: `Setelan sinkronisasi belum diterima. Jika sinkronisasi sudah aktif di perangkat lain, gunakan akun ${SYNC_ACCOUNT_NAME} yang sama, aktifkan sinkronisasi ${BROWSER_NAME}, lalu tunggu. Setelah setelan tiba, Anda dapat memasukkan frasa sandi yang sudah ada.`,
     firstSetup: "Penyiapan pertama",
     checkAgain: "Periksa lagi",
     forgotPassphrase: "Lupa frasa sandi?",
@@ -59,8 +61,7 @@ const base = {
     localOnlyTitle: "Hanya di perangkat ini",
     createHelp:
       "Buat frasa sandi baru hanya jika sinkronisasi belum diaktifkan di perangkat mana pun. Perangkat lain akan bergabung dengan frasa sandi yang sama.",
-    joinHelp:
-      "Masukkan frasa sandi sinkronisasi yang sama dengan yang dibuat di perangkat lain. Gunakan akun Chrome yang sama dengan sinkronisasi aktif.",
+    joinHelp: `Masukkan frasa sandi sinkronisasi yang sama dengan yang dibuat di perangkat lain. Gunakan akun ${SYNC_ACCOUNT_NAME} yang sama dengan sinkronisasi aktif.`,
     details: "Detail dan pengelolaan sinkronisasi",
     scope: ["Koneksi model dan kunci API", "Tindakan", "Pengaturan renungan"],
     localOnly: [
@@ -73,14 +74,11 @@ const base = {
     joinText:
       "Gabungkan pengaturan perangkat ini dengan pengaturan yang disinkronkan? Sebagian pengaturan dapat diperbarui. Koneksi dan tindakan yang hanya ada di perangkat ini tetap disimpan. Koleksi dan preferensi pribadi tidak terpengaruh.",
     title: "Sinkronisasi",
-    intro:
-      "Sinkronkan pengaturan terenkripsi antarperangkat melalui akun Chrome Anda.",
-    requirements:
-      "Chrome mengirim perubahan di latar belakang. Jika belum diterima, periksa sinkronisasi Chrome dan jaringan.",
+    intro: `Sinkronkan pengaturan terenkripsi antarperangkat melalui akun ${SYNC_ACCOUNT_NAME} Anda.`,
+    requirements: `${BROWSER_NAME} mengirim perubahan di latar belakang. Jika belum diterima, periksa sinkronisasi ${BROWSER_NAME} dan jaringan.`,
     passphrase: "Frasa sandi sinkronisasi",
     confirmPassphrase: "Konfirmasi frasa sandi",
-    passphraseHelp:
-      "Simpan frasa sandi ini: frasa sandi tidak dapat dipulihkan. Masukkan lagi setelah memulai ulang Chrome atau memuat ulang ekstensi.",
+    passphraseHelp: `Simpan frasa sandi ini: frasa sandi tidak dapat dipulihkan. Masukkan lagi setelah memulai ulang ${BROWSER_NAME} atau memuat ulang ekstensi.`,
     locked:
       "Masukkan frasa sandi semula untuk melanjutkan sinkronisasi. Pengaturan lokal tetap dapat digunakan.",
     ready: "Sinkronisasi pengaturan aktif.",
@@ -90,8 +88,7 @@ const base = {
     syncNow: "Sinkronkan sekarang",
     stop: "Hentikan di perangkat ini",
     clear: "Hapus pengaturan tersinkron",
-    clearText:
-      "Hapus pengaturan terenkripsi dari Chrome Sync dan hentikan sinkronisasi di sini? Pengaturan dan kunci API lokal tetap tersimpan. Perangkat lain harus disiapkan ulang. Jika lupa frasa sandi, Anda dapat membuat salinan baru setelah menghapusnya.",
+    clearText: `Hapus pengaturan terenkripsi dari ${BROWSER_NAME} Sync dan hentikan sinkronisasi di sini? Pengaturan dan kunci API lokal tetap tersimpan. Perangkat lain harus disiapkan ulang. Jika lupa frasa sandi, Anda dapat membuat salinan baru setelah menghapusnya.`,
     stopText:
       "Hentikan sinkronisasi di perangkat ini? Pengaturan dan kunci API lokal tetap tersedia. Salinan tersinkron dan perangkat lain tidak terpengaruh.",
     done: "Pengaturan sinkronisasi diperbarui",
@@ -103,15 +100,14 @@ const base = {
       wrongPassphrase:
         "Frasa sandi salah atau data tersinkron gagal diautentikasi.",
       locked: "Buka kunci sinkronisasi dengan frasa sandi terlebih dahulu.",
-      waiting: "Chrome masih menerima pengaturan. Coba lagi sebentar.",
+      waiting: `${BROWSER_NAME} masih menerima pengaturan. Coba lagi sebentar.`,
       tooLarge:
         "Pengaturan melebihi ruang sinkronisasi yang tersedia. Persingkat instruksi atau hapus pengaturan yang tidak dipakai.",
       version: "Versi pengaturan berbeda. Perbarui Aside di perangkat Anda.",
       invalidData: "Pengaturan tersinkron tidak valid dan tidak diterapkan.",
       remoteMissing:
         "Salinan tersinkron dihapus. Pengaturan lokal tetap ada. Hapus pengaturan sinkronisasi lalu aktifkan kembali.",
-      unavailable:
-        "Sinkronisasi gagal. Periksa Chrome Sync dan koneksi Anda, lalu coba lagi.",
+      unavailable: `Sinkronisasi gagal. Periksa ${BROWSER_NAME} Sync dan koneksi Anda, lalu coba lagi.`,
     },
   },
   brand: "Aside",
@@ -143,7 +139,7 @@ const base = {
     settings: "Atur pintasan",
     unset: "Belum diatur",
     help: (name: string) =>
-      `Klik “Atur pintasan”, cari “${name}” di Chrome, lalu edit pintasan dan tekan kombinasi tombol baru. Anda juga dapat mengganti tombol yang sudah digunakan.`,
+      `Klik “Atur pintasan”, cari “${name}” di ${BROWSER_NAME}, lalu edit pintasan dan tekan kombinasi tombol baru. Anda juga dapat mengganti tombol yang sudah digunakan.`,
     items: {
       "switch-recent-tab": {
         name: "Beralih tab terakhir",
@@ -594,8 +590,9 @@ const full = {
     lightsEnabled: "Mode gelap: Aktif",
     lightsDisabled: "Mode gelap: Nonaktif",
     lightsSystem: "Mode gelap: Ikuti sistem",
-    lightsPermissionNeeded:
-      "Izinkan akses situs agar mode gelap dapat membaca gaya halaman.",
+    lightsPermissionNeeded: isFirefox
+      ? "Buka Aside dari bilah alat browser dan aktifkan mode gelap di panel untuk mengizinkan akses situs."
+      : "Izinkan akses situs agar mode gelap dapat membaca gaya halaman.",
     resizePanel: "Ubah ukuran panel",
     processing: "Memproses…",
     chooseAction: "Pilih tindakan",

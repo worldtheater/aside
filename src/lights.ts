@@ -2,15 +2,13 @@ import { LightsLocalRepairs } from "./lights-local.js";
 import { LightsEnhancer } from "./lights-enhance.js";
 import { enable, disable, isEnabled, setFetchMethod } from "darkreader";
 import { request } from "./client.js";
-import { resolveWebsite, websiteHostname } from "./website.js";
+import { modelError } from "./providers.js";
+import { resolveWebsite } from "./website.js";
 import type { LightsMode, LightsStatus, PublicConfig } from "./types.js";
 
-// all_frames can match HTTP children of browser/extension pages. Check the
-// top-level origin before starting; those surfaces are not supported websites.
-const websiteUrl = location.ancestorOrigins.length
-  ? location.ancestorOrigins[location.ancestorOrigins.length - 1]
-  : location.href;
-if (/^https?:\/\//i.test(websiteUrl) && !globalThis.__asideLights) {
+// The background validates browser-supplied frame/top-level URLs. Firefox does
+// not expose location.ancestorOrigins, and a frame cannot infer its top site.
+if (!globalThis.__asideLights) {
   globalThis.__asideLights = true;
   // DOM listeners survive extension reload, while the old isolated world's
   // runtime messaging no longer works. Let our old controller release its own
@@ -19,7 +17,7 @@ if (/^https?:\/\//i.test(websiteUrl) && !globalThis.__asideLights) {
   document.dispatchEvent(new Event(disposeEvent));
   let disposed = false;
   // Ordinary cross-origin frames still follow their top-level website's policy.
-  const hostname = websiteHostname(websiteUrl);
+  let hostname: string | null = null;
   const localRepairs = new LightsLocalRepairs();
   const enhancer = new LightsEnhancer();
   let enhanced = false,
@@ -143,7 +141,7 @@ if (/^https?:\/\//i.test(websiteUrl) && !globalThis.__asideLights) {
     if (!disposed && !frame) frame = requestAnimationFrame(apply);
   }
   function update(config: PublicConfig) {
-    if (disposed) return;
+    if (disposed || hostname === null) return;
     const features = resolveWebsite(config.website, hostname);
     mode = features.lights;
     enhanced = features.enhance;
@@ -161,7 +159,10 @@ if (/^https?:\/\//i.test(websiteUrl) && !globalThis.__asideLights) {
   const darkQuery = matchMedia("(prefers-color-scheme: dark)");
   darkQuery.addEventListener("change", schedule);
   window.addEventListener("load", schedule);
-  const ready = request("settings.public").then(update);
+  const ready = request("lights.context").then((context) => {
+    hostname = context.hostname;
+    update(context.config);
+  });
   const onMessage: Parameters<
     typeof chrome.runtime.onMessage.addListener
   >[0] = (message, sender, respond) => {
@@ -196,5 +197,8 @@ if (/^https?:\/\//i.test(websiteUrl) && !globalThis.__asideLights) {
     },
     { once: true },
   );
-  void ready.catch(console.warn);
+  void ready.catch((error) => {
+    document.dispatchEvent(new Event(disposeEvent));
+    if (modelError(error).code !== "notAllowed") console.warn(error);
+  });
 }

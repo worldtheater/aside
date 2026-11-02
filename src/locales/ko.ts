@@ -1,3 +1,4 @@
+import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -5,9 +6,11 @@ import type { Copy } from "./en.js";
 
 const base = {
   sync: {
+    browserBoundary:
+      "동일한 브라우저끼리만 동기화됩니다. Chrome과 Firefox 간에는 설정을 공유하지 않습니다.",
     devicesTitle: "다른 기기에서 참여",
     joinSteps: [
-      "같은 Chrome 계정으로 로그인하고 Chrome 동기화를 켜세요.",
+      `같은 ${SYNC_ACCOUNT_NAME} 계정으로 로그인하고 ${BROWSER_NAME} 동기화를 켜세요.`,
       "Aside의 동기화 페이지에서 같은 암호로 참여하세요.",
       "안내에 따라 해당 기기의 모델 서비스 접근을 허용하세요.",
     ],
@@ -44,8 +47,7 @@ const base = {
     accessDenied:
       "접근 권한이 부여되지 않았습니다. 다시 시도할 수 있으며, 동기화된 설정은 유지됩니다.",
     joinExisting: "기존 동기화에 참여",
-    waitingHelp:
-      "동기화 설정이 아직 도착하지 않았습니다. 다른 기기에서 이미 동기화를 켰다면 같은 Chrome 계정으로 로그인하고 Chrome 동기화를 켠 채 기다리세요. 설정이 도착하면 기존 암호를 입력해 참여할 수 있습니다.",
+    waitingHelp: `동기화 설정이 아직 도착하지 않았습니다. 다른 기기에서 이미 동기화를 켰다면 같은 ${SYNC_ACCOUNT_NAME} 계정으로 로그인하고 ${BROWSER_NAME} 동기화를 켠 채 기다리세요. 설정이 도착하면 기존 암호를 입력해 참여할 수 있습니다.`,
     firstSetup: "처음 동기화 설정",
     checkAgain: "다시 확인",
     forgotPassphrase: "암호를 잊으셨나요?",
@@ -56,8 +58,7 @@ const base = {
     localOnlyTitle: "이 기기에만 보관",
     createHelp:
       "어떤 기기에서도 동기화를 켜지 않은 경우에만 새 암호를 설정하세요. 다른 기기도 같은 암호로 참여합니다.",
-    joinHelp:
-      "다른 기기에서 설정한 것과 같은 동기화 암호를 입력하세요. 같은 Chrome 계정으로 로그인하고 Chrome 동기화를 켜야 합니다.",
+    joinHelp: `다른 기기에서 설정한 것과 같은 동기화 암호를 입력하세요. 같은 ${SYNC_ACCOUNT_NAME} 계정으로 로그인하고 ${BROWSER_NAME} 동기화를 켜야 합니다.`,
     details: "동기화 안내 및 관리",
     scope: ["모델 연결 및 API 키", "처리 방식", "단상 생성 설정"],
     localOnly: [
@@ -70,13 +71,11 @@ const base = {
     joinText:
       "이 기기의 설정을 동기화된 설정과 병합할까요? 일부 설정이 업데이트될 수 있습니다. 이 기기에만 있는 연결과 작업은 유지되며 컬렉션과 개인 환경설정은 영향을 받지 않습니다.",
     title: "동기화",
-    intro: "Chrome 계정으로 암호화된 설정을 기기 간에 동기화합니다.",
-    requirements:
-      "Chrome이 백그라운드에서 변경 사항을 전달합니다. 도착하지 않으면 Chrome 동기화와 네트워크를 확인하세요.",
+    intro: `${SYNC_ACCOUNT_NAME} 계정으로 암호화된 설정을 기기 간에 동기화합니다.`,
+    requirements: `${BROWSER_NAME}이 백그라운드에서 변경 사항을 전달합니다. 도착하지 않으면 ${BROWSER_NAME} 동기화와 네트워크를 확인하세요.`,
     passphrase: "동기화 암호",
     confirmPassphrase: "암호 확인",
-    passphraseHelp:
-      "암호는 복구할 수 없으니 잘 보관하세요. Chrome을 다시 시작하거나 확장 프로그램을 다시 로드하면 재입력해야 합니다.",
+    passphraseHelp: `암호는 복구할 수 없으니 잘 보관하세요. ${BROWSER_NAME}을 다시 시작하거나 확장 프로그램을 다시 로드하면 재입력해야 합니다.`,
     locked:
       "기존 암호를 입력해 동기화를 재개하세요. 이 기기의 설정은 계속 사용할 수 있습니다.",
     ready: "설정 동기화가 켜져 있습니다.",
@@ -86,8 +85,7 @@ const base = {
     syncNow: "지금 동기화",
     stop: "이 기기에서 중지",
     clear: "동기화된 설정 삭제",
-    clearText:
-      "Chrome 동기화에서 암호화된 설정을 삭제하고 이 기기의 동기화를 중지할까요? 로컬 설정과 API 키는 유지됩니다. 다른 기기는 다시 설정해야 합니다. 암호를 잊었다면 삭제 후 새 사본을 만들 수 있습니다.",
+    clearText: `${BROWSER_NAME} 동기화에서 암호화된 설정을 삭제하고 이 기기의 동기화를 중지할까요? 로컬 설정과 API 키는 유지됩니다. 다른 기기는 다시 설정해야 합니다. 암호를 잊었다면 삭제 후 새 사본을 만들 수 있습니다.`,
     stopText:
       "이 기기의 동기화를 중지할까요? 로컬 설정과 API 키는 계속 사용할 수 있으며 동기화된 사본과 다른 기기는 영향을 받지 않습니다.",
     done: "동기화 설정이 업데이트되었습니다",
@@ -98,15 +96,13 @@ const base = {
       mismatch: "암호가 일치하지 않습니다.",
       wrongPassphrase: "암호가 틀리거나 동기화 데이터 인증에 실패했습니다.",
       locked: "먼저 암호로 동기화 잠금을 해제하세요.",
-      waiting: "Chrome이 동기화 설정을 수신 중입니다. 잠시 후 다시 시도하세요.",
-      tooLarge:
-        "Chrome 동기화 용량을 초과했습니다. 지침을 줄이거나 불필요한 설정을 삭제하세요.",
+      waiting: `${BROWSER_NAME}이 동기화 설정을 수신 중입니다. 잠시 후 다시 시도하세요.`,
+      tooLarge: `${BROWSER_NAME} 동기화 용량을 초과했습니다. 지침을 줄이거나 불필요한 설정을 삭제하세요.`,
       version: "설정 버전이 다릅니다. 각 기기의 Aside를 업데이트하세요.",
       invalidData: "동기화 설정이 유효하지 않아 적용되지 않았습니다.",
       remoteMissing:
         "동기화 사본이 삭제되었습니다. 로컬 설정은 유지됩니다. 동기화 설정을 삭제한 후 다시 켜세요.",
-      unavailable:
-        "동기화하지 못했습니다. Chrome 동기화와 네트워크를 확인하고 다시 시도하세요.",
+      unavailable: `동기화하지 못했습니다. ${BROWSER_NAME} 동기화와 네트워크를 확인하고 다시 시도하세요.`,
     },
   },
   brand: "Aside",
@@ -138,7 +134,7 @@ const base = {
     settings: "단축키 설정",
     unset: "설정 안 됨",
     help: (name: string) =>
-      `‘단축키 설정’을 누르고 Chrome에서 ‘${name}’을 찾은 다음, 변경할 단축키를 선택하고 새 키 조합을 누르세요. 사용 중인 키도 다시 지정할 수 있습니다.`,
+      `‘단축키 설정’을 누르고 ${BROWSER_NAME}에서 ‘${name}’을 찾은 다음, 변경할 단축키를 선택하고 새 키 조합을 누르세요. 사용 중인 키도 다시 지정할 수 있습니다.`,
     items: {
       "switch-recent-tab": {
         name: "최근 탭 전환",
@@ -568,8 +564,9 @@ const full = {
     lightsEnabled: "다크 모드: 켬",
     lightsDisabled: "다크 모드: 끔",
     lightsSystem: "다크 모드: 시스템",
-    lightsPermissionNeeded:
-      "다크 모드가 페이지 스타일을 읽을 수 있도록 사이트 접근을 허용하세요.",
+    lightsPermissionNeeded: isFirefox
+      ? "브라우저 도구 모음에서 Aside를 열고 팝업에서 다크 모드를 켜 사이트 접근을 허용하세요."
+      : "다크 모드가 페이지 스타일을 읽을 수 있도록 사이트 접근을 허용하세요.",
     resizePanel: "패널 크기 조절",
     processing: "처리 중…",
     chooseAction: "작업 선택",

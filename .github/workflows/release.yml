@@ -50,23 +50,33 @@ jobs:
       - name: Package the extension
         run: python3 build.py
 
+      - name: Build and validate Firefox
+        run: |
+          npm run build:firefox
+          npm run lint:firefox
+          python3 build.py --firefox
+
       - name: Create or update draft GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           package_name="$(node -p 'require("./package.json").name')"
-          package_path="artifacts/${package_name}-${RELEASE_TAG#v}.zip"
+          package_paths=(
+            "artifacts/${package_name}-${RELEASE_TAG#v}.zip"
+            "artifacts/${package_name}-${RELEASE_TAG#v}-firefox.zip"
+            "artifacts/${package_name}-${RELEASE_TAG#v}-firefox-source.zip"
+          )
           is_draft="$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
             --jq ".[] | select(.tag_name == \"$RELEASE_TAG\") | .draft")"
           case "$is_draft" in
             true)
-              gh release upload "$RELEASE_TAG" "$package_path" \
+              gh release upload "$RELEASE_TAG" "${package_paths[@]}" \
                 --repo "$GITHUB_REPOSITORY" --clobber
               gh release edit "$RELEASE_TAG" \
                 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA"
               ;;
             "")
-              gh release create "$RELEASE_TAG" "$package_path" \
+              gh release create "$RELEASE_TAG" "${package_paths[@]}" \
                 --repo "$GITHUB_REPOSITORY" \
                 --verify-tag \
                 --draft \

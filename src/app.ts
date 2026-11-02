@@ -1,3 +1,5 @@
+import { faviconUrl, openShortcutSettings } from "./browser.js";
+import { storageChanges } from "./extension-storage.js";
 import { readStore } from "./store.js";
 import {
   renderSyncPage,
@@ -385,7 +387,7 @@ const refreshSyncPermissions = () => {
 };
 chrome.permissions.onAdded.addListener(refreshSyncPermissions);
 chrome.permissions.onRemoved.addListener(refreshSyncPermissions);
-chrome.storage.onChanged.addListener((changes, area) => {
+storageChanges.addListener((changes, area) => {
   if (
     state.route === "sync" &&
     !syncBusy &&
@@ -907,12 +909,6 @@ function collectionSource(item: CollectionItem) {
     return null;
   }
 }
-function collectionFavicon(url: URL) {
-  const favicon = new URL(chrome.runtime.getURL("/_favicon/"));
-  favicon.searchParams.set("pageUrl", url.href);
-  favicon.searchParams.set("size", "32");
-  return favicon.href;
-}
 function collectionItems() {
   const query = state.collectionQuery.trim().toLocaleLowerCase(locale);
   return data.collection
@@ -1066,7 +1062,8 @@ function renderCollectionCards() {
     .map((item) => {
       const source = collectionSource(item);
       const sourceLabel = source?.hostname || C.home.localSource;
-      const sourceContent = `${source ? `<img src="${e(collectionFavicon(source))}" alt="" width="16" height="16">` : icon("bookmark")}<span>${e(sourceLabel)}</span>`;
+      const favicon = source ? faviconUrl(source.href) : null;
+      const sourceContent = `${favicon ? `<img src="${e(favicon)}" alt="" width="16" height="16">` : icon(source ? "page" : "bookmark")}<span>${e(sourceLabel)}</span>`;
       return `<article class="collection-card"><button class="collection-card-open" data-op="collection-open" data-id="${e(item.id)}"><div class="collection-card-meta"><span>${e(localizeActionName(item.actionName, locale))}</span><time datetime="${e(item.createdAt)}">${new Intl.DateTimeFormat(locale, { month: "short", day: "numeric" }).format(new Date(item.createdAt))}</time></div><h3>${e(collectionTitle(item))}</h3><p>${e(item.text)}</p></button><div class="collection-card-footer">${source ? `<a class="collection-origin" href="${e(source.href)}" target="_blank" rel="noopener noreferrer" aria-label="${e(item.sourceTitle)}">${sourceContent}</a>` : `<span class="collection-origin" aria-label="${e(item.sourceTitle)}">${sourceContent}</span>`}${iconButton(C.home.options, "collection-menu", "more", `data-id="${e(item.id)}" aria-haspopup="true"`)}</div></article>`;
     })
     .join("");
@@ -1906,7 +1903,7 @@ document.addEventListener("click", async (event) => {
     } else if (op === "home") {
       navigate("home");
     } else if (op === "shortcut-settings") {
-      await chrome.tabs.create({ url: "chrome://extensions/shortcuts" });
+      await openShortcutSettings();
     } else if (op === "navigation-open") {
       setNavigationOpen(true);
       app.querySelector<HTMLElement>("[data-op=navigation-close]")?.focus();

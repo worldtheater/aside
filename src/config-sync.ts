@@ -1,3 +1,4 @@
+import type { LocalStorageArea } from "./private-storage.js";
 import { PROTECTED_CONFIGURATION } from "./credential-store.js";
 import type { StoreData } from "./types.js";
 import {
@@ -51,10 +52,12 @@ export interface SyncStatus {
 }
 export type SyncConnect = "create" | "join" | "unlock";
 interface Dependencies {
-  storage: Pick<
-    typeof chrome.storage,
-    "local" | "sync" | "session" | "onChanged"
-  >;
+  storage: {
+    local: LocalStorageArea;
+    sync: typeof chrome.storage.sync;
+    session: typeof chrome.storage.session;
+    onChanged: Pick<typeof chrome.storage.onChanged, "addListener">;
+  };
   mutate(
     fn: (data: StoreData) => Promise<void>,
     options?: { sync?: boolean },
@@ -80,7 +83,7 @@ export class ConfigurationSync {
   constructor(private deps: Dependencies) {
     this.ready = Promise.all(
       ["sync", "session"].map((area) =>
-        deps.storage[area as "sync" | "session"].setAccessLevel({
+        deps.storage[area as "sync" | "session"].setAccessLevel?.({
           accessLevel: "TRUSTED_CONTEXTS",
         }),
       ),

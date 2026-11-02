@@ -1,3 +1,5 @@
+import { faviconUrl, isFirefox, WEBSITE_RESOURCE_ORIGINS } from "./browser.js";
+import { storageChanges } from "./extension-storage.js";
 import { icon } from "./ui.js";
 import { HoverTips } from "./hover-tips.js";
 import { escapeHtml as escape } from "./html.js";
@@ -20,9 +22,7 @@ const supported = /^https?:/.test(tab?.url || "");
 const hostname = supported ? websiteHostname(tab.url!) : "";
 let featureBusy = false,
   lightsBusy = false;
-const favicon = new URL(chrome.runtime.getURL("/_favicon/"));
-favicon.searchParams.set("pageUrl", tab?.url || "");
-favicon.searchParams.set("size", "32");
+const favicon = faviconUrl(tab?.url || "", tab?.favIconUrl);
 const settingsIcon =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9m4 0h3M4 17h3m4 0h9M13 4v6M7 14v6"/></svg>';
 const playIcon =
@@ -31,7 +31,7 @@ const root = document.querySelector<HTMLElement>("#popup")!;
 root.innerHTML = `<header class="popup-header"><span class="popup-brand">${brandMark}<strong>${C.brand}</strong></span><button class="selection-button" id="settings" aria-label="${C.settings}">${settingsIcon}</button></header>
   <main class="popup-body">
     <section class="popup-page" aria-label="${P.currentPage}">
-      <div class="popup-page-summary"><div class="popup-page-site">${supported ? `<img src="${escape(favicon.href)}" alt="" width="18" height="18">` : ""}<span>${P.currentPage}</span>${supported ? `<strong>${escape(hostname)}</strong>` : ""}</div>
+      <div class="popup-page-summary"><div class="popup-page-site">${supported ? (favicon ? `<img src="${escape(favicon)}" alt="" width="18" height="18">` : icon("page")) : ""}<span>${P.currentPage}</span>${supported ? `<strong>${escape(hostname)}</strong>` : ""}</div>
       <p class="popup-title">${escape(supported ? tab.title : C.real.unsupportedPage)}</p></div>
       <button type="button" class="selection-button" id="website-lights"></button>
       <p class="popup-status" id="lights-status" role="status"></p>
@@ -63,7 +63,7 @@ function updateSetupHint(
   );
 }
 updateSetupHint(data);
-chrome.storage.onChanged.addListener((changes, area) => {
+storageChanges.addListener((changes, area) => {
   if (area === "local" && changes.settings?.newValue) {
     const settings = changes.settings.newValue as PublicSettings;
     updateSetupHint(settings);
@@ -122,17 +122,25 @@ async function cycleLights() {
   lightsBusy = true;
   renderLights();
   try {
+    if (
+      isFirefox &&
+      lights !== "off" &&
+      !(await chrome.permissions.request({ origins: WEBSITE_RESOURCE_ORIGINS }))
+    )
+      throw new ModelError("lightsPermissionRequired");
     data.website = await request("website.update", {
       tabId: tab.id,
       patch: { lights },
     });
   } catch (caught) {
     const error = modelError(caught);
-    field.textContent =
-      error.code === "permissionRequired"
-        ? C.real.lightsPermissionNeeded
-        : C.real.errors[error.code as keyof typeof C.real.errors] ||
-          error.message;
+    field.textContent = [
+      "permissionRequired",
+      "lightsPermissionRequired",
+    ].includes(error.code)
+      ? C.real.lightsPermissionNeeded
+      : C.real.errors[error.code as keyof typeof C.real.errors] ||
+        error.message;
   } finally {
     lightsBusy = false;
     renderLights();

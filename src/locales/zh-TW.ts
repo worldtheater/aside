@@ -1,3 +1,4 @@
+import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -5,9 +6,10 @@ import type { Copy } from "./en.js";
 
 const base = {
   sync: {
+    browserBoundary: "同步僅限同一種瀏覽器，Chrome 與 Firefox 無法互相同步。",
     devicesTitle: "在其他裝置上加入",
     joinSteps: [
-      "登入同一個 Chrome 帳戶，並開啟 Chrome 同步。",
+      `登入同一個 ${SYNC_ACCOUNT_NAME} 帳戶，並開啟 ${BROWSER_NAME} 同步。`,
       "開啟旁白的「同步」頁面，使用同一個通關密語加入。",
       "依照頁面提示，允許這台裝置存取模型服務。",
     ],
@@ -39,8 +41,7 @@ const base = {
     accessReady: "本機已授權所有模型服務位址。",
     accessDenied: "尚未取得存取權限，可重新授權。已同步的設定會保留。",
     joinExisting: "加入現有同步",
-    waitingHelp:
-      "尚未收到同步設定。如果已在其他裝置啟用，請登入同一個 Chrome 帳號並保持 Chrome 同步開啟。設定送達後，即可輸入原密語加入。",
+    waitingHelp: `尚未收到同步設定。如果已在其他裝置啟用，請登入同一個 ${SYNC_ACCOUNT_NAME} 帳號並保持 ${BROWSER_NAME} 同步開啟。設定送達後，即可輸入原密語加入。`,
     firstSetup: "首次啟用同步",
     checkAgain: "重新檢查",
     forgotPassphrase: "忘記密語？",
@@ -51,8 +52,7 @@ const base = {
     localOnlyTitle: "保留在本機",
     createHelp:
       "僅在所有裝置都尚未啟用同步時設定新密語，其他裝置將使用同一個密語加入。",
-    joinHelp:
-      "輸入你在其他裝置設定的同一個同步密語。各裝置需登入同一個 Chrome 帳號並開啟同步。",
+    joinHelp: `輸入你在其他裝置設定的同一個同步密語。各裝置需登入同一個 ${SYNC_ACCOUNT_NAME} 帳號並開啟同步。`,
     details: "同步說明與管理",
     scope: ["模型連線與 API Key", "處理方式", "隨想生成設定"],
     localOnly: [
@@ -65,13 +65,11 @@ const base = {
     joinText:
       "這台裝置的設定會與同步設定合併，部分設定可能更新。本機獨有的模型連線和處理方式會保留，收藏與個人偏好不受影響。",
     title: "同步",
-    intro: "透過 Chrome 帳號，在裝置之間同步加密的設定。",
-    requirements:
-      "變更由 Chrome 在背景傳送。若遲遲未收到，請檢查 Chrome 同步與網路連線。",
+    intro: `透過 ${SYNC_ACCOUNT_NAME} 帳號，在裝置之間同步加密的設定。`,
+    requirements: `變更由 ${BROWSER_NAME} 在背景傳送。若遲遲未收到，請檢查 ${BROWSER_NAME} 同步與網路連線。`,
     passphrase: "同步密語",
     confirmPassphrase: "確認密語",
-    passphraseHelp:
-      "請記住這個密語，遺忘後無法找回。重新啟動 Chrome 或重新載入擴充功能後需再次輸入。",
+    passphraseHelp: `請記住這個密語，遺忘後無法找回。重新啟動 ${BROWSER_NAME} 或重新載入擴充功能後需再次輸入。`,
     locked: "輸入原來的同步密語，繼續同步。本機設定仍可正常使用。",
     ready: "同步已啟用。",
     lastSync: "本機上次同步",
@@ -80,8 +78,7 @@ const base = {
     syncNow: "立即同步",
     stop: "停止本機同步",
     clear: "刪除同步設定",
-    clearText:
-      "從 Chrome 同步中刪除加密設定，並停止本機同步？本機設定和 API Key 會保留，其他裝置需重新設定才能繼續同步。如果忘記密語，刪除後可建立新的同步副本。",
+    clearText: `從 ${BROWSER_NAME} 同步中刪除加密設定，並停止本機同步？本機設定和 API Key 會保留，其他裝置需重新設定才能繼續同步。如果忘記密語，刪除後可建立新的同步副本。`,
     stopText:
       "停止這台裝置的同步？本機設定和 API Key 仍可使用，同步副本會保留，其他裝置不受影響。",
     done: "同步設定已更新",
@@ -92,14 +89,13 @@ const base = {
       mismatch: "兩次輸入的密語不一致。",
       wrongPassphrase: "密語不正確，或同步資料未通過完整性驗證。",
       locked: "請先輸入密語解鎖同步。",
-      waiting: "Chrome 正在接收同步設定，請稍後重試。",
-      tooLarge:
-        "設定超過 Chrome 可用同步空間，請縮短補充要求或刪除不用的設定後重試。",
+      waiting: `${BROWSER_NAME} 正在接收同步設定，請稍後重試。`,
+      tooLarge: `設定超過 ${BROWSER_NAME} 可用同步空間，請縮短補充要求或刪除不用的設定後重試。`,
       version: "同步設定需要不同版本的 Aside，請更新各裝置上的擴充功能。",
       invalidData: "同步設定無效，未套用至本機。",
       remoteMissing:
         "同步副本已被刪除，本機設定仍保留。請刪除同步設定後重新啟用。",
-      unavailable: "同步未完成，請檢查 Chrome 同步和網路後重試。",
+      unavailable: `同步未完成，請檢查 ${BROWSER_NAME} 同步和網路後重試。`,
     },
   },
   brand: "旁白",
@@ -130,7 +126,7 @@ const base = {
     settings: "設定快捷鍵",
     unset: "未設定",
     help: (name: string) =>
-      `點選「設定快捷鍵」，在 Chrome 中找到「${name}」，點選要修改的快捷鍵並按下新的組合鍵。已被占用的按鍵也可在該頁面重新分配。`,
+      `點選「設定快捷鍵」，在 ${BROWSER_NAME} 中找到「${name}」，點選要修改的快捷鍵並按下新的組合鍵。已被占用的按鍵也可在該頁面重新分配。`,
     items: {
       "switch-recent-tab": {
         name: "切換最近兩個分頁",
@@ -546,7 +542,9 @@ const full = {
     lightsEnabled: "暗色模式：開啟",
     lightsDisabled: "暗色模式：關閉",
     lightsSystem: "暗色模式：跟隨系統",
-    lightsPermissionNeeded: "請允許網站存取，讓暗色模式讀取網頁樣式。",
+    lightsPermissionNeeded: isFirefox
+      ? "請從瀏覽器工具列開啟旁白，在彈出視窗中開啟暗色模式並允許網站存取。"
+      : "請允許網站存取，讓暗色模式讀取網頁樣式。",
     resizePanel: "調整面板大小",
     processing: "處理中…",
     chooseAction: "選擇處理方式",

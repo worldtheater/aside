@@ -1,11 +1,49 @@
 import { build } from "esbuild";
 import ts from "typescript";
-import { readdir, rm, readFile, writeFile } from "node:fs/promises";
+import { readdir, rm, readFile, writeFile, mkdir, cp } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
+const firefox = process.argv.includes("--firefox");
+const output = firefox ? path.join(root, "dist/firefox") : root;
+const target = firefox ? "firefox147" : "chrome120";
+if (firefox) {
+  await rm(output, { recursive: true, force: true });
+  await mkdir(output, { recursive: true });
+  for (const name of await readdir(root)) {
+    if (
+      /\.(css|html)$/.test(name) ||
+      [
+        "icons",
+        "_locales",
+        "licenses",
+        "LICENSE",
+        "THIRD_PARTY_NOTICES.md",
+      ].includes(name)
+    )
+      await cp(path.join(root, name), path.join(output, name), {
+        recursive: true,
+      });
+  }
+  const manifest = JSON.parse(
+    await readFile(path.join(root, "manifest.json"), "utf8"),
+  );
+  const overrides = JSON.parse(
+    await readFile(path.join(root, "manifests/firefox.json"), "utf8"),
+  );
+  delete manifest.key;
+  delete manifest.minimum_chrome_version;
+  manifest.permissions = manifest.permissions.filter(
+    (permission) => permission !== "favicon",
+  );
+  Object.assign(manifest, overrides);
+  await writeFile(
+    path.join(output, "manifest.json"),
+    JSON.stringify(manifest, null, 2) + "\n",
+  );
+}
 execFileSync(
   process.execPath,
   [path.join(root, "node_modules/typescript/bin/tsc"), "--noEmit"],
@@ -13,8 +51,8 @@ execFileSync(
 );
 // Preserve the unpacked extension's path (and therefore its ID and local settings).
 // All root-level .js files are generated; source and tooling live in src/ and scripts/.
-for (const name of await readdir(root)) {
-  if (name.endsWith(".js")) await rm(path.join(root, name));
+for (const name of await readdir(output)) {
+  if (name.endsWith(".js")) await rm(path.join(output, name));
 }
 const modules = (await readdir(path.join(root, "src"))).filter(
   (name) =>
@@ -26,11 +64,11 @@ const modules = (await readdir(path.join(root, "src"))).filter(
 );
 await build({
   entryPoints: modules.map((name) => path.join(root, "src", name)),
-  outdir: root,
+  outdir: output,
   format: "esm",
   bundle: true,
   splitting: true,
-  target: "chrome120",
+  target,
   loader: { ".svg": "text", ".css": "text" },
 });
 // The website API shim must not wrap this extension's Promise-based chrome API.
@@ -56,7 +94,7 @@ if (!proxy)
     "Dark Reader API proxy was not found; review the pinned dependency before updating.",
   );
 await writeFile(
-  path.join(root, "lights-proxy.js"),
+  path.join(output, "lights-proxy.js"),
   `${proxy.getText(parsedDarkReader)}
 if (document.documentElement.dataset.darkreaderMode === "dynamic") {
   document.dispatchEvent(new CustomEvent("__darkreader__cleanUp"));
@@ -140,11 +178,11 @@ await build({
   entryPoints: ["content", "extract", "theme-bootstrap", "lights"].map((name) =>
     path.join(root, "src", `${name}.ts`),
   ),
-  outdir: root,
+  outdir: output,
   bundle: true,
   format: "iife",
   plugins: [darkReaderPlugin],
-  target: "chrome120",
+  target,
   loader: { ".svg": "text", ".css": "text" },
 });
-console.log(`Built Aside extension in ${root}`);
+console.log(`Built Aside extension in ${output}`);

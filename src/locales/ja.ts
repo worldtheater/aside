@@ -1,3 +1,4 @@
+import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -5,9 +6,11 @@ import type { Copy } from "./en.js";
 
 const base = {
   sync: {
+    browserBoundary:
+      "同期は同じブラウザー間でのみ行われます。Chrome と Firefox の間では設定を同期できません。",
     devicesTitle: "他の端末で参加する",
     joinSteps: [
-      "同じ Chrome アカウントにログインし、Chrome 同期を有効にします。",
+      `同じ ${SYNC_ACCOUNT_NAME} アカウントにログインし、${BROWSER_NAME} 同期を有効にします。`,
       "Aside の「同期」を開き、同じパスフレーズで参加します。",
       "画面の案内に従い、その端末からモデルサービスへのアクセスを許可します。",
     ],
@@ -43,8 +46,7 @@ const base = {
     accessDenied:
       "アクセスは許可されていません。再試行できます。同期済みの設定は保持されます。",
     joinExisting: "既存の同期に参加",
-    waitingHelp:
-      "同期設定がまだ届いていません。別のデバイスで同期を有効にしている場合は、同じ Chrome アカウントで Chrome の同期を有効にしてお待ちください。設定が届いたら、既存のパスフレーズで参加できます。",
+    waitingHelp: `同期設定がまだ届いていません。別のデバイスで同期を有効にしている場合は、同じ ${SYNC_ACCOUNT_NAME} アカウントで ${BROWSER_NAME} の同期を有効にしてお待ちください。設定が届いたら、既存のパスフレーズで参加できます。`,
     firstSetup: "初めて同期を設定",
     checkAgain: "再確認",
     forgotPassphrase: "パスフレーズを忘れた場合",
@@ -55,8 +57,7 @@ const base = {
     localOnlyTitle: "この端末に保持",
     createHelp:
       "どのデバイスでも同期を有効にしていない場合にのみ、新しいパスフレーズを設定してください。他のデバイスも同じパスフレーズで参加します。",
-    joinHelp:
-      "他の端末で設定したものと同じ同期パスフレーズを入力してください。同じ Chrome アカウントで Chrome 同期を有効にする必要があります。",
+    joinHelp: `他の端末で設定したものと同じ同期パスフレーズを入力してください。同じ ${SYNC_ACCOUNT_NAME} アカウントで ${BROWSER_NAME} 同期を有効にする必要があります。`,
     details: "同期の詳細と管理",
     scope: ["モデル接続と API キー", "アクション", "随想の生成設定"],
     localOnly: [
@@ -69,13 +70,11 @@ const base = {
     joinText:
       "この端末の設定と同期済みの設定を統合しますか？一部の設定は更新される場合があります。この端末だけにある接続とアクションは保持され、コレクションや個人設定には影響しません。",
     title: "同期",
-    intro: "Chrome アカウントを使って、暗号化した設定を端末間で同期します。",
-    requirements:
-      "変更は Chrome がバックグラウンドで転送します。届かない場合は Chrome 同期とネットワークを確認してください。",
+    intro: `${SYNC_ACCOUNT_NAME} アカウントを使って、暗号化した設定を端末間で同期します。`,
+    requirements: `変更は ${BROWSER_NAME} がバックグラウンドで転送します。届かない場合は ${BROWSER_NAME} 同期とネットワークを確認してください。`,
     passphrase: "同期パスフレーズ",
     confirmPassphrase: "パスフレーズの確認",
-    passphraseHelp:
-      "パスフレーズは復元できません。忘れずに保管してください。Chrome の再起動や拡張機能の再読み込み後に再入力が必要です。",
+    passphraseHelp: `パスフレーズは復元できません。忘れずに保管してください。${BROWSER_NAME} の再起動や拡張機能の再読み込み後に再入力が必要です。`,
     locked:
       "元のパスフレーズを入力して同期を再開します。この端末の設定は引き続き利用できます。",
     ready: "設定の同期が有効です。",
@@ -85,8 +84,7 @@ const base = {
     syncNow: "今すぐ同期",
     stop: "この端末の同期を停止",
     clear: "同期済み設定を削除",
-    clearText:
-      "Chrome 同期から暗号化した設定を削除し、この端末の同期を停止しますか？ローカル設定と API キーは保持されます。他の端末では再設定が必要です。パスフレーズを忘れた場合も、削除後に新しく設定できます。",
+    clearText: `${BROWSER_NAME} 同期から暗号化した設定を削除し、この端末の同期を停止しますか？ローカル設定と API キーは保持されます。他の端末では再設定が必要です。パスフレーズを忘れた場合も、削除後に新しく設定できます。`,
     stopText:
       "この端末の同期を停止しますか？ローカル設定と API キーは引き続き使用でき、同期済みのコピーと他の端末には影響しません。",
     done: "同期設定を更新しました",
@@ -97,17 +95,14 @@ const base = {
       mismatch: "パスフレーズが一致しません。",
       wrongPassphrase: "パスフレーズが違うか、同期データの認証に失敗しました。",
       locked: "先にパスフレーズで同期のロックを解除してください。",
-      waiting:
-        "Chrome が同期設定を受信中です。しばらくして再試行してください。",
-      tooLarge:
-        "設定が Chrome の同期容量を超えています。指示を短くするか不要な設定を削除してください。",
+      waiting: `${BROWSER_NAME} が同期設定を受信中です。しばらくして再試行してください。`,
+      tooLarge: `設定が ${BROWSER_NAME} の同期容量を超えています。指示を短くするか不要な設定を削除してください。`,
       version:
         "同期設定のバージョンが異なります。各端末の Aside を更新してください。",
       invalidData: "同期設定が無効なため適用しませんでした。",
       remoteMissing:
         "同期済みのコピーが削除されています。ローカル設定は保持されています。同期設定を削除して再度有効にしてください。",
-      unavailable:
-        "同期できませんでした。Chrome 同期とネットワークを確認して再試行してください。",
+      unavailable: `同期できませんでした。${BROWSER_NAME} 同期とネットワークを確認して再試行してください。`,
     },
   },
   brand: "Aside",
@@ -139,7 +134,7 @@ const base = {
     settings: "ショートカットを設定",
     unset: "未設定",
     help: (name: string) =>
-      `「ショートカットを設定」を押し、Chrome で「${name}」を見つけ、変更するショートカットに新しいキーの組み合わせを入力してください。使用中のキーも再割り当てできます。`,
+      `「ショートカットを設定」を押し、${BROWSER_NAME} で「${name}」を見つけ、変更するショートカットに新しいキーの組み合わせを入力してください。使用中のキーも再割り当てできます。`,
     items: {
       "switch-recent-tab": {
         name: "最近のタブを切り替え",
@@ -572,8 +567,9 @@ const full = {
     lightsEnabled: "ダークモード：オン",
     lightsDisabled: "ダークモード：オフ",
     lightsSystem: "ダークモード：システム",
-    lightsPermissionNeeded:
-      "ダークモードがページのスタイルを読み取れるよう、サイトへのアクセスを許可してください。",
+    lightsPermissionNeeded: isFirefox
+      ? "ブラウザーのツールバーから Aside を開き、ポップアップでダークモードをオンにしてサイトへのアクセスを許可してください。"
+      : "ダークモードがページのスタイルを読み取れるよう、サイトへのアクセスを許可してください。",
     resizePanel: "パネルのサイズを変更",
     processing: "処理中…",
     chooseAction: "アクションを選択",

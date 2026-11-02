@@ -1,3 +1,4 @@
+import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -5,9 +6,11 @@ import type { Copy } from "./en.js";
 
 const base = {
   sync: {
+    browserBoundary:
+      "La synchronisation reste propre à chaque navigateur : Chrome et Firefox ne partagent pas leurs paramètres.",
     devicesTitle: "Sur un autre appareil",
     joinSteps: [
-      "Connectez-vous au même compte Chrome et activez la synchronisation Chrome.",
+      `Connectez-vous au même compte ${SYNC_ACCOUNT_NAME} et activez la synchronisation ${BROWSER_NAME}.`,
       "Ouvrez la page Synchronisation d’Aside et rejoignez-la avec la même phrase secrète.",
       "Autorisez l’accès aux services de modèles lorsque cet appareil le demande.",
     ],
@@ -47,8 +50,7 @@ const base = {
     accessDenied:
       "L’accès n’a pas été autorisé. Vous pouvez réessayer ; les paramètres synchronisés sont conservés.",
     joinExisting: "Rejoindre une synchronisation existante",
-    waitingHelp:
-      "Les paramètres synchronisés ne sont pas encore arrivés. Si la synchronisation est déjà activée sur un autre appareil, utilisez le même compte Chrome, activez la synchronisation Chrome et patientez. Vous pourrez ensuite saisir votre phrase secrète existante.",
+    waitingHelp: `Les paramètres synchronisés ne sont pas encore arrivés. Si la synchronisation est déjà activée sur un autre appareil, utilisez le même compte ${SYNC_ACCOUNT_NAME}, activez la synchronisation ${BROWSER_NAME} et patientez. Vous pourrez ensuite saisir votre phrase secrète existante.`,
     firstSetup: "Première configuration",
     checkAgain: "Vérifier à nouveau",
     forgotPassphrase: "Phrase secrète oubliée ?",
@@ -59,8 +61,7 @@ const base = {
     localOnlyTitle: "Sur cet appareil",
     createHelp:
       "Ne définissez une nouvelle phrase secrète que si aucun de vos appareils n’a encore activé la synchronisation. Les autres appareils utiliseront la même phrase pour rejoindre.",
-    joinHelp:
-      "Saisissez la même phrase secrète que celle définie sur un autre appareil. Utilisez le même compte Chrome avec la synchronisation Chrome activée.",
+    joinHelp: `Saisissez la même phrase secrète que celle définie sur un autre appareil. Utilisez le même compte ${SYNC_ACCOUNT_NAME} avec la synchronisation ${BROWSER_NAME} activée.`,
     details: "Détails et gestion de la synchronisation",
     scope: [
       "Connexions aux modèles et clés API",
@@ -77,14 +78,11 @@ const base = {
     joinText:
       "Fusionner les paramètres de cet appareil avec ceux synchronisés ? Certains paramètres peuvent être mis à jour. Les connexions et actions propres à cet appareil sont conservées. Les collections et préférences personnelles ne sont pas affectées.",
     title: "Synchronisation",
-    intro:
-      "Synchronisez vos paramètres chiffrés entre appareils avec votre compte Chrome.",
-    requirements:
-      "Chrome transmet les modifications en arrière-plan. Si elles n’arrivent pas, vérifiez la synchronisation Chrome et le réseau.",
+    intro: `Synchronisez vos paramètres chiffrés entre appareils avec votre compte ${SYNC_ACCOUNT_NAME}.`,
+    requirements: `${BROWSER_NAME} transmet les modifications en arrière-plan. Si elles n’arrivent pas, vérifiez la synchronisation ${BROWSER_NAME} et le réseau.`,
     passphrase: "Phrase secrète de synchronisation",
     confirmPassphrase: "Confirmer la phrase secrète",
-    passphraseHelp:
-      "Conservez cette phrase secrète : elle ne peut pas être récupérée. Saisissez-la à nouveau après un redémarrage de Chrome ou un rechargement de l’extension.",
+    passphraseHelp: `Conservez cette phrase secrète : elle ne peut pas être récupérée. Saisissez-la à nouveau après un redémarrage de ${BROWSER_NAME} ou un rechargement de l’extension.`,
     locked:
       "Saisissez votre phrase secrète d’origine pour reprendre la synchronisation. Vos paramètres locaux restent disponibles.",
     ready: "La synchronisation est activée.",
@@ -94,8 +92,7 @@ const base = {
     syncNow: "Synchroniser maintenant",
     stop: "Arrêter sur cet appareil",
     clear: "Supprimer les paramètres synchronisés",
-    clearText:
-      "Supprimer les paramètres chiffrés de Chrome Sync et arrêter la synchronisation ici ? Les paramètres locaux et clés API seront conservés. Les autres appareils devront être reconfigurés. Si vous avez oublié la phrase secrète, vous pourrez créer une nouvelle copie.",
+    clearText: `Supprimer les paramètres chiffrés de ${BROWSER_NAME} Sync et arrêter la synchronisation ici ? Les paramètres locaux et clés API seront conservés. Les autres appareils devront être reconfigurés. Si vous avez oublié la phrase secrète, vous pourrez créer une nouvelle copie.`,
     stopText:
       "Arrêter la synchronisation sur cet appareil ? Les paramètres locaux et clés API restent disponibles. La copie synchronisée et les autres appareils ne sont pas affectés.",
     done: "Paramètres de synchronisation mis à jour",
@@ -109,8 +106,7 @@ const base = {
         "Phrase secrète incorrecte ou données synchronisées non authentifiables.",
       locked:
         "Déverrouillez d’abord la synchronisation avec votre phrase secrète.",
-      waiting:
-        "Chrome reçoit les paramètres synchronisés. Réessayez dans un instant.",
+      waiting: `${BROWSER_NAME} reçoit les paramètres synchronisés. Réessayez dans un instant.`,
       tooLarge:
         "La configuration dépasse l’espace de synchronisation disponible. Raccourcissez les instructions ou supprimez des paramètres inutilisés.",
       version:
@@ -119,8 +115,7 @@ const base = {
         "Les paramètres synchronisés sont invalides et n’ont pas été appliqués.",
       remoteMissing:
         "La copie synchronisée a été supprimée. Les paramètres locaux sont conservés. Supprimez la configuration de synchronisation puis réactivez-la.",
-      unavailable:
-        "Échec de la synchronisation. Vérifiez Chrome Sync et votre connexion, puis réessayez.",
+      unavailable: `Échec de la synchronisation. Vérifiez ${BROWSER_NAME} Sync et votre connexion, puis réessayez.`,
     },
   },
   brand: "Aside",
@@ -152,7 +147,7 @@ const base = {
     settings: "Configurer les raccourcis",
     unset: "Non défini",
     help: (name: string) =>
-      `Cliquez sur « Configurer les raccourcis », cherchez « ${name} » dans Chrome, puis sélectionnez un raccourci et saisissez la nouvelle combinaison. Vous pouvez aussi réattribuer les touches déjà utilisées.`,
+      `Cliquez sur « Configurer les raccourcis », cherchez « ${name} » dans ${BROWSER_NAME}, puis sélectionnez un raccourci et saisissez la nouvelle combinaison. Vous pouvez aussi réattribuer les touches déjà utilisées.`,
     items: {
       "switch-recent-tab": {
         name: "Basculer entre les onglets récents",
@@ -602,8 +597,9 @@ const full = {
     lightsEnabled: "Mode sombre : activé",
     lightsDisabled: "Mode sombre : désactivé",
     lightsSystem: "Mode sombre : système",
-    lightsPermissionNeeded:
-      "Autorisez l’accès au site pour que le mode sombre puisse lire les styles de la page.",
+    lightsPermissionNeeded: isFirefox
+      ? "Ouvrez Aside depuis la barre d’outils du navigateur et activez le mode sombre dans la fenêtre pour autoriser l’accès aux sites."
+      : "Autorisez l’accès au site pour que le mode sombre puisse lire les styles de la page.",
     resizePanel: "Redimensionner le panneau",
     processing: "Traitement…",
     chooseAction: "Choisir une action",

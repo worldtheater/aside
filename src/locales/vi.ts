@@ -1,3 +1,4 @@
+import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -6,9 +7,11 @@ import type { Copy } from "./en.js";
 
 const base = {
   sync: {
+    browserBoundary:
+      "Chỉ đồng bộ giữa các trình duyệt cùng loại. Chrome và Firefox không trao đổi cài đặt.",
     devicesTitle: "Tham gia trên thiết bị khác",
     joinSteps: [
-      "Đăng nhập cùng tài khoản Chrome và bật đồng bộ hóa Chrome.",
+      `Đăng nhập cùng tài khoản ${SYNC_ACCOUNT_NAME} và bật đồng bộ hóa ${BROWSER_NAME}.`,
       "Mở trang Đồng bộ của Aside và tham gia bằng cùng cụm mật khẩu.",
       "Cho phép thiết bị truy cập dịch vụ mô hình khi được nhắc.",
     ],
@@ -46,8 +49,7 @@ const base = {
     accessDenied:
       "Chưa được cấp quyền truy cập. Bạn có thể thử lại; cài đặt đã đồng bộ vẫn được giữ nguyên.",
     joinExisting: "Tham gia đồng bộ hiện có",
-    waitingHelp:
-      "Chưa nhận được cài đặt đồng bộ. Nếu đã bật đồng bộ trên thiết bị khác, hãy dùng cùng tài khoản Chrome, bật đồng bộ Chrome và chờ. Khi cài đặt được chuyển đến, bạn có thể nhập cụm mật khẩu hiện có để tham gia.",
+    waitingHelp: `Chưa nhận được cài đặt đồng bộ. Nếu đã bật đồng bộ trên thiết bị khác, hãy dùng cùng tài khoản ${SYNC_ACCOUNT_NAME}, bật đồng bộ ${BROWSER_NAME} và chờ. Khi cài đặt được chuyển đến, bạn có thể nhập cụm mật khẩu hiện có để tham gia.`,
     firstSetup: "Thiết lập lần đầu",
     checkAgain: "Kiểm tra lại",
     forgotPassphrase: "Quên mật khẩu?",
@@ -58,8 +60,7 @@ const base = {
     localOnlyTitle: "Chỉ trên thiết bị này",
     createHelp:
       "Chỉ đặt cụm mật khẩu mới nếu chưa bật đồng bộ trên bất kỳ thiết bị nào. Các thiết bị khác sẽ dùng cùng cụm mật khẩu để tham gia.",
-    joinHelp:
-      "Nhập đúng mật khẩu đồng bộ đã đặt trên thiết bị khác. Dùng cùng tài khoản Chrome và bật đồng bộ Chrome.",
+    joinHelp: `Nhập đúng mật khẩu đồng bộ đã đặt trên thiết bị khác. Dùng cùng tài khoản ${SYNC_ACCOUNT_NAME} và bật đồng bộ ${BROWSER_NAME}.`,
     details: "Chi tiết và quản lý đồng bộ",
     scope: ["Kết nối mô hình và khóa API", "Thao tác", "Cài đặt tạo suy ngẫm"],
     localOnly: [
@@ -72,14 +73,11 @@ const base = {
     joinText:
       "Gộp cài đặt của thiết bị này với cài đặt đã đồng bộ? Một số cài đặt có thể được cập nhật. Kết nối và tác vụ chỉ có trên thiết bị này sẽ được giữ lại. Bộ sưu tập và tùy chọn cá nhân không bị ảnh hưởng.",
     title: "Đồng bộ",
-    intro:
-      "Đồng bộ cài đặt được mã hóa giữa các thiết bị qua tài khoản Chrome.",
-    requirements:
-      "Chrome truyền thay đổi trong nền. Nếu chưa nhận được, hãy kiểm tra đồng bộ hóa Chrome và kết nối mạng.",
+    intro: `Đồng bộ cài đặt được mã hóa giữa các thiết bị qua tài khoản ${SYNC_ACCOUNT_NAME}.`,
+    requirements: `${BROWSER_NAME} truyền thay đổi trong nền. Nếu chưa nhận được, hãy kiểm tra đồng bộ hóa ${BROWSER_NAME} và kết nối mạng.`,
     passphrase: "Cụm mật khẩu đồng bộ",
     confirmPassphrase: "Xác nhận cụm mật khẩu",
-    passphraseHelp:
-      "Hãy giữ mật khẩu này vì không thể khôi phục. Bạn cần nhập lại sau khi khởi động lại Chrome hoặc tải lại tiện ích.",
+    passphraseHelp: `Hãy giữ mật khẩu này vì không thể khôi phục. Bạn cần nhập lại sau khi khởi động lại ${BROWSER_NAME} hoặc tải lại tiện ích.`,
     locked:
       "Nhập mật khẩu ban đầu để tiếp tục đồng bộ. Cài đặt trên thiết bị này vẫn dùng được.",
     ready: "Đã bật đồng bộ cài đặt.",
@@ -89,8 +87,7 @@ const base = {
     syncNow: "Đồng bộ ngay",
     stop: "Dừng trên thiết bị này",
     clear: "Xóa cài đặt đã đồng bộ",
-    clearText:
-      "Xóa cài đặt được mã hóa khỏi Chrome Sync và dừng đồng bộ trên thiết bị này? Cài đặt và khóa API cục bộ được giữ lại. Các thiết bị khác cần thiết lập lại. Nếu quên cụm mật khẩu, bạn có thể tạo bản mới sau khi xóa.",
+    clearText: `Xóa cài đặt được mã hóa khỏi ${BROWSER_NAME} Sync và dừng đồng bộ trên thiết bị này? Cài đặt và khóa API cục bộ được giữ lại. Các thiết bị khác cần thiết lập lại. Nếu quên cụm mật khẩu, bạn có thể tạo bản mới sau khi xóa.`,
     stopText:
       "Dừng đồng bộ trên thiết bị này? Cài đặt và khóa API cục bộ vẫn dùng được. Bản đồng bộ và các thiết bị khác không bị ảnh hưởng.",
     done: "Đã cập nhật cài đặt đồng bộ",
@@ -102,7 +99,7 @@ const base = {
       wrongPassphrase:
         "Cụm mật khẩu không đúng hoặc không thể xác thực dữ liệu đồng bộ.",
       locked: "Hãy mở khóa đồng bộ bằng cụm mật khẩu trước.",
-      waiting: "Chrome đang nhận cài đặt. Hãy thử lại sau giây lát.",
+      waiting: `${BROWSER_NAME} đang nhận cài đặt. Hãy thử lại sau giây lát.`,
       tooLarge:
         "Cài đặt vượt quá dung lượng đồng bộ hiện có. Hãy rút gọn hướng dẫn hoặc xóa cài đặt không dùng.",
       version:
@@ -110,8 +107,7 @@ const base = {
       invalidData: "Cài đặt đồng bộ không hợp lệ nên chưa được áp dụng.",
       remoteMissing:
         "Bản đồng bộ đã bị xóa. Cài đặt cục bộ vẫn còn. Hãy xóa thiết lập đồng bộ rồi bật lại.",
-      unavailable:
-        "Không thể đồng bộ. Kiểm tra Chrome Sync và kết nối mạng rồi thử lại.",
+      unavailable: `Không thể đồng bộ. Kiểm tra ${BROWSER_NAME} Sync và kết nối mạng rồi thử lại.`,
     },
   },
   brand: "Aside",
@@ -143,7 +139,7 @@ const base = {
     settings: "Đặt phím tắt",
     unset: "Chưa đặt",
     help: (name: string) =>
-      `Nhấp vào “Đặt phím tắt”, tìm “${name}” trong Chrome, rồi chỉnh sửa phím tắt và nhấn tổ hợp phím mới. Bạn cũng có thể gán lại các phím đang dùng.`,
+      `Nhấp vào “Đặt phím tắt”, tìm “${name}” trong ${BROWSER_NAME}, rồi chỉnh sửa phím tắt và nhấn tổ hợp phím mới. Bạn cũng có thể gán lại các phím đang dùng.`,
     items: {
       "switch-recent-tab": {
         name: "Chuyển tab gần đây",
@@ -582,8 +578,9 @@ const full = {
     lightsEnabled: "Chế độ tối: Bật",
     lightsDisabled: "Chế độ tối: Tắt",
     lightsSystem: "Chế độ tối: Theo hệ thống",
-    lightsPermissionNeeded:
-      "Cho phép truy cập trang web để chế độ tối đọc được kiểu hiển thị của trang.",
+    lightsPermissionNeeded: isFirefox
+      ? "Mở Aside từ thanh công cụ trình duyệt, bật chế độ tối trong bảng và cho phép truy cập trang web."
+      : "Cho phép truy cập trang web để chế độ tối đọc được kiểu hiển thị của trang.",
     resizePanel: "Đổi kích thước bảng",
     processing: "Đang xử lý…",
     chooseAction: "Chọn thao tác",

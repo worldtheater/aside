@@ -209,3 +209,11 @@ GitHub Pages 从 `main` 分支的 `docs/` 提供静态页面。首页使用 `web
 ### 自定义文本翻译
 
 悬浮菜单的「文本翻译」打开 `src/text-translation.ts` 中的独立输入面板，复用翻译处理方式、语言选项和请求管线。输入文字作为一整段发送，不提取当前网页内容；调用记录使用 `text` 来源。关闭、停止和网页导航会取消未完成的请求。专项回归：构建后运行 `node tests/browser.cjs --text-translation-only`。
+
+## Firefox 构建
+
+Chrome 与 Firefox 共用源码；构建差异由 `scripts/build.mjs` 和 `manifests/firefox.json` 管理。`npm run build:firefox` 输出到 `dist/firefox/`，不覆盖 Chrome 根目录产物。`npm run package:firefox:dev` 生成 Firefox ZIP、对应审核源码包，并刷新固定调试目录 `artifacts/unpacked-firefox/`。Chrome 仍使用 `npm run package:dev` 和 `artifacts/unpacked/`。
+
+Firefox 最低桌面版本为 147，固定 Gecko ID 独立于 Chrome ID。后台使用模块事件页，取消 Chrome 专属 favicon 权限及公钥字段。`src/browser.ts` 集中管理浏览器入口和名称；不要在各界面散落 UA 判断。`src/extension-storage.ts` 统一可信本机存储和变化通知：Chrome 使用可信 `storage.local`，Firefox 使用扩展源 IndexedDB；不要直接从新增业务代码读写 `chrome.storage.local`，也不要将 Firefox 原生 local 事件作为可信配置通知。两端 API Key 加密方式一致。
+
+`npm run test:firefox` 在隔离 Firefox 中验证主要路径及内容脚本权限边界；`npm run lint:firefox` 检查实际构建清单与 API。Firefox 原生同步仅在 Mozilla 账号之间传递，不能与 Chrome Sync 互通。详细构建及源码审核说明见 [FIREFOX.md](FIREFOX.md)。标签发布流水线保留 Chrome 包，并增加独立 Firefox 包和审核源码包；不自动签名或提交 AMO。

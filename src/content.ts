@@ -132,7 +132,10 @@ async function initializePagework() {
   };
   const errorText = (caught: unknown) => {
     const e = modelError(caught);
-    const label = S.errors[e.code as keyof typeof S.errors] || S.failed;
+    const label =
+      e.code === "lightsPermissionRequired"
+        ? S.lightsPermissionNeeded
+        : S.errors[e.code as keyof typeof S.errors] || S.failed;
     return e.message !== e.code ? `${label}\n${e.message}` : label;
   };
   const selectionTools = new SelectionTools($("selection"), {

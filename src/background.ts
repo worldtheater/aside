@@ -1,3 +1,5 @@
+import { isFirefox, WEBSITE_RESOURCE_ORIGINS } from "./browser.js";
+import { configurationStorage } from "./extension-storage.js";
 import { createSecretRedactor } from "./redaction.js";
 import { ConfigurationSync } from "./config-sync.js";
 import { resolveLocale } from "./locale.js";
@@ -25,6 +27,7 @@ import type {
   Connection,
   RequestMessage,
   ProcessPayload,
+  PublicConfig,
   UsageSource,
   UsageRecord,
   UsageDetails,
@@ -90,10 +93,16 @@ function validateOutputLength(value: string | undefined) {
   if (value !== undefined && !Object.hasOwn(OUTPUT_LENGTH_PROMPTS, value))
     throw new ModelError("invalidAction");
 }
-const publicConfig = (settings: Settings) => ({
+const publicConfig = (settings: Settings): PublicConfig => ({
   ...publicSettings(settings),
   actions: settings.actions.map((a) => resolveAction(a, settings)!),
-  strings: messages[localeOf(settings)].real,
+  // Locale formatters are local functions, not part of the wire payload.
+  // Chrome omits them during JSON serialization; Firefox rejects them.
+  strings: Object.fromEntries(
+    Object.entries(messages[localeOf(settings)].real).filter(
+      ([, value]) => typeof value !== "function",
+    ),
+  ) as PublicConfig["strings"],
 });
 // Eligibility follows the top-level website, even for related about/data/blob
 // frames. All URL/frame fields here are supplied by Chrome, never by a message.
@@ -253,7 +262,7 @@ function syncSelectionMenu() {
   return update;
 }
 const configurationSync = new ConfigurationSync({
-  storage: chrome.storage,
+  storage: configurationStorage,
   mutate,
   applied: async () => {
     await syncSelectionMenu();
@@ -362,14 +371,18 @@ chrome.runtime.onMessage.addListener(
           )
             throw new ModelError("notAllowed");
         }
-        // Both entry points request CSS access in the click's message gesture.
-        if (
-          ["on", "system"].includes(message.patch?.lights as string) &&
-          !(await chrome.permissions.request({
-            origins: ["http://*/*", "https://*/*"],
-          }))
-        )
-          throw new ModelError("permissionRequired");
+        // Firefox does not carry user activation through runtime messages.
+        // Its popup requests access directly; page controls use existing grants.
+        if (["on", "system"].includes(message.patch?.lights as string)) {
+          const permissions = { origins: WEBSITE_RESOURCE_ORIGINS };
+          const granted = isFirefox
+            ? await chrome.permissions.contains(permissions)
+            : await chrome.permissions.request(permissions);
+          if (!granted)
+            throw new ModelError(
+              isFirefox ? "lightsPermissionRequired" : "permissionRequired",
+            );
+        }
         await initialize();
         if (!DECISION_MODELS_ENABLED && message.patch?.enhance === true)
           throw new ModelError("notAllowed");
@@ -399,6 +412,10 @@ chrome.runtime.onMessage.addListener(
         return website;
       }
       await initialize();
+      if (message.type === "lights.context") {
+        const hostname = websiteHostname(lightsWebsite(sender));
+        return { hostname, config: publicConfig((await readStore()).settings) };
+      }
       if (message.type === "lights.cancel") {
         lightsWebsite(sender);
         enhancementJobs

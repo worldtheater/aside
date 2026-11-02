@@ -1,3 +1,4 @@
+import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -5,9 +6,11 @@ import type { Copy } from "./en.js";
 
 const base = {
   sync: {
+    browserBoundary:
+      "La sincronización solo funciona entre navegadores del mismo tipo. Chrome y Firefox no intercambian ajustes.",
     devicesTitle: "En otro dispositivo",
     joinSteps: [
-      "Inicia sesión en la misma cuenta de Chrome y activa la sincronización de Chrome.",
+      `Inicia sesión en la misma cuenta de ${SYNC_ACCOUNT_NAME} y activa la sincronización de ${BROWSER_NAME}.`,
       "Abre la página de sincronización de Aside y únete con la misma frase de contraseña.",
       "Permite el acceso a los servicios de modelos cuando se solicite en ese dispositivo.",
     ],
@@ -46,8 +49,7 @@ const base = {
     accessDenied:
       "No se concedió acceso. Puedes volver a intentarlo; la configuración sincronizada se conserva.",
     joinExisting: "Unirse a una sincronización existente",
-    waitingHelp:
-      "La configuración sincronizada aún no ha llegado. Si ya activaste la sincronización en otro dispositivo, usa la misma cuenta de Chrome, activa la sincronización de Chrome y espera. Cuando llegue la configuración, podrás introducir tu frase de contraseña actual.",
+    waitingHelp: `La configuración sincronizada aún no ha llegado. Si ya activaste la sincronización en otro dispositivo, usa la misma cuenta de ${SYNC_ACCOUNT_NAME}, activa la sincronización de ${BROWSER_NAME} y espera. Cuando llegue la configuración, podrás introducir tu frase de contraseña actual.`,
     firstSetup: "Configurar por primera vez",
     checkAgain: "Volver a comprobar",
     forgotPassphrase: "¿Olvidaste la frase de contraseña?",
@@ -58,8 +60,7 @@ const base = {
     localOnlyTitle: "Solo en este dispositivo",
     createHelp:
       "Crea una nueva frase de contraseña solo si aún no has activado la sincronización en ningún dispositivo. Los demás dispositivos usarán la misma frase para unirse.",
-    joinHelp:
-      "Introduce la misma frase de contraseña que configuraste en otro dispositivo. Usa la misma cuenta de Chrome con la sincronización activada.",
+    joinHelp: `Introduce la misma frase de contraseña que configuraste en otro dispositivo. Usa la misma cuenta de ${SYNC_ACCOUNT_NAME} con la sincronización activada.`,
     details: "Detalles y gestión de sincronización",
     scope: [
       "Conexiones de modelos y claves API",
@@ -76,14 +77,11 @@ const base = {
     joinText:
       "¿Combinar los ajustes de este dispositivo con los sincronizados? Algunos pueden actualizarse. Se conservan las conexiones y acciones exclusivas de este dispositivo. Las colecciones y preferencias personales no se ven afectadas.",
     title: "Sincronización",
-    intro:
-      "Sincroniza la configuración cifrada entre dispositivos con tu cuenta de Chrome.",
-    requirements:
-      "Chrome transmite los cambios en segundo plano. Si no llegan, revisa la sincronización de Chrome y la red.",
+    intro: `Sincroniza la configuración cifrada entre dispositivos con tu cuenta de ${SYNC_ACCOUNT_NAME}.`,
+    requirements: `${BROWSER_NAME} transmite los cambios en segundo plano. Si no llegan, revisa la sincronización de ${BROWSER_NAME} y la red.`,
     passphrase: "Frase de contraseña",
     confirmPassphrase: "Confirmar frase de contraseña",
-    passphraseHelp:
-      "Guarda esta frase de contraseña: no se puede recuperar. Tendrás que introducirla de nuevo al reiniciar Chrome o recargar la extensión.",
+    passphraseHelp: `Guarda esta frase de contraseña: no se puede recuperar. Tendrás que introducirla de nuevo al reiniciar ${BROWSER_NAME} o recargar la extensión.`,
     locked:
       "Introduce tu frase de contraseña original para reanudar la sincronización. Tus ajustes locales siguen disponibles.",
     ready: "La sincronización está activada.",
@@ -93,8 +91,7 @@ const base = {
     syncNow: "Sincronizar ahora",
     stop: "Detener en este dispositivo",
     clear: "Eliminar configuración sincronizada",
-    clearText:
-      "¿Eliminar la configuración cifrada de Chrome Sync y detener la sincronización aquí? Los ajustes y claves API locales se conservan. Los demás dispositivos deberán configurarse de nuevo. Si olvidaste la frase, podrás crear una nueva copia.",
+    clearText: `¿Eliminar la configuración cifrada de ${BROWSER_NAME} Sync y detener la sincronización aquí? Los ajustes y claves API locales se conservan. Los demás dispositivos deberán configurarse de nuevo. Si olvidaste la frase, podrás crear una nueva copia.`,
     stopText:
       "¿Detener la sincronización en este dispositivo? Los ajustes y claves API locales seguirán disponibles. La copia sincronizada y los otros dispositivos no se verán afectados.",
     done: "Configuración de sincronización actualizada",
@@ -107,8 +104,7 @@ const base = {
         "La frase es incorrecta o no se pudieron autenticar los datos sincronizados.",
       locked:
         "Primero desbloquea la sincronización con tu frase de contraseña.",
-      waiting:
-        "Chrome está recibiendo la configuración. Inténtalo de nuevo en un momento.",
+      waiting: `${BROWSER_NAME} está recibiendo la configuración. Inténtalo de nuevo en un momento.`,
       tooLarge:
         "La configuración supera el espacio de sincronización disponible. Acorta las instrucciones o elimina ajustes sin usar.",
       version:
@@ -117,8 +113,7 @@ const base = {
         "La configuración sincronizada no es válida y no se ha aplicado.",
       remoteMissing:
         "Se eliminó la copia sincronizada. Los ajustes locales se conservan. Elimina la configuración de sincronización y vuelve a activarla.",
-      unavailable:
-        "No se pudo sincronizar. Revisa Chrome Sync y la conexión e inténtalo de nuevo.",
+      unavailable: `No se pudo sincronizar. Revisa ${BROWSER_NAME} Sync y la conexión e inténtalo de nuevo.`,
     },
   },
   brand: "Aside",
@@ -150,7 +145,7 @@ const base = {
     settings: "Configurar atajos",
     unset: "Sin asignar",
     help: (name: string) =>
-      `Pulsa «Configurar atajos», busca «${name}» en Chrome, selecciona un atajo y pulsa la nueva combinación. También puedes reasignar teclas que ya estén en uso.`,
+      `Pulsa «Configurar atajos», busca «${name}» en ${BROWSER_NAME}, selecciona un atajo y pulsa la nueva combinación. También puedes reasignar teclas que ya estén en uso.`,
     items: {
       "switch-recent-tab": {
         name: "Alternar pestañas recientes",
@@ -600,8 +595,9 @@ const full = {
     lightsEnabled: "Modo oscuro: activado",
     lightsDisabled: "Modo oscuro: desactivado",
     lightsSystem: "Modo oscuro: sistema",
-    lightsPermissionNeeded:
-      "Permite el acceso al sitio para que el modo oscuro pueda leer los estilos de la página.",
+    lightsPermissionNeeded: isFirefox
+      ? "Abre Aside desde la barra del navegador y activa allí el modo oscuro para permitir el acceso a los sitios."
+      : "Permite el acceso al sitio para que el modo oscuro pueda leer los estilos de la página.",
     resizePanel: "Cambiar tamaño del panel",
     processing: "Procesando…",
     chooseAction: "Elegir acción",

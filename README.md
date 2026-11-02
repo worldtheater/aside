@@ -37,6 +37,12 @@ Alternatively, load the packaged extension from GitHub Releases. No Node.js is r
 
 Keep the extracted folder while using the unpacked extension.
 
+### Firefox (testing)
+
+A desktop **Firefox 147+** build is available from this source tree. It is not yet listed on Mozilla Add-ons. Run `npm ci` and `npm run package:firefox:dev`, then load `artifacts/unpacked-firefox/manifest.json` through `about:debugging#/runtime/this-firefox` → **Load Temporary Add-on**. Temporary add-ons are removed when Firefox closes; regular installation requires a Mozilla-signed package.
+
+The Firefox build uses a Mozilla account for encrypted configuration sync. Chrome and Firefox settings do not sync with each other. See [Firefox development and testing](docs/FIREFOX.md) for build outputs and browser differences.
+
 ### Build from source
 
 For development, use Node.js 22+ and npm. `.nvmrc` selects Node.js 24.

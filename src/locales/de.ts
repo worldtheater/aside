@@ -1,3 +1,4 @@
+import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -5,9 +6,11 @@ import type { Copy } from "./en.js";
 
 const base = {
   sync: {
+    browserBoundary:
+      "Die Synchronisierung erfolgt nur innerhalb desselben Browsers. Chrome und Firefox tauschen keine Einstellungen aus.",
     devicesTitle: "Auf einem anderen Gerät",
     joinSteps: [
-      "Mit demselben Chrome-Konto anmelden und die Chrome-Synchronisierung aktivieren.",
+      `Mit demselben ${SYNC_ACCOUNT_NAME}-Konto anmelden und die ${BROWSER_NAME}-Synchronisierung aktivieren.`,
       "In Aside die Seite „Synchronisierung“ öffnen und mit derselben Passphrase beitreten.",
       "Auf diesem Gerät den Zugriff auf Modelldienste erlauben, wenn dazu aufgefordert wird.",
     ],
@@ -47,8 +50,7 @@ const base = {
     accessDenied:
       "Der Zugriff wurde nicht erlaubt. Sie können es erneut versuchen; Ihre synchronisierten Einstellungen bleiben erhalten.",
     joinExisting: "Bestehender Synchronisierung beitreten",
-    waitingHelp:
-      "Die synchronisierten Einstellungen sind noch nicht angekommen. Falls die Synchronisierung auf einem anderen Gerät bereits aktiv ist, verwenden Sie dasselbe Chrome-Konto mit aktivierter Chrome-Synchronisierung und warten Sie. Sobald die Einstellungen ankommen, können Sie Ihre bestehende Passphrase eingeben.",
+    waitingHelp: `Die synchronisierten Einstellungen sind noch nicht angekommen. Falls die Synchronisierung auf einem anderen Gerät bereits aktiv ist, verwenden Sie dasselbe ${SYNC_ACCOUNT_NAME}-Konto mit aktivierter ${BROWSER_NAME}-Synchronisierung und warten Sie. Sobald die Einstellungen ankommen, können Sie Ihre bestehende Passphrase eingeben.`,
     firstSetup: "Erstmalig einrichten",
     checkAgain: "Erneut prüfen",
     forgotPassphrase: "Passphrase vergessen?",
@@ -59,8 +61,7 @@ const base = {
     localOnlyTitle: "Nur auf diesem Gerät",
     createHelp:
       "Legen Sie nur dann eine neue Passphrase fest, wenn Sie die Synchronisierung noch auf keinem Gerät aktiviert haben. Andere Geräte treten mit derselben Passphrase bei.",
-    joinHelp:
-      "Gib dieselbe Sync-Passphrase ein, die du auf einem anderen Gerät festgelegt hast. Verwende dasselbe Chrome-Konto mit aktivierter Synchronisierung.",
+    joinHelp: `Gib dieselbe Sync-Passphrase ein, die du auf einem anderen Gerät festgelegt hast. Verwende dasselbe ${SYNC_ACCOUNT_NAME}-Konto mit aktivierter Synchronisierung.`,
     details: "Sync-Details und Verwaltung",
     scope: [
       "Modellverbindungen und API-Schlüssel",
@@ -77,14 +78,11 @@ const base = {
     joinText:
       "Die Einstellungen dieses Geräts mit den synchronisierten Einstellungen zusammenführen? Dabei können Einstellungen aktualisiert werden. Nur hier vorhandene Verbindungen und Aktionen bleiben erhalten. Sammlungen und persönliche Einstellungen sind nicht betroffen.",
     title: "Synchronisierung",
-    intro:
-      "Synchronisiere verschlüsselte Einstellungen über dein Chrome-Konto zwischen Geräten.",
-    requirements:
-      "Chrome überträgt Änderungen im Hintergrund. Kommen sie nicht an, Chrome-Synchronisierung und Netzwerk prüfen.",
+    intro: `Synchronisiere verschlüsselte Einstellungen über dein ${SYNC_ACCOUNT_NAME}-Konto zwischen Geräten.`,
+    requirements: `${BROWSER_NAME} überträgt Änderungen im Hintergrund. Kommen sie nicht an, ${BROWSER_NAME}-Synchronisierung und Netzwerk prüfen.`,
     passphrase: "Sync-Passphrase",
     confirmPassphrase: "Passphrase bestätigen",
-    passphraseHelp:
-      "Bewahre die Passphrase gut auf: Sie lässt sich nicht wiederherstellen. Nach einem Neustart von Chrome oder erneutem Laden der Erweiterung musst du sie erneut eingeben.",
+    passphraseHelp: `Bewahre die Passphrase gut auf: Sie lässt sich nicht wiederherstellen. Nach einem Neustart von ${BROWSER_NAME} oder erneutem Laden der Erweiterung musst du sie erneut eingeben.`,
     locked:
       "Gib deine ursprüngliche Passphrase ein, um weiter zu synchronisieren. Deine lokalen Einstellungen bleiben nutzbar.",
     ready: "Die Synchronisierung ist aktiviert.",
@@ -94,8 +92,7 @@ const base = {
     syncNow: "Jetzt synchronisieren",
     stop: "Auf diesem Gerät stoppen",
     clear: "Synchronisierte Einstellungen löschen",
-    clearText:
-      "Verschlüsselte Einstellungen aus Chrome Sync löschen und hier die Synchronisierung stoppen? Lokale Einstellungen und API-Schlüssel bleiben erhalten. Andere Geräte müssen neu eingerichtet werden. Bei vergessener Passphrase kannst du danach eine neue Kopie erstellen.",
+    clearText: `Verschlüsselte Einstellungen aus ${BROWSER_NAME} Sync löschen und hier die Synchronisierung stoppen? Lokale Einstellungen und API-Schlüssel bleiben erhalten. Andere Geräte müssen neu eingerichtet werden. Bei vergessener Passphrase kannst du danach eine neue Kopie erstellen.`,
     stopText:
       "Synchronisierung auf diesem Gerät stoppen? Lokale Einstellungen und API-Schlüssel bleiben nutzbar. Die synchronisierte Kopie und andere Geräte bleiben unverändert.",
     done: "Sync-Einstellungen aktualisiert",
@@ -108,8 +105,7 @@ const base = {
       wrongPassphrase:
         "Falsche Passphrase oder die synchronisierten Daten konnten nicht authentifiziert werden.",
       locked: "Entsperre die Synchronisierung zuerst mit deiner Passphrase.",
-      waiting:
-        "Chrome empfängt die Einstellungen noch. Versuche es gleich erneut.",
+      waiting: `${BROWSER_NAME} empfängt die Einstellungen noch. Versuche es gleich erneut.`,
       tooLarge:
         "Die Einstellungen überschreiten den verfügbaren Sync-Speicher. Kürze Anweisungen oder entferne ungenutzte Einstellungen.",
       version:
@@ -118,8 +114,7 @@ const base = {
         "Die synchronisierten Einstellungen sind ungültig und wurden nicht angewendet.",
       remoteMissing:
         "Die synchronisierte Kopie wurde gelöscht. Lokale Einstellungen bleiben erhalten. Lösche die Sync-Einrichtung und aktiviere sie erneut.",
-      unavailable:
-        "Synchronisierung fehlgeschlagen. Prüfe Chrome Sync und deine Verbindung und versuche es erneut.",
+      unavailable: `Synchronisierung fehlgeschlagen. Prüfe ${BROWSER_NAME} Sync und deine Verbindung und versuche es erneut.`,
     },
   },
   brand: "Aside",
@@ -151,7 +146,7 @@ const base = {
     settings: "Tastenkürzel festlegen",
     unset: "Nicht festgelegt",
     help: (name: string) =>
-      `Klicke auf „Tastenkürzel festlegen“, suche in Chrome nach „${name}“ und gib beim gewünschten Kürzel die neue Tastenkombination ein. Dort lassen sich auch bereits belegte Tasten neu zuweisen.`,
+      `Klicke auf „Tastenkürzel festlegen“, suche in ${BROWSER_NAME} nach „${name}“ und gib beim gewünschten Kürzel die neue Tastenkombination ein. Dort lassen sich auch bereits belegte Tasten neu zuweisen.`,
     items: {
       "switch-recent-tab": {
         name: "Letzte Tabs wechseln",
@@ -603,8 +598,9 @@ const full = {
     lightsEnabled: "Dunkelmodus: Ein",
     lightsDisabled: "Dunkelmodus: Aus",
     lightsSystem: "Dunkelmodus: System",
-    lightsPermissionNeeded:
-      "Website-Zugriff erlauben, damit der Dunkelmodus die Seitenstile lesen kann.",
+    lightsPermissionNeeded: isFirefox
+      ? "Öffne Aside über die Browser-Symbolleiste und aktiviere dort den Dunkelmodus, um den Website-Zugriff zu erlauben."
+      : "Website-Zugriff erlauben, damit der Dunkelmodus die Seitenstile lesen kann.",
     resizePanel: "Fenstergröße ändern",
     processing: "Wird verarbeitet…",
     chooseAction: "Aktion wählen",
