@@ -8,7 +8,7 @@ import type { Copy } from "./en.js";
 const base = {
   sync: {
     browserBoundary:
-      "Sinkronisasi hanya berlaku dalam browser yang sama. Chrome dan Firefox tidak bertukar setelan.",
+      "Sinkronisasi hanya berlaku dalam browser yang sama. Chrome, Edge, dan Firefox tidak bertukar setelan.",
     devicesTitle: "Di perangkat lain",
     joinSteps: [
       `Masuk ke akun ${SYNC_ACCOUNT_NAME} yang sama dan aktifkan sinkronisasi ${BROWSER_NAME}.`,

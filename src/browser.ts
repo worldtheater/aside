@@ -1,9 +1,16 @@
-// Identify the extension runtime, not the page's user agent.
+// Firefox has a distinct extension scheme. Edge shares Chromium's scheme,
+// so use its desktop UA token for names and browser settings links only.
 export const isFirefox =
   globalThis.chrome?.runtime?.getURL?.("").startsWith("moz-extension://") ??
   false;
-export const BROWSER_NAME = isFirefox ? "Firefox" : "Chrome";
-export const SYNC_ACCOUNT_NAME = isFirefox ? "Mozilla" : "Chrome";
+export const isEdge =
+  !isFirefox && /\bEdg\//.test(globalThis.navigator?.userAgent ?? "");
+export const BROWSER_NAME = isFirefox ? "Firefox" : isEdge ? "Edge" : "Chrome";
+export const SYNC_ACCOUNT_NAME = isFirefox
+  ? "Mozilla"
+  : isEdge
+    ? "Microsoft"
+    : "Chrome";
 
 export const WEBSITE_RESOURCE_ORIGINS = ["http://*/*", "https://*/*"];
 
@@ -27,6 +34,8 @@ export async function openShortcutSettings(): Promise<void> {
     };
     await commands.openShortcutSettings();
   } else {
-    await chrome.tabs.create({ url: "chrome://extensions/shortcuts" });
+    await chrome.tabs.create({
+      url: `${isEdge ? "edge" : "chrome"}://extensions/shortcuts`,
+    });
   }
 }

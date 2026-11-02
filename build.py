@@ -6,15 +6,18 @@ from zipfile import ZipFile, ZIP_DEFLATED
 
 parser = argparse.ArgumentParser(description='Package the Aside extension.')
 parser.add_argument('--unpack', action='store_true',
-                    help='Also refresh artifacts/unpacked for local debugging.')
-parser.add_argument('--firefox', action='store_true', help='Package the Firefox build and its review sources.')
+                    help='Also refresh the fixed unpacked directory for this browser.')
+browsers = parser.add_mutually_exclusive_group()
+browsers.add_argument('--firefox', action='store_true', help='Package the Firefox build and its review sources.')
+browsers.add_argument('--edge', action='store_true', help='Package the Microsoft Edge build.')
 args = parser.parse_args()
 
 root = Path(__file__).resolve().parent
-source = root / 'dist/firefox' if args.firefox else root
-suffix = '-firefox' if args.firefox else ''
+browser = 'firefox' if args.firefox else 'edge' if args.edge else 'chrome'
+source = root if browser == 'chrome' else root / 'dist' / browser
+suffix = '' if browser == 'chrome' else f'-{browser}'
 if not (source / 'background.js').is_file():
-    raise SystemExit('Run npm run build before packaging.')
+    raise SystemExit(f'Run npm run build{suffix.replace("-", ":")} before packaging.')
 version = json.loads((source / 'manifest.json').read_text())['version']
 name = json.loads((root / 'package.json').read_text())['name']
 out = root / 'artifacts' / f'{name}-{version}{suffix}.zip'

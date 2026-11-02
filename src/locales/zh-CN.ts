@@ -7,7 +7,7 @@ import type { Copy } from "./en.js";
 const base = {
   sync: {
     browserBoundary:
-      "同步仅在同一种浏览器之间进行，Chrome 与 Firefox 不能互相同步。",
+      "同步仅在同一种浏览器之间进行，Chrome、Edge 与 Firefox 不能互相同步。",
     devicesTitle: "在其他设备上接入",
     joinSteps: [
       `登录同一个 ${SYNC_ACCOUNT_NAME} 账号，并开启 ${BROWSER_NAME} 同步。`,

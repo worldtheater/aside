@@ -7,9 +7,12 @@ import path from "node:path";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const firefox = process.argv.includes("--firefox");
-const output = firefox ? path.join(root, "dist/firefox") : root;
-const target = firefox ? "firefox147" : "chrome120";
-if (firefox) {
+const edge = process.argv.includes("--edge");
+if (firefox && edge) throw new Error("Choose only one browser target.");
+const browser = firefox ? "firefox" : edge ? "edge" : "chrome";
+const output = browser === "chrome" ? root : path.join(root, "dist", browser);
+const target = firefox ? "firefox147" : edge ? "edge120" : "chrome120";
+if (browser !== "chrome") {
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
   for (const name of await readdir(root)) {
@@ -30,15 +33,19 @@ if (firefox) {
   const manifest = JSON.parse(
     await readFile(path.join(root, "manifest.json"), "utf8"),
   );
-  const overrides = JSON.parse(
-    await readFile(path.join(root, "manifests/firefox.json"), "utf8"),
-  );
+  // Other stores assign their own extension identity and update channel.
   delete manifest.key;
-  delete manifest.minimum_chrome_version;
-  manifest.permissions = manifest.permissions.filter(
-    (permission) => permission !== "favicon",
-  );
-  Object.assign(manifest, overrides);
+  delete manifest.update_url;
+  if (firefox) {
+    const overrides = JSON.parse(
+      await readFile(path.join(root, "manifests/firefox.json"), "utf8"),
+    );
+    delete manifest.minimum_chrome_version;
+    manifest.permissions = manifest.permissions.filter(
+      (permission) => permission !== "favicon",
+    );
+    Object.assign(manifest, overrides);
+  }
   await writeFile(
     path.join(output, "manifest.json"),
     JSON.stringify(manifest, null, 2) + "\n",

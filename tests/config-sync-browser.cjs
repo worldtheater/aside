@@ -24,7 +24,7 @@ async function start(name) {
   const context = await chromium.launchPersistentContext(profile, {
     ...(process.env.CHROME_PATH
       ? { executablePath: process.env.CHROME_PATH }
-      : { channel: "chrome" }),
+      : { channel: process.env.BROWSER_CHANNEL || "chrome" }),
     headless: true,
     viewport: { width: 1440, height: 1000 },
     locale: "en-US",
@@ -33,7 +33,9 @@ async function start(name) {
   });
   contexts.push(context);
   const cdp = await context.browser().newBrowserCDPSession();
-  const { id } = await cdp.send("Extensions.loadUnpacked", { path: root });
+  const { id } = await cdp.send("Extensions.loadUnpacked", {
+    path: process.env.EXTENSION_PATH || root,
+  });
   const page = await context.newPage();
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto(`chrome-extension://${id}/index.html#sync`);
@@ -625,7 +627,7 @@ async function status(page) {
     assert.equal(await op(b, "sync-reset-ask").count(), 0);
     assert.deepEqual(errors, []);
     console.log(
-      "PASS: isolated Chrome profiles, read-only waiting, explicit first setup/back, delayed delivery during passphrase entry, automatic join transition, setup/confirmation, grouped service authorization, denial/retry, native permission events, no model calls, wrong passphrase, record merge, default adoption/preservation, local preferences and collection retention, session unlock, automatic updates and deletions, dark/narrow layout, recovery cancellation, confirmed reset without the old passphrase, local data retention and setup with a new passphrase.",
+      "PASS: isolated Chromium profiles, read-only waiting, explicit first setup/back, delayed delivery during passphrase entry, automatic join transition, setup/confirmation, grouped service authorization, denial/retry, native permission events, no model calls, wrong passphrase, record merge, default adoption/preservation, local preferences and collection retention, session unlock, automatic updates and deletions, dark/narrow layout, recovery cancellation, confirmed reset without the old passphrase, local data retention and setup with a new passphrase.",
     );
     console.log("Screenshots: " + artifacts);
   } finally {

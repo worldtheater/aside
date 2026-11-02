@@ -7,7 +7,7 @@ import { LANGUAGE_NAMES } from "../locale.js";
 const base = {
   sync: {
     browserBoundary:
-      "Sync stays within the same browser: Chrome and Firefox do not exchange settings.",
+      "Sync stays within the same browser: Chrome, Edge and Firefox do not exchange settings.",
     devicesTitle: "On another device",
     joinSteps: [
       `Sign in to the same ${SYNC_ACCOUNT_NAME} account and enable ${BROWSER_NAME} sync.`,

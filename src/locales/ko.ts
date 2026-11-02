@@ -7,7 +7,7 @@ import type { Copy } from "./en.js";
 const base = {
   sync: {
     browserBoundary:
-      "동일한 브라우저끼리만 동기화됩니다. Chrome과 Firefox 간에는 설정을 공유하지 않습니다.",
+      "동일한 브라우저끼리만 동기화됩니다. Chrome, Edge, Firefox 간에는 설정을 공유하지 않습니다.",
     devicesTitle: "다른 기기에서 참여",
     joinSteps: [
       `같은 ${SYNC_ACCOUNT_NAME} 계정으로 로그인하고 ${BROWSER_NAME} 동기화를 켜세요.`,

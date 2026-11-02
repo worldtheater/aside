@@ -8,7 +8,7 @@ import type { Copy } from "./en.js";
 const base = {
   sync: {
     browserBoundary:
-      "Eşitleme yalnızca aynı tarayıcı içinde çalışır. Chrome ve Firefox ayarları birbirleriyle paylaşmaz.",
+      "Eşitleme yalnızca aynı tarayıcı içinde çalışır. Chrome, Edge ve Firefox ayarları birbirleriyle paylaşmaz.",
     devicesTitle: "Başka bir cihazda katılma",
     joinSteps: [
       `Aynı ${SYNC_ACCOUNT_NAME} hesabıyla oturum açın ve ${BROWSER_NAME} senkronizasyonunu etkinleştirin.`,

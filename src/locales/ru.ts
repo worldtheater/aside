@@ -8,7 +8,7 @@ import type { Copy } from "./en.js";
 const base = {
   sync: {
     browserBoundary:
-      "Синхронизация работает только в пределах одного браузера. Chrome и Firefox не обмениваются настройками.",
+      "Синхронизация работает только в пределах одного браузера. Chrome, Edge и Firefox не обмениваются настройками.",
     devicesTitle: "На другом устройстве",
     joinSteps: [
       `Войдите в тот же аккаунт ${SYNC_ACCOUNT_NAME} и включите синхронизацию ${BROWSER_NAME}.`,

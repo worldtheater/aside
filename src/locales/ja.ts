@@ -7,7 +7,7 @@ import type { Copy } from "./en.js";
 const base = {
   sync: {
     browserBoundary:
-      "同期は同じブラウザー間でのみ行われます。Chrome と Firefox の間では設定を同期できません。",
+      "同期は同じブラウザー間でのみ行われます。Chrome、Edge、Firefox の間では設定を同期できません。",
     devicesTitle: "他の端末で参加する",
     joinSteps: [
       `同じ ${SYNC_ACCOUNT_NAME} アカウントにログインし、${BROWSER_NAME} 同期を有効にします。`,

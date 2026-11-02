@@ -6,7 +6,8 @@ import type { Copy } from "./en.js";
 
 const base = {
   sync: {
-    browserBoundary: "同步僅限同一種瀏覽器，Chrome 與 Firefox 無法互相同步。",
+    browserBoundary:
+      "同步僅限同一種瀏覽器，Chrome、Edge 與 Firefox 無法互相同步。",
     devicesTitle: "在其他裝置上加入",
     joinSteps: [
       `登入同一個 ${SYNC_ACCOUNT_NAME} 帳戶，並開啟 ${BROWSER_NAME} 同步。`,

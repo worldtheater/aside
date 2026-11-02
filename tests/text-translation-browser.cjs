@@ -169,8 +169,9 @@ module.exports = async ({
       origin,
     });
     await panel.locator("[data-text-command=copy]").click();
-    assert.equal(
-      await source.evaluate(() => navigator.clipboard.readText()),
+    // The click handler awaits the asynchronous clipboard write.
+    await source.waitForFunction(
+      async (expected) => (await navigator.clipboard.readText()) === expected,
       "Processed together: " + text,
     );
 

@@ -7,7 +7,7 @@ import type { Copy } from "./en.js";
 const base = {
   sync: {
     browserBoundary:
-      "La synchronisation reste propre à chaque navigateur : Chrome et Firefox ne partagent pas leurs paramètres.",
+      "La synchronisation reste propre à chaque navigateur : Chrome, Edge et Firefox ne partagent pas leurs paramètres.",
     devicesTitle: "Sur un autre appareil",
     joinSteps: [
       `Connectez-vous au même compte ${SYNC_ACCOUNT_NAME} et activez la synchronisation ${BROWSER_NAME}.`,

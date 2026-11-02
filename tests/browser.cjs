@@ -282,7 +282,7 @@ fs.mkdirSync(artifacts, { recursive: true });
   const context = await chromium.launchPersistentContext(profile, {
     ...(process.env.CHROME_PATH
       ? { executablePath: process.env.CHROME_PATH }
-      : { channel: "chrome" }),
+      : { channel: process.env.BROWSER_CHANNEL || "chrome" }),
     headless: true,
     viewport: { width: 1440, height: 1000 },
     locale: "zh-CN",
@@ -306,7 +306,9 @@ fs.mkdirSync(artifacts, { recursive: true });
   require("./inspect-ui.cjs").watchUI(context, errors);
   try {
     const cdp = await context.browser().newBrowserCDPSession(),
-      { id } = await cdp.send("Extensions.loadUnpacked", { path: root });
+      { id } = await cdp.send("Extensions.loadUnpacked", {
+        path: process.env.EXTENSION_PATH || root,
+      });
     const manager = await context.newPage();
     await manager.goto("chrome://extensions");
     console.log(

@@ -8,7 +8,7 @@ import type { Copy } from "./en.js";
 const base = {
   sync: {
     browserBoundary:
-      "Chỉ đồng bộ giữa các trình duyệt cùng loại. Chrome và Firefox không trao đổi cài đặt.",
+      "Chỉ đồng bộ giữa các trình duyệt cùng loại. Chrome, Edge và Firefox không trao đổi cài đặt.",
     devicesTitle: "Tham gia trên thiết bị khác",
     joinSteps: [
       `Đăng nhập cùng tài khoản ${SYNC_ACCOUNT_NAME} và bật đồng bộ hóa ${BROWSER_NAME}.`,

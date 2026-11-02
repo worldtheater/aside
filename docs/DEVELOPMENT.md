@@ -217,3 +217,9 @@ Chrome 与 Firefox 共用源码；构建差异由 `scripts/build.mjs` 和 `manif
 Firefox 最低桌面版本为 147，固定 Gecko ID 独立于 Chrome ID。后台使用模块事件页，取消 Chrome 专属 favicon 权限及公钥字段。`src/browser.ts` 集中管理浏览器入口和名称；不要在各界面散落 UA 判断。`src/extension-storage.ts` 统一可信本机存储和变化通知：Chrome 使用可信 `storage.local`，Firefox 使用扩展源 IndexedDB；不要直接从新增业务代码读写 `chrome.storage.local`，也不要将 Firefox 原生 local 事件作为可信配置通知。两端 API Key 加密方式一致。
 
 `npm run test:firefox` 在隔离 Firefox 中验证主要路径及内容脚本权限边界；`npm run lint:firefox` 检查实际构建清单与 API。Firefox 原生同步仅在 Mozilla 账号之间传递，不能与 Chrome Sync 互通。详细构建及源码审核说明见 [FIREFOX.md](FIREFOX.md)。标签发布流水线保留 Chrome 包，并增加独立 Firefox 包和审核源码包；不自动签名或提交 AMO。
+
+## Edge 构建
+
+Edge 沿用 Chromium 运行时，`npm run build:edge` 输出至 `dist/edge/`；`npm run package:edge:dev` 生成 `artifacts/aside-<版本>-edge.zip` 并刷新 `artifacts/unpacked-edge/`。Chrome 和 Firefox 的输出目录互不覆盖。Edge 包不携带 Chrome 的公钥和更新地址，商店分配独立 ID。
+
+`src/browser.ts` 统一 Edge/Microsoft 文案与快捷键入口，业务层不新增浏览器判断。`npm run test:edge` 复用 Chromium 回归并使用隔离 Edge 环境；跨设备 Microsoft 账号同步仍需独立实测；Windows 实机验收已由维护者于 2026-11-03 确认。构建、安装、身份与测试边界见 [EDGE.md](EDGE.md)。版本标签的草稿 Release 同时包含 Edge ZIP，不自动提交商店。

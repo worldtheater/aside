@@ -8,7 +8,7 @@ import type { Copy } from "./en.js";
 const base = {
   sync: {
     browserBoundary:
-      "ซิงค์ได้เฉพาะเบราว์เซอร์ชนิดเดียวกัน Chrome และ Firefox ไม่แลกเปลี่ยนการตั้งค่ากัน",
+      "ซิงค์ได้เฉพาะเบราว์เซอร์ชนิดเดียวกัน Chrome, Edge และ Firefox ไม่แลกเปลี่ยนการตั้งค่ากัน",
     devicesTitle: "เข้าร่วมจากอุปกรณ์อื่น",
     joinSteps: [
       `ลงชื่อเข้าใช้บัญชี ${SYNC_ACCOUNT_NAME} เดียวกันและเปิดการซิงค์ของ ${BROWSER_NAME}`,

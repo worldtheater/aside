@@ -16,13 +16,17 @@ const server = http.createServer((req, res) => {
 });
 async function start() {
   context = await chromium.launchPersistentContext(profile, {
-    channel: "chrome",
+    ...(process.env.CHROME_PATH
+      ? { executablePath: process.env.CHROME_PATH }
+      : { channel: process.env.BROWSER_CHANNEL || "chrome" }),
     headless: true,
     ignoreDefaultArgs: ["--disable-extensions"],
     args: ["--enable-unsafe-extension-debugging"],
   });
   const cdp = await context.browser().newBrowserCDPSession();
-  const { id } = await cdp.send("Extensions.loadUnpacked", { path: root });
+  const { id } = await cdp.send("Extensions.loadUnpacked", {
+    path: process.env.EXTENSION_PATH || root,
+  });
   const page = await context.newPage();
   await page.goto(`chrome-extension://${id}/index.html#connections`);
   await page.locator("h1").waitFor();

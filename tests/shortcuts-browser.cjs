@@ -81,7 +81,10 @@ module.exports = async ({
     const settingsOpened = context.waitForEvent("page");
     await op("shortcut-settings").click();
     shortcutSettings = await settingsOpened;
-    await shortcutSettings.waitForURL("chrome://extensions/shortcuts");
+    const scheme = await page.evaluate(async () =>
+      (await import("./browser.js")).isEdge ? "edge" : "chrome",
+    );
+    await shortcutSettings.waitForURL(`${scheme}://extensions/shortcuts`);
     settingsFocusSession = await context.newCDPSession(shortcutSettings);
     const setShortcut = async (commandName, keybinding) => {
       await focusSession.send("Emulation.setFocusEmulationEnabled", {

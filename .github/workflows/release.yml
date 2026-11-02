@@ -50,6 +50,9 @@ jobs:
       - name: Package the extension
         run: python3 build.py
 
+      - name: Build and package Edge
+        run: npm run package:edge
+
       - name: Build and validate Firefox
         run: |
           npm run build:firefox
@@ -63,6 +66,7 @@ jobs:
           package_name="$(node -p 'require("./package.json").name')"
           package_paths=(
             "artifacts/${package_name}-${RELEASE_TAG#v}.zip"
+            "artifacts/${package_name}-${RELEASE_TAG#v}-edge.zip"
             "artifacts/${package_name}-${RELEASE_TAG#v}-firefox.zip"
             "artifacts/${package_name}-${RELEASE_TAG#v}-firefox-source.zip"
           )
