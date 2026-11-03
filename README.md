@@ -23,8 +23,8 @@ An AI reading assistant for Chrome, Microsoft Edge, and Firefox. Translate pages
 | Browser | Minimum desktop version | Installation |
 | --- | --- | --- |
 | Google Chrome | 120 | [Chrome Web Store](https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf) or [manual installation](#manual-installation-chrome) |
-| Microsoft Edge | 120 | [Build from source](#build-from-source); Edge Add-ons listing not yet published |
-| Firefox | 147 | [Build from source](#build-from-source); Mozilla Add-ons listing not yet published |
+| Microsoft Edge | 120 | [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp) or [manual installation](#manual-installation-edge) — version 0.1.5 available |
+| Firefox | 147 | Under review on Mozilla Add-ons; [manual installation](#manual-installation-firefox) for temporary testing |
 
 After installing, open Aside’s **Settings → Model connections**, add your service URL, API key, and protocol, test the connection, choose a model, and save. Open a regular HTTP/HTTPS page to use the selection toolbar, floating menu, or extension popup.
 
@@ -32,11 +32,27 @@ After installing, open Aside’s **Settings → Model connections**, add your se
 
 No Node.js is required for a packaged release.
 
-1. [Download Aside 0.1.4](https://github.com/worldtheater/aside/releases/download/v0.1.4/aside-0.1.4.zip) from GitHub Releases. Use the extension ZIP, not the automatically generated “Source code” archive.
+1. [Download Aside 0.1.6 for Chrome](https://github.com/worldtheater/aside/releases/download/v0.1.6/aside-0.1.6.zip) from GitHub Releases. Use the extension ZIP, not the automatically generated “Source code” archive.
 2. Extract the ZIP to a permanent folder.
 3. Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the extracted folder containing `manifest.json`.
 
 Keep the extracted folder in place. To update, replace its contents and reload the existing extension rather than uninstalling it, so local data is retained.
+
+### Manual installation (Edge)
+
+1. [Download Aside 0.1.6 for Edge](https://github.com/worldtheater/aside/releases/download/v0.1.6/aside-0.1.6-edge.zip).
+2. Extract the ZIP to a permanent folder.
+3. Open `edge://extensions`, enable **Developer mode**, click **Load unpacked**, and select the extracted folder containing `manifest.json`.
+
+Keep the extracted folder in place. To update, replace its contents and reload the existing extension. Manual installations do not update automatically.
+
+### Manual installation (Firefox)
+
+1. [Download Aside 0.1.6 for Firefox](https://github.com/worldtheater/aside/releases/download/v0.1.6/aside-0.1.6-firefox.zip). Choose this extension package, not the `firefox-source.zip` review archive.
+2. Extract the ZIP to a folder.
+3. Open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select `manifest.json` in the extracted folder.
+
+This unsigned ZIP is for temporary testing. Firefox removes temporary add-ons when it closes; load the add-on again after restarting. Permanent installation requires a Mozilla-signed package.
 
 ### Build from source
 

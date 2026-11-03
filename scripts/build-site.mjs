@@ -10,20 +10,34 @@ const readJson = async (name) =>
 const languages = await readJson("website/languages.json");
 const reference = await readJson("website/locales/en.json");
 // Public download links must not advance when the next release is still a draft.
-const { version } = await readJson("website/release.json");
-const { minimum_chrome_version: minimumChromeVersion } =
-  await readJson("manifest.json");
+const { version, browsers } = await readJson("website/release.json");
+const browserIcons = Object.fromEntries(
+  await Promise.all(
+    browsers.map(async ({ id }) => [
+      id,
+      (
+        await readFile(
+          path.join(root, "docs/assets/browsers", `${id}.svg`),
+          "utf8",
+        )
+      )
+        .replace(/<!--[\s\S]*?-->\s*/g, "")
+        .replace("<svg", '<svg aria-hidden="true" focusable="false"'),
+    ]),
+  ),
+);
+const publishedBrowsers = browsers.filter(({ storeUrl }) => storeUrl);
 const template = await readFile(
   path.join(root, "website/template.html"),
   "utf8",
 );
 const site = "https://worldtheater.github.io/aside/";
 const repo = "https://github.com/worldtheater/aside";
-const storeUrl =
-  "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf";
 const check = process.argv.includes("--check");
 const url = (locale) => site + (locale.path ? locale.path + "/" : "");
-const downloadUrl = `${repo}/releases/download/v${version}/aside-${version}.zip`;
+const extensionDownloadUrl = (suffix = "") =>
+  `${repo}/releases/download/v${version}/aside-${version}${suffix}.zip`;
+const downloadUrl = extensionDownloadUrl();
 
 async function writeOrCheck(file, output) {
   if (check) {
@@ -94,16 +108,80 @@ for (const language of languages) {
     ollamaLink:
       '<a href="https://docs.ollama.com/api/openai-compatibility">Ollama</a>',
     privacyLink: `<a href="${prefix}privacy.html">${escape(copy.privacyRead)}</a>`,
-    extensions: "<code>chrome://extensions</code>",
     developerMode: `<strong>${escape(copy.developerMode)}</strong>`,
     loadUnpacked: `<strong>${escape(copy.loadUnpacked)}</strong>`,
   };
-  const renderCopy = (key) =>
+  const renderCopy = (key, parameters = {}, inlineFragments = {}) =>
     escape(copy[key]).replace(/\{(\w+)\}/g, (_, name) => {
+      if (name in parameters) return escape(parameters[name]);
+      if (name in inlineFragments) return inlineFragments[name];
       if (!(name in fragments))
         throw Error(`${language.code}.${key}: unknown placeholder ${name}`);
       return fragments[name];
     });
+  const renderBrowserOptions = (placement) =>
+    `<div class="browser-options" role="group" aria-label="${escape(copy.browserLabel)}" hidden>${browsers
+      .map(
+        (
+          browser,
+          index,
+        ) => `<label class="browser-option" title="${escape(browser.name)}">
+        <input type="radio" name="${placement}-browser" value="${escape(browser.id)}"
+          aria-label="${escape(browser.name)}" aria-controls="${placement}-install-${escape(browser.id)}"${index === 0 ? " checked" : ""} />
+        <span>${browserIcons[browser.id]}</span>
+      </label>`,
+      )
+      .join("")}</div>`;
+  const renderStoreInstall = () => `<div class="browser-install">
+    ${renderBrowserOptions("hero")}
+    ${browsers
+      .map((browser, index) => {
+        const parameters = {
+          browser: browser.name,
+          minimumVersion: browser.minimumVersion,
+          version: browser.version,
+        };
+        const action = browser.storeUrl
+          ? `<a class="button primary" href="${escape(browser.storeUrl)}">${renderCopy("storeLink", parameters)}</a>`
+          : `<button class="button" type="button" disabled>${escape(browser.name)} · ${renderCopy("storePending")}</button>`;
+        return `<div id="hero-install-${escape(browser.id)}" data-install-browser="${escape(browser.id)}"${index === 0 ? "" : " hidden"}>
+        <div class="install-actions">${action}<a class="text-link" href="#install">${renderCopy("installLink")}</a></div>
+        <p class="browser-note">${renderCopy("browserCompatibility", parameters)}${browser.version ? ` ${renderCopy("versionLink", parameters)}` : ""}</p>
+      </div>`;
+      })
+      .join("")}
+  </div>`;
+  const renderManualInstall = () => `<div class="browser-install">
+    ${renderBrowserOptions("manual")}
+    ${browsers
+      .map((browser, index) => {
+        const { manual } = browser;
+        const parameters = {
+          browser: browser.name,
+        };
+        const inlineFragments = {
+          extensions: `<code>${escape(manual.managementUrl)}</code>`,
+          manifest: "<code>manifest.json</code>",
+        };
+        const steps = [
+          ["downloadTitle", "downloadText"],
+          ["managerTitle", "managerText"],
+          [
+            manual.temporary ? "temporaryTitle" : "loadTitle",
+            manual.temporary ? "temporaryText" : "loadText",
+          ],
+        ];
+        return `<div id="manual-install-${escape(browser.id)}" data-install-browser="${escape(browser.id)}"${index === 0 ? "" : " hidden"}>
+        <ol class="install-steps">${steps.map(([title, description]) => `<li><h3>${renderCopy(title, parameters)}</h3><p>${renderCopy(description, parameters, inlineFragments)}</p></li>`).join("")}</ol>
+        <div class="install-actions">
+          <a class="button primary" href="${escape(extensionDownloadUrl(manual.archiveSuffix))}">${renderCopy("browserDownload", parameters)}</a>
+          <a class="text-link" href="${escape(manual.guideUrl)}">${renderCopy("manualGuide")}</a>
+        </div>
+        <p class="manual-note">${renderCopy(manual.temporary ? "temporaryNote" : "manualUpdate")}</p>
+      </div>`;
+      })
+      .join("")}
+  </div>`;
   const values = {
     language: escape(language.code),
     root: prefix,
@@ -115,7 +193,8 @@ for (const language of languages) {
     brandSecondary: language.code.startsWith("zh") ? "Aside" : "旁白",
     releaseUrl: `${repo}/releases/tag/v${version}`,
     downloadUrl,
-    storeUrl,
+    heroInstall: renderStoreInstall(),
+    manualInstall: renderManualInstall(),
     structuredData: `<script type="application/ld+json">${JSON.stringify(
       {
         "@context": "https://schema.org",
@@ -127,14 +206,16 @@ for (const language of languages) {
         url: url(language),
         applicationCategory: "BrowserApplication",
         operatingSystem: ["Windows", "macOS", "Linux", "ChromeOS"],
-        softwareRequirements: `Google Chrome ${minimumChromeVersion}+`,
+        softwareRequirements: publishedBrowsers
+          .map(({ name, minimumVersion }) => `${name} ${minimumVersion}+`)
+          .join(" / "),
         softwareVersion: version,
         inLanguage: languages.map(({ code }) => code),
         isAccessibleForFree: true,
         license: `${repo}/blob/main/LICENSE`,
         downloadUrl,
-        installUrl: storeUrl,
-        sameAs: storeUrl,
+        installUrl: publishedBrowsers.map(({ storeUrl }) => storeUrl),
+        sameAs: publishedBrowsers.map(({ storeUrl }) => storeUrl),
         image: `${site}assets/social-preview.png`,
       },
       null,

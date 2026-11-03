@@ -26,7 +26,35 @@ function applyTheme() {
 applyTheme();
 systemTheme.addEventListener("change", applyTheme);
 
+function preferredBrowser() {
+  const brands = navigator.userAgentData?.brands || [];
+  if (
+    brands.some(({ brand }) => brand === "Microsoft Edge") ||
+    /Edg\//.test(navigator.userAgent)
+  )
+    return "edge";
+  if (/Firefox\//.test(navigator.userAgent)) return "firefox";
+  return "chrome";
+}
+
+function initializeBrowserInstall() {
+  const options = [...document.querySelectorAll(".browser-option input")];
+  const panels = [...document.querySelectorAll("[data-install-browser]")];
+  function selectBrowser(id) {
+    for (const option of options) option.checked = option.value === id;
+    for (const panel of panels)
+      panel.hidden = panel.dataset.installBrowser !== id;
+  }
+  selectBrowser(preferredBrowser());
+  for (const option of options) {
+    option.addEventListener("change", () => selectBrowser(option.value));
+  }
+  for (const group of document.querySelectorAll(".browser-options"))
+    group.hidden = false;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  initializeBrowserInstall();
   applyTheme();
   document.querySelector(".theme-toggle").addEventListener("click", () => {
     themeMode =

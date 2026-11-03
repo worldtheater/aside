@@ -1,3 +1,44 @@
 {
-  "version": "0.1.4"
+  "version": "0.1.6",
+  "browsers": [
+    {
+      "id": "chrome",
+      "name": "Chrome",
+      "minimumVersion": "120",
+      "version": "0.1.4",
+      "storeUrl": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
+      "manual": {
+        "guideUrl": "https://github.com/worldtheater/aside#manual-installation-chrome",
+        "managementUrl": "chrome://extensions",
+        "temporary": false,
+        "archiveSuffix": ""
+      }
+    },
+    {
+      "id": "edge",
+      "name": "Edge",
+      "minimumVersion": "120",
+      "version": "0.1.5",
+      "storeUrl": "https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp",
+      "manual": {
+        "guideUrl": "https://github.com/worldtheater/aside#manual-installation-edge",
+        "managementUrl": "edge://extensions",
+        "temporary": false,
+        "archiveSuffix": "-edge"
+      }
+    },
+    {
+      "id": "firefox",
+      "name": "Firefox",
+      "minimumVersion": "147",
+      "version": null,
+      "storeUrl": null,
+      "manual": {
+        "guideUrl": "https://github.com/worldtheater/aside#manual-installation-firefox",
+        "managementUrl": "about:debugging#/runtime/this-firefox",
+        "temporary": true,
+        "archiveSuffix": "-firefox"
+      }
+    }
+  ]
 }

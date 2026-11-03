@@ -12,4 +12,6 @@ Aside's own code is licensed under the [MIT License](LICENSE). Bundled third-par
 
 Provider SVGs in `icons/providers/` are bundled local assets. Provider names and logos identify their respective services; this project's MIT license does not grant rights to third-party trademarks or imply endorsement.
 
+Browser icons on the product website in `docs/assets/browsers/` are from [Bootstrap Icons](https://github.com/twbs/icons), under the [MIT license](docs/assets/browsers/LICENSE.txt). Browser names and logos identify their respective products and do not imply endorsement. These website assets are not bundled with the extension.
+
 Development-only dependencies and their license metadata are recorded in `package-lock.json`; they are not included in the extension archive. The archive includes this notice, the project license, and the files in `licenses/`.

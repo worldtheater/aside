@@ -161,7 +161,6 @@ h1 {
   margin-bottom: 28px;
   color: var(--muted);
 }
-.hero-actions,
 .install-actions {
   display: flex;
   align-items: center;
@@ -177,8 +176,10 @@ h1 {
   border: 1px solid transparent;
   border-radius: 8px;
   text-decoration: none;
+  font-family: inherit;
   font-size: 15px;
   font-weight: 600;
+  line-height: inherit;
   transition: background-color 0.18s ease;
 }
 .primary {
@@ -187,6 +188,64 @@ h1 {
 }
 .primary:hover {
   background: color-mix(in srgb, var(--button) 88%, var(--background));
+}
+.button:disabled {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+  color: var(--muted);
+  cursor: default;
+}
+.browser-options:not([hidden]) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.browser-option {
+  position: relative;
+  cursor: pointer;
+}
+.browser-option input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+.browser-option span {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: var(--muted);
+  transition:
+    background-color 0.18s ease,
+    color 0.18s ease;
+}
+.browser-option svg {
+  width: 22px;
+  height: 22px;
+}
+.browser-option:hover span {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+}
+.browser-option input:checked + span {
+  color: var(--text);
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+}
+.browser-option input:focus-visible + span {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.browser-note {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
 }
 .text-link,
 .install-actions > a:not(.button) {
@@ -452,8 +511,7 @@ kbd {
 .faq-list details:first-child {
   border-top: 1px solid var(--line);
 }
-.faq-list summary,
-.manual-install > summary {
+.faq-list summary {
   padding: 18px 30px 18px 0;
   cursor: pointer;
   font-size: 17px;
@@ -461,12 +519,10 @@ kbd {
   position: relative;
   list-style: none;
 }
-.faq-list summary::-webkit-details-marker,
-.manual-install > summary::-webkit-details-marker {
+.faq-list summary::-webkit-details-marker {
   display: none;
 }
-.faq-list summary::after,
-.manual-install > summary::after {
+.faq-list summary::after {
   content: "+";
   position: absolute;
   right: 3px;
@@ -475,8 +531,7 @@ kbd {
   font-weight: 400;
   color: var(--muted);
 }
-.faq-list details[open] summary::after,
-.manual-install[open] > summary::after {
+.faq-list details[open] summary::after {
   content: "−";
 }
 .faq-list p {
@@ -518,27 +573,35 @@ code {
   font-size: 0.9em;
   overflow-wrap: anywhere;
 }
+.install-steps code {
+  padding: 2px 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--background);
+  color: var(--text);
+}
 .after-install {
   margin-top: 25px;
   font-size: 14px;
   color: var(--muted);
   max-width: 78ch;
 }
-.store-install {
+.install-section .browser-install {
   margin-top: 24px;
 }
-.manual-install {
-  border-top: 1px solid var(--line);
-  margin-top: 28px;
-}
-.manual-install > summary {
-  padding-bottom: 0;
-  font-size: 14px;
-  font-weight: 500;
+.manual-note {
+  margin-top: 12px;
   color: var(--muted);
+  font-size: 13px;
+  max-width: 78ch;
 }
-.manual-install .install-steps {
-  margin-top: 24px;
+.install-steps p {
+  overflow-wrap: anywhere;
+}
+.install-section .after-install {
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  max-width: none;
 }
 .site-footer {
   border-top: 1px solid var(--line);
@@ -595,11 +658,6 @@ code {
   .hero {
     gap: 32px;
   }
-  .hero-actions {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 14px;
-  }
   .feature-row,
   .comfort-layout,
   .model-section,
@@ -636,11 +694,6 @@ code {
   .hero-figure {
     width: min(100%, 640px);
     margin-inline: auto;
-  }
-  .hero-actions {
-    flex-direction: row;
-    align-items: center;
-    gap: 16px 24px;
   }
   .lead {
     margin-top: 20px;
@@ -727,9 +780,6 @@ code {
   .product-type {
     font-size: 13px;
     margin-bottom: 16px;
-  }
-  .hero-actions {
-    gap: 16px;
   }
   .button {
     padding-inline: 17px;

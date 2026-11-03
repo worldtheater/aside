@@ -1,6 +1,6 @@
 # Firefox build and review
 
-Aside shares its TypeScript sources with Chrome. The Firefox target supports **desktop Firefox 147+**. Firefox for Android is not a supported target. The Firefox build has not yet been submitted to Mozilla Add-ons (AMO).
+Aside shares its TypeScript sources with Chrome. The Firefox target supports **desktop Firefox 147+**. Firefox for Android is not a supported target. The Firefox build is under review on Mozilla Add-ons (AMO); the store listing is not yet available.
 
 ## Try it locally
 

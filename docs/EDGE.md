@@ -1,6 +1,6 @@
 # Microsoft Edge development and testing
 
-Aside uses the shared Chromium implementation on desktop Microsoft Edge 120+. An Edge Add-ons listing is not yet published.
+Aside uses the shared Chromium implementation on desktop Microsoft Edge 120+. Version 0.1.5 is available on [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp).
 
 ## Build and load
 

@@ -196,11 +196,11 @@ node tests/browser.cjs --lights-recovery-only
 
 GitHub Pages 从 `main` 分支的 `docs/` 提供静态页面。首页使用 `website/template.html` 共用模板，文案在 `website/locales/`，语言名称与路由在 `website/languages.json`。运行 `npm run build:site` 生成十五种语言的静态页面；`npm run check:site` 检查文案完整性和生成结果是否最新。不要直接修改生成的首页 HTML。页面共享 `docs/home.css` 和 `docs/home.js`，图片位于 `docs/assets/`。英文首页仍位于根目录，简体中文仍位于 `zh/`；隐私政策仍位于 `privacy.html`，其他语言的链接会标明其为英文。
 
-搜索标题和摘要分别使用各语言文案的 `seoTitle`、`seoDescription`，与可见主标题分开维护。模板保留 Google Search Console 的 `google-site-verification` 验证标记，验证成功后也不要删除。构建同时生成产品 `SoftwareApplication` JSON-LD 和 `docs/sitemap.xml`；结构化数据中的公开版本来自 `website/release.json`，最低 Chrome 版本来自 manifest，网站地图包含全部语言首页与隐私政策，不填写虚构的更新时间、评分或评论。
+搜索标题和摘要分别使用各语言文案的 `seoTitle`、`seoDescription`，与可见主标题分开维护。模板保留 Google Search Console 的 `google-site-verification` 验证标记，验证成功后也不要删除。构建同时生成产品 `SoftwareApplication` JSON-LD 和 `docs/sitemap.xml`；结构化数据中的公开下载版本和各浏览器兼容要求来自 `website/release.json`，网站地图包含全部语言首页与隐私政策，不填写虚构的更新时间、评分或评论。
 
 部署后，在 Search Console 使用 URL 前缀 `https://worldtheater.github.io/aside/` 验证所有权，再提交 <https://worldtheater.github.io/aside/sitemap.xml>。`robots.txt` 只在域名根目录生效；本仓库的 `/aside/` 是项目子路径，无需在此放置无效的 robots 文件。网站验证和结构化数据不保证收录、排名或 AI 引用。
 
-首页主安装入口指向 Chrome Web Store，GitHub 手动安装步骤收在折叠区。`website/release.json` 单独记录已公开的版本，用于页面版本、结构化数据与 ZIP 下载链接；它不随 `package.json` 中的待发布版本自动变化。草稿验收并公开发布后，再更新该文件和 README 下载链接，运行 `npm run build:site` 并推送。发布流程见[自动发布](#自动发布)。
+首页通过中性色浏览器图标选择平台，首屏提供商店安装，底部展示对应浏览器的手动安装步骤；两处选择保持一致。默认识别 Edge、Firefox，其他浏览器显示 Chrome 并保留手动切换。`website/release.json` 的 `version` 记录公开的 GitHub 下载版本；`browsers` 分别维护商店地址、已上架版本与最低浏览器版本。每个浏览器的 `manual` 维护 ZIP 文件名后缀 `archiveSuffix`、手动安装指南、扩展管理地址和是否临时加载；下载地址统一由公开版本与文件名后缀生成。手动安装直接下载对应浏览器的 ZIP，不要求从源码构建。Firefox 的临时加载限制单独说明。未上架平台的 `storeUrl` 和 `version` 为 `null`，页面显示审核中；上架后填入实际地址与版本即可。新增浏览器还需在 `docs/assets/browsers/` 添加同名 SVG。公开信息不随 `package.json` 中的待发布版本自动变化。新版本的下载链接可提前在本地准备并提交，但须等草稿验收并公开发布后，再推送到 `main`，避免官网出现无法下载的入口。修改后运行 `npm run build:site`。发布流程见[自动发布](#自动发布)。
 
 使用 `node scripts/store-assets.mjs --website` 重新生成首页截图。它复用商店素材的隔离浏览器与本地模拟服务，以 2 倍像素密度直接截取真实插件界面，并为首屏提供移动端版本，为首屏、选文问答和收藏提供亮暗色版本。无参数运行仍只生成商店素材。截图内容、显示比例与预览交互遵循设计规范。
 
