@@ -30,6 +30,7 @@ The base `manifest.json` remains the Chrome manifest. `manifests/firefox.json` r
 
 ## Browser differences
 
+- **HTTP model services:** The Firefox manifest explicitly sets an extension-page CSP without `upgrade-insecure-requests`, so authorized HTTP providers keep their configured scheme, including LAN addresses. Firefox's default Manifest V3 policy otherwise upgrades these requests to HTTPS. Script and object sources remain restricted to packaged extension resources; inline scripts and eval remain blocked. HTTP connections still require host access and display the unencrypted-connection warning.
 - **Storage:** Chrome retains trusted-context `storage.local`. Firefox uses extension-origin IndexedDB for local settings because `storage.setAccessLevel` is unavailable. API keys remain AES-256-GCM encrypted with a non-exportable device key in a separate IndexedDB. Content scripts receive only the public settings projection. Configuration changes between extension pages are delivered through an extension-origin BroadcastChannel.
 - **Sync:** Firefox uses Mozilla account sync for Add-ons; Chrome uses Google Chrome Sync. The same passphrase does not connect the two ecosystems. Firefox and Chrome can each synchronize between their own desktop installations. The passphrase-derived key stays in privileged session storage and must be entered again after browser restart or extension reload.
 - **Shortcuts:** The settings button opens Firefox’s **Manage Extension Shortcuts** page directly. Firefox and the operating system may reserve some defaults; users can reassign them.
@@ -51,6 +52,6 @@ npm run test:firefox
 npm run lint:firefox
 ```
 
-The Firefox regression uses Selenium, geckodriver and an isolated temporary profile. Set `FIREFOX_PATH` if the browser is not at its standard location. Selenium Manager may download geckodriver on first run. It uses a local mock model, not a paid API or personal profile. Native test-only permissions are granted solely in that temporary profile.
+The Firefox regression uses Selenium, geckodriver and an isolated temporary profile. Set `FIREFOX_PATH` if the browser is not at its standard location. Selenium Manager may download geckodriver on first run. It uses a local mock model, not a paid API or personal profile. Model requests use a non-localhost hostname mapped to loopback only in the test profile, covering both connection tests and streamed generation without the localhost HTTPS-upgrade exemption. Native test-only permissions are granted solely in that temporary profile.
 
 Real account-to-account Firefox Sync delivery, native keyboard conflicts and Mozilla's signed installation/update path still require manual acceptance. Automated checks of encrypted sync records do not prove delivery through Mozilla's servers. `web-ext lint` can report dynamic-HTML warnings for the shared renderers; model Markdown is sanitized with DOMPurify and interpolated user text is escaped. Review these warnings rather than suppressing them globally.

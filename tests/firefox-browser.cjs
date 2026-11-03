@@ -9,6 +9,7 @@ const id = "aside-ai@worldtheater.github.io";
 const uuid = "5ced12e3-429c-43dc-8a60-d323fc812784";
 const extensionUrl = `moz-extension://${uuid}/`;
 const fixtureKey = "firefox-fixture-key";
+const providerHost = "model.aside.test";
 const requests = [];
 const server = http.createServer(async (req, res) => {
   if (req.url === "/v1/models") {
@@ -55,9 +56,13 @@ const server = http.createServer(async (req, res) => {
   let driver;
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   const origin = `http://127.0.0.1:${server.address().port}`;
+  const providerOrigin = `http://${providerHost}:${server.address().port}`;
   try {
     const options = new firefox.Options()
       .addArguments("-headless")
+      // Resolve a non-localhost HTTP provider inside this isolated profile only.
+      // Loopback URLs are exempt from Firefox MV3 HTTPS upgrades.
+      .setPreference("network.dns.localDomains", providerHost)
       .setPreference(
         "extensions.webextensions.uuids",
         JSON.stringify({ [id]: uuid }),
@@ -89,11 +94,11 @@ const server = http.createServer(async (req, res) => {
         await driver.setContext(firefox.Context.CONTENT);
       }
     };
-    // Grant only this isolated mock origin, never change a personal profile.
+    // Grant only these isolated mock origins, never change a personal profile.
     await privileged(
-      `const done=arguments[arguments.length-1];const {ExtensionPermissions}=ChromeUtils.importESModule('resource://gre/modules/ExtensionPermissions.sys.mjs');ExtensionPermissions.add(arguments[0],{origins:[arguments[1]+'/*'],permissions:[]}).then(()=>done(true),e=>done(String(e)));`,
+      `const done=arguments[arguments.length-1];const {ExtensionPermissions}=ChromeUtils.importESModule('resource://gre/modules/ExtensionPermissions.sys.mjs');ExtensionPermissions.add(arguments[0],{origins:arguments[1].map(origin=>origin+'/*'),permissions:[]}).then(()=>done(true),e=>done(String(e)));`,
       id,
-      origin,
+      [origin, providerOrigin],
     );
     async function openExtension(page = "index.html") {
       await privileged(
@@ -135,12 +140,23 @@ const server = http.createServer(async (req, res) => {
     const commands = await evaluate("return await chrome.commands.getAll();");
     assert(commands.some((command) => command.name === "text-translate"));
     assert(commands.some((command) => command.name === "quick-question"));
+    // Exercise the same background request as the connection editor's Test button.
+    // Unlike localhost, this HTTP origin exposes accidental HTTPS upgrades.
+    const models = await send({
+      type: "connection.test",
+      key: fixtureKey,
+      connection: { url: providerOrigin + "/v1", protocol: "responses" },
+    });
+    assert.deepEqual(
+      models.map((model) => model.id),
+      ["fixture-model"],
+    );
     await send({
       type: "connection.save",
       key: fixtureKey,
       connection: {
         name: "Firefox fixture",
-        url: origin + "/v1",
+        url: providerOrigin + "/v1",
         protocol: "chat",
         model: "fixture-model",
         models: [{ id: "fixture-model", name: "Fixture" }],
@@ -292,7 +308,7 @@ const server = http.createServer(async (req, res) => {
       connection: {
         id: snapshot.connections[0].id,
         name: "Changed on another extension page",
-        url: origin + "/v1",
+        url: providerOrigin + "/v1",
         protocol: "chat",
         model: "fixture-model",
         models: [{ id: "fixture-model", name: "Fixture" }],
@@ -380,7 +396,7 @@ const server = http.createServer(async (req, res) => {
       true,
     );
     console.log(
-      "Firefox: model storage, custom text and inline page translation, Q&A, usage, dark mode, sync encryption, cross-page updates and content-script isolation passed.",
+      "Firefox: HTTP provider connection and generation, model storage, custom text and inline page translation, Q&A, usage, dark mode, sync encryption, cross-page updates and content-script isolation passed.",
     );
   } catch (error) {
     if (driver) {
