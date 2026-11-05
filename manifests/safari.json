@@ -1,0 +1,13 @@
+{
+  "background": {
+    "scripts": ["background.js"],
+    "type": "module",
+    "persistent": false
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  },
+  "options_ui": {
+    "page": "index.html"
+  }
+}

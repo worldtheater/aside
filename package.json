@@ -24,7 +24,15 @@
     "build:edge": "node scripts/build.mjs --edge",
     "package:edge": "npm run build:edge && python3 build.py --edge",
     "package:edge:dev": "npm run build:edge && python3 build.py --edge --unpack",
-    "test:edge": "npm run build:edge && node tests/edge-browser.cjs"
+    "test:edge": "npm run build:edge && node tests/edge-browser.cjs",
+    "build:safari": "node scripts/build.mjs --safari",
+    "package:safari": "npm run build:safari && python3 build.py --safari",
+    "package:safari:dev": "npm run build:safari && python3 build.py --safari --unpack && node scripts/safari-project.mjs && node scripts/safari-app.mjs",
+    "safari:run": "./script/build_and_run.sh",
+    "test:safari": "npm run build:safari && node tests/safari.mjs",
+    "safari:archive": "node scripts/safari-release.mjs archive",
+    "safari:export": "node scripts/safari-release.mjs export",
+    "build:icons:safari": "node scripts/build-icons.mjs --safari"
   },
   "devDependencies": {
     "@types/chrome": "^0.1.31",

@@ -1,4 +1,8 @@
-import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
+import {
+  BROWSER_NAME,
+  SYNC_ACCOUNT_NAME,
+  requiresDirectPermissionRequest,
+} from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -143,6 +147,8 @@ const base = {
     shortcuts: "Raccourcis clavier",
   },
   shortcuts: {
+    safariHelp:
+      "Pour modifier les raccourcis dans Safari 26 ou ultérieur, ouvrez Safari → Réglages → Extensions → Aside.",
     intro: "Consultez et personnalisez vos raccourcis clavier.",
     settings: "Configurer les raccourcis",
     unset: "Non défini",
@@ -599,7 +605,7 @@ const full = {
     lightsEnabled: "Mode sombre : activé",
     lightsDisabled: "Mode sombre : désactivé",
     lightsSystem: "Mode sombre : système",
-    lightsPermissionNeeded: isFirefox
+    lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Ouvrez Aside depuis la barre d’outils du navigateur et activez le mode sombre dans la fenêtre pour autoriser l’accès aux sites."
       : "Autorisez l’accès au site pour que le mode sombre puisse lire les styles de la page.",
     resizePanel: "Redimensionner le panneau",

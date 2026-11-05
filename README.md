@@ -25,6 +25,7 @@ An AI reading assistant for Chrome, Microsoft Edge, and Firefox. Translate pages
 | Google Chrome | 120 | [Chrome Web Store](https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf) or [manual installation](#manual-installation-chrome) |
 | Microsoft Edge | 120 | [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp) or [manual installation](#manual-installation-edge) — version 0.1.5 available |
 | Firefox | 147 | Under review on Mozilla Add-ons; [manual installation](#manual-installation-firefox) for temporary testing |
+| Safari for macOS | 26 | [Local development preview](docs/SAFARI.md) — requires Xcode; no cross-device sync |
 
 After installing, open Aside’s **Settings → Model connections**, add your service URL, API key, and protocol, test the connection, choose a model, and save. Open a regular HTTP/HTTPS page to use the selection toolbar, floating menu, or extension popup.
 
@@ -119,6 +120,8 @@ Quick Q&A and text translation are unavailable on extension pages, blank pages, 
 
 ## Configuration sync
 
+Safari currently keeps all configuration local and does not offer cross-device sync.
+
 Open **Settings → Sync** to enable optional sync through your existing browser account (Google for Chrome, Microsoft for Edge, or Mozilla for Firefox). Sync is limited to the same browser and extension ID. The page waits for existing synced settings by default. Only on the first device, choose **First-time setup** and set a passphrase of at least 12 characters. On another device, sign in to the same browser account, enable browser sync, install Aside with the same extension ID, and wait for the synced settings to arrive, then enter that passphrase to join. Do not select first-time setup again while waiting for delivery. The browser controls delivery; Aside cannot detect whether your account sync is enabled or confirm delivery to another device.
 
 - Sync merges model connections (with their API keys), actions, and reflection settings as separate records. All reflection settings travel together as one record. Language, theme, appearance, website preferences, quick-action visibility and order stay local. Collections, generated reflections, request history, caches, and discovered model lists are also excluded. Browser site permissions are granted separately on each device. After joining, the sync page lists model services that need access on this browser. Choose **Allow access** to authorize those addresses; this does not send a model request.
@@ -149,6 +152,7 @@ npm run format:check   # Check source formatting
 npm run test:browser   # Chrome browser regression tests
 npm run test:edge      # Edge browser regression tests
 npm run test:firefox   # Firefox browser regression tests
+npm run safari:run     # Build and open the Safari debug app (macOS + Xcode)
 ```
 
 Browser tests use isolated profiles and local mock model services. They do not read personal browser profiles or call paid models. Install the browser being tested; `CHROME_PATH` and `EDGE_PATH` can override their executable paths. See the browser guides for test scope and Firefox setup.

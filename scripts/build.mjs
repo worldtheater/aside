@@ -6,12 +6,21 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
-const firefox = process.argv.includes("--firefox");
-const edge = process.argv.includes("--edge");
-if (firefox && edge) throw new Error("Choose only one browser target.");
-const browser = firefox ? "firefox" : edge ? "edge" : "chrome";
+const browserTargets = {
+  chrome: "chrome120",
+  edge: "edge120",
+  firefox: "firefox147",
+  safari: "safari26",
+};
+const selected = Object.keys(browserTargets).filter((name) =>
+  process.argv.includes(`--${name}`),
+);
+if (selected.length > 1) throw new Error("Choose only one browser target.");
+const browser = selected[0] || "chrome";
+const firefox = browser === "firefox";
+const safari = browser === "safari";
 const output = browser === "chrome" ? root : path.join(root, "dist", browser);
-const target = firefox ? "firefox147" : edge ? "edge120" : "chrome120";
+const target = browserTargets[browser];
 if (browser !== "chrome") {
   await rm(output, { recursive: true, force: true });
   await mkdir(output, { recursive: true });
@@ -36,9 +45,9 @@ if (browser !== "chrome") {
   // Other stores assign their own extension identity and update channel.
   delete manifest.key;
   delete manifest.update_url;
-  if (firefox) {
+  if (firefox || safari) {
     const overrides = JSON.parse(
-      await readFile(path.join(root, "manifests/firefox.json"), "utf8"),
+      await readFile(path.join(root, `manifests/${browser}.json`), "utf8"),
     );
     delete manifest.minimum_chrome_version;
     manifest.permissions = manifest.permissions.filter(

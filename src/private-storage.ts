@@ -5,7 +5,7 @@ export interface LocalStorageArea {
   remove(keys: string | string[]): Promise<void>;
 }
 
-// Firefox does not support storage.local.setAccessLevel. An extension-origin
+// Firefox and Safari do not support storage.local.setAccessLevel. An extension-origin
 // database keeps both secrets and the endpoints that receive them privileged.
 export function createPrivateStorage(
   notify: (changes: StorageChanges) => void,

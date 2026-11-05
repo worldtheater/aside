@@ -1,4 +1,8 @@
-import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
+import {
+  BROWSER_NAME,
+  SYNC_ACCOUNT_NAME,
+  requiresDirectPermissionRequest,
+} from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -132,6 +136,8 @@ const base = {
     shortcuts: "Keyboard shortcuts",
   },
   shortcuts: {
+    safariHelp:
+      "To change shortcuts in Safari 26 or later, open Safari → Settings → Extensions → Aside.",
     intro: "See your current key bindings and customize them to suit you.",
     settings: "Set shortcuts",
     unset: "Not set",
@@ -557,7 +563,7 @@ const full = {
     lightsEnabled: "Dark mode: On",
     lightsDisabled: "Dark mode: Off",
     lightsSystem: "Dark mode: System",
-    lightsPermissionNeeded: isFirefox
+    lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Open Aside from the browser toolbar and turn on dark mode there to allow website access."
       : "Allow website access so dark mode can read page styles.",
     resizePanel: "Resize panel",

@@ -1,4 +1,9 @@
-import { isFirefox, WEBSITE_RESOURCE_ORIGINS } from "./browser.js";
+import {
+  supportsConfigurationSync,
+  hostPermissionPattern,
+  requiresDirectPermissionRequest,
+  WEBSITE_RESOURCE_ORIGINS,
+} from "./browser.js";
 import { configurationStorage } from "./extension-storage.js";
 import { createSecretRedactor } from "./redaction.js";
 import { ConfigurationSync } from "./config-sync.js";
@@ -261,16 +266,20 @@ function syncSelectionMenu() {
   selectionMenuUpdate = update;
   return update;
 }
-const configurationSync = new ConfigurationSync({
-  storage: configurationStorage,
-  mutate,
-  applied: async () => {
-    await syncSelectionMenu();
-    await broadcastSettings((await readStore()).settings);
-    await chrome.runtime.sendMessage({ type: "sync.applied" }).catch(() => {});
-  },
-});
-configurationSync.start();
+const configurationSync = supportsConfigurationSync
+  ? new ConfigurationSync({
+      storage: configurationStorage,
+      mutate,
+      applied: async () => {
+        await syncSelectionMenu();
+        await broadcastSettings((await readStore()).settings);
+        await chrome.runtime
+          .sendMessage({ type: "sync.applied" })
+          .catch(() => {});
+      },
+    })
+  : null;
+configurationSync?.start();
 chrome.runtime.onInstalled.addListener(async (details) => {
   await initialize();
   const registrations = await chrome.scripting.getRegisteredContentScripts();
@@ -287,7 +296,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     await Promise.all(
       tabs.map(async (tab) => {
         if (tab.id === undefined || !tab.url) return;
-        const origin = new URL(tab.url).origin + "/*";
+        const origin = hostPermissionPattern(tab.url);
         if (await chrome.permissions.contains({ origins: [origin] }))
           await inject(tab.id).catch(() => {});
       }),
@@ -371,16 +380,18 @@ chrome.runtime.onMessage.addListener(
           )
             throw new ModelError("notAllowed");
         }
-        // Firefox does not carry user activation through runtime messages.
-        // Its popup requests access directly; page controls use existing grants.
+        // Request access in the popup on browsers that require direct activation.
+        // Page controls use existing grants.
         if (["on", "system"].includes(message.patch?.lights as string)) {
           const permissions = { origins: WEBSITE_RESOURCE_ORIGINS };
-          const granted = isFirefox
+          const granted = requiresDirectPermissionRequest
             ? await chrome.permissions.contains(permissions)
             : await chrome.permissions.request(permissions);
           if (!granted)
             throw new ModelError(
-              isFirefox ? "lightsPermissionRequired" : "permissionRequired",
+              requiresDirectPermissionRequest
+                ? "lightsPermissionRequired"
+                : "permissionRequired",
             );
         }
         await initialize();
@@ -572,16 +583,19 @@ chrome.runtime.onMessage.addListener(
       }
       assertTrusted(sender);
       if (message.type === "snapshot") return snapshot();
-      if (message.type === "sync.status") return configurationSync.status();
-      if (message.type === "sync.connect")
-        return configurationSync.connect(
-          message.passphrase,
-          message.action,
-          message.revision,
-        );
-      if (message.type === "sync.run") return configurationSync.run();
-      if (message.type === "sync.stop") return configurationSync.stop();
-      if (message.type === "sync.clear") return configurationSync.clear();
+      if (message.type.startsWith("sync.")) {
+        if (!configurationSync) throw new ModelError("notAllowed");
+        if (message.type === "sync.status") return configurationSync.status();
+        if (message.type === "sync.connect")
+          return configurationSync.connect(
+            message.passphrase,
+            message.action,
+            message.revision,
+          );
+        if (message.type === "sync.run") return configurationSync.run();
+        if (message.type === "sync.stop") return configurationSync.stop();
+        if (message.type === "sync.clear") return configurationSync.clear();
+      }
       if (message.type === "cache.stats") return resultCache.stats();
       if (message.type === "cache.clear") {
         await resultCache.clear();
@@ -780,7 +794,7 @@ chrome.runtime.onMessage.addListener(
         const connection = message.connection;
         if (!connectionAvailable(connection))
           throw new ModelError("notAllowed");
-        const origin = new URL(modelsEndpoint(connection)).origin + "/*";
+        const origin = hostPermissionPattern(modelsEndpoint(connection));
         if (!(await chrome.permissions.contains({ origins: [origin] })))
           throw new ModelError("permissionRequired");
         const data = await readStore();
@@ -889,7 +903,7 @@ async function trackedCall<T>(
   secrets: readonly string[],
 ): Promise<T> {
   const redact = createSecretRedactor(secrets);
-  const origin = new URL(endpoint(connection)).origin + "/*";
+  const origin = hostPermissionPattern(endpoint(connection));
   if (!(await chrome.permissions.contains({ origins: [origin] })))
     throw new ModelError("permissionRequired");
   const startedAt = Date.now();

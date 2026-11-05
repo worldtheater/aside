@@ -1,4 +1,8 @@
-import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
+import {
+  BROWSER_NAME,
+  SYNC_ACCOUNT_NAME,
+  requiresDirectPermissionRequest,
+} from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -142,6 +146,8 @@ const base = {
     shortcuts: "Tastenkürzel",
   },
   shortcuts: {
+    safariHelp:
+      "Zum Ändern der Tastenkürzel in Safari 26 oder neuer: Safari → Einstellungen → Erweiterungen → Aside.",
     intro: "Aktuelle Tastenkürzel ansehen und anpassen.",
     settings: "Tastenkürzel festlegen",
     unset: "Nicht festgelegt",
@@ -600,7 +606,7 @@ const full = {
     lightsEnabled: "Dunkelmodus: Ein",
     lightsDisabled: "Dunkelmodus: Aus",
     lightsSystem: "Dunkelmodus: System",
-    lightsPermissionNeeded: isFirefox
+    lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Öffne Aside über die Browser-Symbolleiste und aktiviere dort den Dunkelmodus, um den Website-Zugriff zu erlauben."
       : "Website-Zugriff erlauben, damit der Dunkelmodus die Seitenstile lesen kann.",
     resizePanel: "Fenstergröße ändern",

@@ -1,4 +1,8 @@
-import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
+import {
+  BROWSER_NAME,
+  SYNC_ACCOUNT_NAME,
+  requiresDirectPermissionRequest,
+} from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -130,6 +134,8 @@ const base = {
     shortcuts: "키보드 단축키",
   },
   shortcuts: {
+    safariHelp:
+      "단축키를 변경하려면 Safari 26 이상에서 Safari → 설정 → 확장 프로그램 → Aside를 여세요.",
     intro: "현재 단축키를 확인하고 원하는 대로 설정하세요.",
     settings: "단축키 설정",
     unset: "설정 안 됨",
@@ -566,7 +572,7 @@ const full = {
     lightsEnabled: "다크 모드: 켬",
     lightsDisabled: "다크 모드: 끔",
     lightsSystem: "다크 모드: 시스템",
-    lightsPermissionNeeded: isFirefox
+    lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "브라우저 도구 모음에서 Aside를 열고 팝업에서 다크 모드를 켜 사이트 접근을 허용하세요."
       : "다크 모드가 페이지 스타일을 읽을 수 있도록 사이트 접근을 허용하세요.",
     resizePanel: "패널 크기 조절",

@@ -1,4 +1,8 @@
-import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
+import {
+  BROWSER_NAME,
+  SYNC_ACCOUNT_NAME,
+  requiresDirectPermissionRequest,
+} from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -123,6 +127,8 @@ const base = {
     shortcuts: "快捷鍵",
   },
   shortcuts: {
+    safariHelp:
+      "如需修改快捷鍵，請在 Safari 26 或更新版本中開啟 Safari → 設定 → 延伸功能 → 旁白。",
     intro: "查看目前的按鍵設定，依使用習慣調整。",
     settings: "設定快捷鍵",
     unset: "未設定",
@@ -545,7 +551,7 @@ const full = {
     lightsEnabled: "暗色模式：開啟",
     lightsDisabled: "暗色模式：關閉",
     lightsSystem: "暗色模式：跟隨系統",
-    lightsPermissionNeeded: isFirefox
+    lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "請從瀏覽器工具列開啟旁白，在彈出視窗中開啟暗色模式並允許網站存取。"
       : "請允許網站存取，讓暗色模式讀取網頁樣式。",
     resizePanel: "調整面板大小",

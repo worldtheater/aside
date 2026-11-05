@@ -1,4 +1,10 @@
-import { faviconUrl, openShortcutSettings } from "./browser.js";
+import {
+  faviconUrl,
+  openShortcutSettings,
+  isSafari,
+  supportsConfigurationSync,
+  hostPermissionPattern,
+} from "./browser.js";
 import { storageChanges } from "./extension-storage.js";
 import { readStore } from "./store.js";
 import {
@@ -109,6 +115,7 @@ let syncBusy = false;
 let syncFirstSetup = false;
 let pendingSync: (() => Promise<void>) | null = null;
 async function refreshSync() {
+  if (!supportsConfigurationSync) return;
   const [next, services] = await Promise.all([
     request("sync.status"),
     readSyncServiceAccess(data.connections),
@@ -287,7 +294,7 @@ const routeNames = [
   "appearance",
   "connections",
   "shortcuts",
-  "sync",
+  ...(supportsConfigurationSync ? ["sync"] : []),
   "usage",
   "help",
 ];
@@ -446,6 +453,7 @@ function dirty() {
   return state.editor && JSON.stringify(state.editor) !== state.initialDraft;
 }
 function navigate(route: string) {
+  if (!routeNames.includes(route)) return;
   dismissNotice();
   stopJob();
   closeMenu();
@@ -595,7 +603,7 @@ function renderSidebar() {
   const link = (name: keyof typeof C.nav, glyph: string) =>
     `<button class="sidebar-link" data-route="${name}" ${name === "home" ? 'data-op="home"' : ""} ${route === name ? 'aria-current="page"' : ""}>${icon(glyph)}<span>${C.nav[name]}</span></button>`;
   return `<aside class="sidebar" id="sidebar" aria-label="${C.pageMenu}"><div class="sidebar-brand"><a class="sidebar-brand-link" href="${e(homepage)}" target="_blank" rel="noopener noreferrer"><img src="icons/icon-32.png" alt="" width="28" height="28"><strong>${C.brand}</strong></a>${iconButton(C.closeNavigation, "navigation-close", "close", "", false)}</div>
-    <nav><div class="sidebar-group"><h2>${C.contentGroup}</h2>${link("home", "bookmark")}</div><div class="sidebar-group"><h2>${C.settings}</h2>${link("actions", "spark")}${link("appearance", "palette")}${link("connections", "plug")}${link("shortcuts", "keyboard")}${link("usage", "list")}${link("sync", "refresh")}</div></nav><div class="sidebar-footer">${link("help", "question")}</div></aside>
+    <nav><div class="sidebar-group"><h2>${C.contentGroup}</h2>${link("home", "bookmark")}</div><div class="sidebar-group"><h2>${C.settings}</h2>${link("actions", "spark")}${link("appearance", "palette")}${link("connections", "plug")}${link("shortcuts", "keyboard")}${link("usage", "list")}${supportsConfigurationSync ? link("sync", "refresh") : ""}</div></nav><div class="sidebar-footer">${link("help", "question")}</div></aside>
     <button class="sidebar-backdrop" data-op="navigation-close" aria-label="${C.closeNavigation}" tabindex="-1"></button>`;
 }
 const narrowNavigation = matchMedia("(max-width: 860px)");
@@ -999,8 +1007,8 @@ function renderShortcutBinding(name: string) {
     : `<span class="muted">${C.shortcuts.unset}</span>`;
 }
 function renderShortcuts() {
-  return `${heading(C.nav.shortcuts, C.shortcuts.intro, button(C.shortcuts.settings, "shortcut-settings", "", "keyboard"))}
-    <p class="shortcut-help">${e(C.shortcuts.help(chrome.runtime.getManifest().name))}</p>
+  return `${heading(C.nav.shortcuts, C.shortcuts.intro, isSafari ? "" : button(C.shortcuts.settings, "shortcut-settings", "", "keyboard"))}
+    <p class="shortcut-help">${e(isSafari ? C.shortcuts.safariHelp : C.shortcuts.help(chrome.runtime.getManifest().name))}</p>
     <section class="shortcut-list" aria-label="${C.nav.shortcuts}">${Object.entries(
       C.shortcuts.items,
     )
@@ -1768,7 +1776,7 @@ function validConnection(testOnly = false) {
   }
 }
 async function grantConnection(draft = connectionDraft) {
-  const origin = new URL(modelsEndpoint(draft)).origin + "/*";
+  const origin = hostPermissionPattern(modelsEndpoint(draft));
   if (!(await chrome.permissions.request({ origins: [origin] }))) {
     throw new ModelError("permissionRequired");
   }
@@ -1854,7 +1862,7 @@ document.addEventListener("click", async (event) => {
     if (op === "sync-authorize") {
       const origins = syncServices
         .filter((service) => !service.granted)
-        .map((service) => service.origin + "/*");
+        .map((service) => hostPermissionPattern(service.origin));
       if (!origins.length) return;
       dismissNotice();
       target.disabled = true;

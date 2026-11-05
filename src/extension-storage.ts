@@ -1,11 +1,11 @@
-import { isFirefox } from "./browser.js";
+import { usesPrivateSettingsStore } from "./browser.js";
 import { createPrivateStorage } from "./private-storage.js";
 import type { StorageChanges, LocalStorageArea } from "./private-storage.js";
 
 type Listener = (changes: StorageChanges, area: string) => void;
 const listeners = new Map<Listener, Listener>();
 let channel: BroadcastChannel | undefined;
-if (isFirefox) {
+if (usesPrivateSettingsStore) {
   if (!location.href.startsWith(chrome.runtime.getURL("")))
     throw new Error("Private settings are only available to extension pages");
   channel = new BroadcastChannel("aside-settings-changed");
@@ -18,10 +18,11 @@ function dispatch(changes: StorageChanges) {
 export const storageChanges = {
   addListener(listener: Listener) {
     if (listeners.has(listener)) return;
-    // Firefox's native local area is not our private settings store. Never let
+    // The native local area is not our private settings store. Never let
     // content-script writes to that area impersonate a trusted settings event.
     const native: Listener = (changes, area) => {
-      if (!isFirefox || area !== "local") listener(changes, area);
+      if (!usesPrivateSettingsStore || area !== "local")
+        listener(changes, area);
     };
     listeners.set(listener, native);
     chrome.storage.onChanged.addListener(native);
@@ -32,13 +33,13 @@ export const storageChanges = {
     listeners.delete(listener);
   },
 };
-export const localStore: LocalStorageArea = isFirefox
+export const localStore: LocalStorageArea = usesPrivateSettingsStore
   ? createPrivateStorage((changes) => {
       channel!.postMessage(changes);
       dispatch(changes);
     })
   : chrome.storage.local;
-export const localStoreReady = isFirefox
+export const localStoreReady = usesPrivateSettingsStore
   ? Promise.resolve()
   : chrome.storage.local.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" });
 export const configurationStorage = {

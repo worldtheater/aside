@@ -36,3 +36,7 @@ coverage/
 
 # Generated extension bundles (the repository root is the load directory)
 /*.js
+
+# Xcode per-user state
+xcuserdata/
+*.xcuserstate

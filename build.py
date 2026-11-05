@@ -10,10 +10,11 @@ parser.add_argument('--unpack', action='store_true',
 browsers = parser.add_mutually_exclusive_group()
 browsers.add_argument('--firefox', action='store_true', help='Package the Firefox build and its review sources.')
 browsers.add_argument('--edge', action='store_true', help='Package the Microsoft Edge build.')
+browsers.add_argument('--safari', action='store_true', help='Package Safari web resources for the macOS app.')
 args = parser.parse_args()
 
 root = Path(__file__).resolve().parent
-browser = 'firefox' if args.firefox else 'edge' if args.edge else 'chrome'
+browser = 'firefox' if args.firefox else 'edge' if args.edge else 'safari' if args.safari else 'chrome'
 source = root if browser == 'chrome' else root / 'dist' / browser
 suffix = '' if browser == 'chrome' else f'-{browser}'
 if not (source / 'background.js').is_file():

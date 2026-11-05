@@ -1,4 +1,8 @@
-import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
+import {
+  BROWSER_NAME,
+  SYNC_ACCOUNT_NAME,
+  requiresDirectPermissionRequest,
+} from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -141,6 +145,8 @@ const base = {
     shortcuts: "Scorciatoie da tastiera",
   },
   shortcuts: {
+    safariHelp:
+      "Per modificare le scorciatoie in Safari 26 o successivo, apri Safari → Impostazioni → Estensioni → Aside.",
     intro:
       "Visualizza le combinazioni attuali e personalizzale come preferisci.",
     settings: "Imposta scorciatoie",
@@ -600,7 +606,7 @@ const full = {
     lightsEnabled: "Modalità scura: Attiva",
     lightsDisabled: "Modalità scura: Disattiva",
     lightsSystem: "Modalità scura: Sistema",
-    lightsPermissionNeeded: isFirefox
+    lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Apri Aside dalla barra del browser e attiva la modalità scura nel pannello per consentire l’accesso ai siti."
       : "Consenti l’accesso al sito affinché la modalità scura possa leggere gli stili della pagina.",
     resizePanel: "Ridimensiona pannello",

@@ -1,4 +1,8 @@
-import { faviconUrl, isFirefox, WEBSITE_RESOURCE_ORIGINS } from "./browser.js";
+import {
+  faviconUrl,
+  requiresDirectPermissionRequest,
+  WEBSITE_RESOURCE_ORIGINS,
+} from "./browser.js";
 import { storageChanges } from "./extension-storage.js";
 import { icon } from "./ui.js";
 import { HoverTips } from "./hover-tips.js";
@@ -123,7 +127,7 @@ async function cycleLights() {
   renderLights();
   try {
     if (
-      isFirefox &&
+      requiresDirectPermissionRequest &&
       lights !== "off" &&
       !(await chrome.permissions.request({ origins: WEBSITE_RESOURCE_ORIGINS }))
     )

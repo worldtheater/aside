@@ -1,4 +1,8 @@
-import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
+import {
+  BROWSER_NAME,
+  SYNC_ACCOUNT_NAME,
+  requiresDirectPermissionRequest,
+} from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -135,6 +139,8 @@ const base = {
     shortcuts: "แป้นพิมพ์ลัด",
   },
   shortcuts: {
+    safariHelp:
+      "หากต้องการเปลี่ยนปุ่มลัดใน Safari 26 หรือใหม่กว่า ให้เปิด Safari → การตั้งค่า → ส่วนขยาย → Aside",
     intro: "ดูแป้นพิมพ์ลัดปัจจุบันและปรับให้เหมาะกับการใช้งาน",
     settings: "ตั้งค่าแป้นพิมพ์ลัด",
     unset: "ยังไม่ได้ตั้งค่า",
@@ -572,7 +578,7 @@ const full = {
     lightsEnabled: "โหมดมืด: เปิด",
     lightsDisabled: "โหมดมืด: ปิด",
     lightsSystem: "โหมดมืด: ตามระบบ",
-    lightsPermissionNeeded: isFirefox
+    lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "เปิด Aside จากแถบเครื่องมือเบราว์เซอร์ แล้วเปิดโหมดมืดในแผงเพื่ออนุญาตการเข้าถึงเว็บไซต์"
       : "อนุญาตการเข้าถึงเว็บไซต์เพื่อให้โหมดมืดอ่านรูปแบบหน้าเว็บได้",
     resizePanel: "ปรับขนาดแผง",

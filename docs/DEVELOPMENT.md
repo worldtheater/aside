@@ -223,3 +223,13 @@ Firefox 最低桌面版本为 147，固定 Gecko ID 独立于 Chrome ID。后台
 Edge 沿用 Chromium 运行时，`npm run build:edge` 输出至 `dist/edge/`；`npm run package:edge:dev` 生成 `artifacts/aside-<版本>-edge.zip` 并刷新 `artifacts/unpacked-edge/`。Chrome 和 Firefox 的输出目录互不覆盖。Edge 包不携带 Chrome 的公钥和更新地址，商店分配独立 ID。
 
 `src/browser.ts` 统一 Edge/Microsoft 文案与快捷键入口，业务层不新增浏览器判断。`npm run test:edge` 复用 Chromium 回归并使用隔离 Edge 环境；跨设备 Microsoft 账号同步仍需独立实测；Windows 实机验收已由维护者于 2026-11-03 确认。构建、安装、身份与测试边界见 [EDGE.md](EDGE.md)。版本标签的草稿 Release 同时包含 Edge ZIP，不自动提交商店。
+
+## Safari 构建
+
+首期仅支持 macOS Safari 26+，不提供跨设备配置同步。`npm run safari:run` 是生成工程、编译、启动的统一入口；`npm run package:safari:dev` 同时生成资源 ZIP、更新 `artifacts/unpacked-safari/`，并输出固定位置的 `artifacts/safari/Debug/Aside.app`。原生工程位于 `artifacts/safari/project/`，每次重新生成；修改应保存在 `safari/config.json` 或 `safari/host/`，不要直接编辑产物。
+
+`src/browser.ts` 集中声明 Safari 能力：不启动同步控制器、不显示同步入口，后台拒绝同步消息；配置沿用 Firefox 的扩展源 IndexedDB 和本机凭据加密。请求网站权限需要由界面直接触发。快捷键说明使用 Safari 设置路径，不尝试打开 Chromium 内部页面。
+
+`npm run test:safari` 检查构建后的后台、存储边界和 HTTP 模型连接，使用 API 替身而非真实 Safari；编译启动可运行 `./script/build_and_run.sh --verify`。浏览器内的权限、内容脚本和暗色模式仍需 Safari 实机验收。资源 ZIP 不能直接安装到 Safari；本机启用与后续签名边界见 [SAFARI.md](SAFARI.md)。当前发布流水线不增加未签名 Safari 安装包。
+
+Safari 商店归档使用 `SAFARI_TEAM_ID` 和 `SAFARI_BUILD_NUMBER` 环境变量，运行 `npm run safari:archive`、`npm run safari:export`。Release 归档与本地 Debug App 分开，保存在 `artifacts/safari/release/<版本>-<构建号>/`；只导出，不自动上传或发布。正式签名、原生图标和提审说明见 [SAFARI.md](SAFARI.md#app-store-preparation)。

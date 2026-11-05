@@ -1,4 +1,8 @@
-import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
+import {
+  BROWSER_NAME,
+  SYNC_ACCOUNT_NAME,
+  requiresDirectPermissionRequest,
+} from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -138,6 +142,8 @@ const base = {
     shortcuts: "Klavye kısayolları",
   },
   shortcuts: {
+    safariHelp:
+      "Safari 26 veya sonraki sürümlerde kısayolları değiştirmek için Safari → Ayarlar → Uzantılar → Aside yolunu açın.",
     intro: "Mevcut kısayolları görün ve ihtiyacınıza göre özelleştirin.",
     settings: "Kısayolları ayarla",
     unset: "Ayarlanmamış",
@@ -587,7 +593,7 @@ const full = {
     lightsEnabled: "Koyu mod: Açık",
     lightsDisabled: "Koyu mod: Kapalı",
     lightsSystem: "Koyu mod: Sistem",
-    lightsPermissionNeeded: isFirefox
+    lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Tarayıcı araç çubuğundan Aside’ı açın ve site erişimine izin vermek için panelde koyu modu etkinleştirin."
       : "Koyu modun sayfa stillerini okuyabilmesi için site erişimine izin verin.",
     resizePanel: "Paneli yeniden boyutlandır",

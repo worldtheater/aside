@@ -1,4 +1,8 @@
-import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
+import {
+  BROWSER_NAME,
+  SYNC_ACCOUNT_NAME,
+  requiresDirectPermissionRequest,
+} from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -130,6 +134,8 @@ const base = {
     shortcuts: "キーボードショートカット",
   },
   shortcuts: {
+    safariHelp:
+      "ショートカットを変更するには、Safari 26 以降で Safari → 設定 → 機能拡張 → Aside を開きます。",
     intro: "現在のキー割り当てを確認し、使いやすく設定できます。",
     settings: "ショートカットを設定",
     unset: "未設定",
@@ -569,7 +575,7 @@ const full = {
     lightsEnabled: "ダークモード：オン",
     lightsDisabled: "ダークモード：オフ",
     lightsSystem: "ダークモード：システム",
-    lightsPermissionNeeded: isFirefox
+    lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "ブラウザーのツールバーから Aside を開き、ポップアップでダークモードをオンにしてサイトへのアクセスを許可してください。"
       : "ダークモードがページのスタイルを読み取れるよう、サイトへのアクセスを許可してください。",
     resizePanel: "パネルのサイズを変更",

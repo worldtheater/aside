@@ -25,6 +25,13 @@ for (const [scheme, userAgent, browser, account, settings] of [
     "chrome://extensions/shortcuts",
   ],
   [
+    "safari-web-extension",
+    "Version/26.0 Safari/625.1",
+    "Safari",
+    "Apple",
+    null,
+  ],
+  [
     "moz-extension",
     "Firefox/147.0 Edg/156.0",
     "Firefox",
@@ -46,7 +53,22 @@ for (const [scheme, userAgent, browser, account, settings] of [
       commands: { openShortcutSettings: async () => { settings = "commands"; } }
     };
     const platform = await import("./browser.js");
-    await platform.openShortcutSettings();
+    const assert = (await import("node:assert/strict")).default;
+    const safari = platform.isSafari;
+    for (const [address, expected] of [
+      ["http://192.0.2.27:8317/v1/models", safari ? "http://192.0.2.27/*" : "http://192.0.2.27:8317/*"],
+      ["https://models.example:8443/v1/responses", safari ? "https://models.example/*" : "https://models.example:8443/*"],
+      ["http://localhost:11434/v1", safari ? "http://localhost/*" : "http://localhost:11434/*"],
+      ["http://[::1]:8317/v1", safari ? "http://[::1]/*" : "http://[::1]:8317/*"],
+      ["https://api.example.com/v1", "https://api.example.com/*"],
+    ]) assert.equal(platform.hostPermissionPattern(address), expected);
+
+    if (platform.supportsConfigurationSync) await platform.openShortcutSettings();
+    else {
+      const assert = (await import("node:assert/strict")).default;
+      await assert.rejects(platform.openShortcutSettings(), /Safari/);
+      settings = null;
+    }
     console.log(JSON.stringify([platform.BROWSER_NAME, platform.SYNC_ACCOUNT_NAME, settings,
       platform.faviconUrl("https://example.com/"), platform.faviconUrl("https://example.com/", "javascript:alert(1)")]));
   `,
@@ -59,7 +81,7 @@ for (const [scheme, userAgent, browser, account, settings] of [
     [actualBrowser, actualAccount, actualSettings],
     [browser, account, settings],
   );
-  if (scheme === "moz-extension") {
+  if (scheme !== "chrome-extension") {
     assert.equal(icon, null);
     assert.equal(unsafeIcon, null);
   } else {
@@ -69,5 +91,5 @@ for (const [scheme, userAgent, browser, account, settings] of [
   }
 }
 console.log(
-  "PASS: Chrome, Edge and Firefox names, sync accounts and shortcut destinations.",
+  "PASS: Chrome, Edge, Firefox and Safari names, sync accounts, shortcut destinations and host permission patterns.",
 );

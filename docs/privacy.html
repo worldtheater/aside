@@ -45,7 +45,7 @@
       <div class="policy-heading">
         <h1>Privacy Policy</h1>
         <p class="updated">
-          Last updated <time datetime="2026-11-03">November 3, 2026</time>
+          Last updated <time datetime="2026-11-05">November 5, 2026</time>
         </p>
         <p class="lead">
           Your reading stays in your browser until a feature sends content to
@@ -54,10 +54,12 @@
         <p>
           Aside (旁白) is an open-source browser extension maintained through
           <a href="https://github.com/worldtheater/aside">worldtheater/aside</a
-          >. This policy covers the extension and this policy page. Aside has no
-          developer-operated relay, analytics service, or sync server. Optional
-          encrypted configuration sync is provided through Chrome Sync,
-          Microsoft Edge Sync, or Firefox Sync, depending on your browser.
+          >. This policy covers Aside for Chrome, Edge, Firefox, and Safari for
+          macOS, including its companion Mac app, and this policy page. Aside
+          has no developer-operated relay, analytics service, or sync server.
+          Optional encrypted configuration sync is provided through Chrome Sync,
+          Microsoft Edge Sync, or Firefox Sync, depending on your browser. The
+          Safari version does not provide cross-device configuration sync.
         </p>
       </div>
       <div class="policy-layout">
@@ -80,7 +82,9 @@
             <p>
               Aside uses browser extension storage and local databases to
               provide its features. The extension does not send these stores to
-              the developer.
+              the developer. Safari stores configuration in extension-origin
+              IndexedDB; it does not upload configuration to iCloud or exchange
+              it with installations in other browsers.
             </p>
             <dl class="data-list">
               <div>
@@ -142,6 +146,11 @@
           </section>
           <section aria-labelledby="configuration-sync">
             <h2 id="configuration-sync">Optional configuration sync</h2>
+            <p>
+              This feature is available in Chrome, Edge, and Firefox. It is not
+              available in Safari; the following sync description does not apply
+              to the Safari version.
+            </p>
             <p>
               When you enable Sync, Aside sends an encrypted copy of your model
               connections and API keys, actions and custom instructions, and
@@ -243,8 +252,8 @@
               referenced by the page from their original hosts, which receive
               normal network metadata. Dark mode does not send page content to a
               model. Chrome and Edge use their favicon interface for site icons;
-              Firefox uses the current tab’s browser-provided icon and a local
-              icon for saved pages.
+              Firefox and Safari use the current tab’s browser-provided icon and
+              a local icon for saved pages.
             </p>
             <p>
               <strong>This page and support.</strong> This static page is hosted
@@ -273,9 +282,9 @@
             <ul>
               <li>Delete saved passages from <strong>Collection</strong>.</li>
               <li>
-                Use <strong>Sync</strong> to stop this device's synchronization
-                or delete the encrypted synced copy. Local configuration is
-                preserved.
+                In Chrome, Edge, or Firefox, use <strong>Sync</strong> to stop
+                this device's synchronization or delete the encrypted synced
+                copy. Local configuration is preserved.
               </li>
               <li>
                 Clear request history from <strong>Usage</strong> to remove both

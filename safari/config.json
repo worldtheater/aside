@@ -1,0 +1,8 @@
+{
+  "appName": "Aside",
+  "bundleIdentifier": "io.github.worldtheater.aside",
+  "extensionBundleIdentifier": "io.github.worldtheater.aside.Extension",
+  "minimumMacOSVersion": "14.0",
+  "copyright": "2026 Aside contributors",
+  "applicationCategory": "public.app-category.productivity"
+}

@@ -1,4 +1,8 @@
-import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
+import {
+  BROWSER_NAME,
+  SYNC_ACCOUNT_NAME,
+  requiresDirectPermissionRequest,
+} from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -135,6 +139,8 @@ const base = {
     shortcuts: "Pintasan keyboard",
   },
   shortcuts: {
+    safariHelp:
+      "Untuk mengubah pintasan di Safari 26 atau versi lebih baru, buka Safari → Pengaturan → Ekstensi → Aside.",
     intro: "Lihat pintasan saat ini dan sesuaikan dengan kebutuhan Anda.",
     settings: "Atur pintasan",
     unset: "Belum diatur",
@@ -592,7 +598,7 @@ const full = {
     lightsEnabled: "Mode gelap: Aktif",
     lightsDisabled: "Mode gelap: Nonaktif",
     lightsSystem: "Mode gelap: Ikuti sistem",
-    lightsPermissionNeeded: isFirefox
+    lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Buka Aside dari bilah alat browser dan aktifkan mode gelap di panel untuk mengizinkan akses situs."
       : "Izinkan akses situs agar mode gelap dapat membaca gaya halaman.",
     resizePanel: "Ubah ukuran panel",

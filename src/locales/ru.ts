@@ -1,4 +1,8 @@
-import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
+import {
+  BROWSER_NAME,
+  SYNC_ACCOUNT_NAME,
+  requiresDirectPermissionRequest,
+} from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -141,6 +145,8 @@ const base = {
     shortcuts: "Горячие клавиши",
   },
   shortcuts: {
+    safariHelp:
+      "Чтобы изменить сочетания клавиш в Safari 26 или новее, откройте Safari → Настройки → Расширения → Aside.",
     intro: "Просматривайте сочетания клавиш и настраивайте их под себя.",
     settings: "Настроить сочетания",
     unset: "Не задано",
@@ -598,7 +604,7 @@ const full = {
     lightsEnabled: "Тёмный режим: Вкл.",
     lightsDisabled: "Тёмный режим: Выкл.",
     lightsSystem: "Тёмный режим: Как в системе",
-    lightsPermissionNeeded: isFirefox
+    lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Откройте Aside на панели браузера и включите тёмный режим во всплывающем окне, чтобы разрешить доступ к сайтам."
       : "Разрешите доступ к сайту, чтобы тёмный режим мог читать стили страницы.",
     resizePanel: "Изменить размер панели",

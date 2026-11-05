@@ -1,4 +1,8 @@
-import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
+import {
+  BROWSER_NAME,
+  SYNC_ACCOUNT_NAME,
+  requiresDirectPermissionRequest,
+} from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -135,6 +139,8 @@ const base = {
     shortcuts: "Phím tắt",
   },
   shortcuts: {
+    safariHelp:
+      "Để đổi phím tắt trong Safari 26 trở lên, mở Safari → Cài đặt → Phần mở rộng → Aside.",
     intro: "Xem các phím tắt hiện tại và tùy chỉnh theo nhu cầu.",
     settings: "Đặt phím tắt",
     unset: "Chưa đặt",
@@ -580,7 +586,7 @@ const full = {
     lightsEnabled: "Chế độ tối: Bật",
     lightsDisabled: "Chế độ tối: Tắt",
     lightsSystem: "Chế độ tối: Theo hệ thống",
-    lightsPermissionNeeded: isFirefox
+    lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Mở Aside từ thanh công cụ trình duyệt, bật chế độ tối trong bảng và cho phép truy cập trang web."
       : "Cho phép truy cập trang web để chế độ tối đọc được kiểu hiển thị của trang.",
     resizePanel: "Đổi kích thước bảng",

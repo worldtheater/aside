@@ -1,3 +1,4 @@
+import { hostPermissionPattern } from "./browser.js";
 import { C } from "./copy.js";
 import { escapeHtml as e } from "./html.js";
 import { button, heading, icon } from "./ui.js";
@@ -25,7 +26,9 @@ export async function readSyncServiceAccess(
     [...services].map(async ([origin, names]) => ({
       origin,
       connections: names,
-      granted: await chrome.permissions.contains({ origins: [origin + "/*"] }),
+      granted: await chrome.permissions.contains({
+        origins: [hostPermissionPattern(origin)],
+      }),
     })),
   );
 }

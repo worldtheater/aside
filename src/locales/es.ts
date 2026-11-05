@@ -1,4 +1,8 @@
-import { BROWSER_NAME, SYNC_ACCOUNT_NAME, isFirefox } from "../browser.js";
+import {
+  BROWSER_NAME,
+  SYNC_ACCOUNT_NAME,
+  requiresDirectPermissionRequest,
+} from "../browser.js";
 import { DAILY_PROMPT } from "../prompts.js";
 import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
@@ -141,6 +145,8 @@ const base = {
     shortcuts: "Atajos de teclado",
   },
   shortcuts: {
+    safariHelp:
+      "Para cambiar los atajos en Safari 26 o posterior, abre Safari → Ajustes → Extensiones → Aside.",
     intro: "Consulta y personaliza tus atajos de teclado.",
     settings: "Configurar atajos",
     unset: "Sin asignar",
@@ -597,7 +603,7 @@ const full = {
     lightsEnabled: "Modo oscuro: activado",
     lightsDisabled: "Modo oscuro: desactivado",
     lightsSystem: "Modo oscuro: sistema",
-    lightsPermissionNeeded: isFirefox
+    lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Abre Aside desde la barra del navegador y activa allí el modo oscuro para permitir el acceso a los sitios."
       : "Permite el acceso al sitio para que el modo oscuro pueda leer los estilos de la página.",
     resizePanel: "Cambiar tamaño del panel",
