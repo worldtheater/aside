@@ -3,6 +3,7 @@ export type Protocol =
   "responses" | "anthropic" | "gemini" | "chat" | "typesafe";
 export type ModelPurpose = "generation" | "decision";
 export type { Locale, LocalePreference } from "./locale.js";
+export type TranslationEngine = "ai" | "microsoft" | "browser";
 export type ActionKind =
   "translate" | "plain" | "explain" | "summary" | "qa" | "custom";
 export type OutputLength = "brief" | "balanced" | "detailed";
@@ -44,6 +45,8 @@ export interface Action {
   mode: ActionMode;
   placement: "inline" | "panel";
   quick: boolean;
+  translationEngine?: TranslationEngine;
+  translationScope?: Scope;
   sourceLanguage?: string;
   targetLanguage?: string;
   outputLanguage?: string;
@@ -57,6 +60,7 @@ export type ActionEdit = Pick<
   | "name"
   | "instruction"
   | "model"
+  | "translationEngine"
   | "sourceLanguage"
   | "targetLanguage"
   | "outputLanguage"
@@ -261,7 +265,22 @@ export interface ProcessPayload {
   daily?: Daily;
   saveDaily?: boolean;
 }
+export interface NativeTranslationRequest {
+  type: "native-translate";
+  id: string;
+  texts: string[];
+  sourceLanguage: string;
+  targetLanguage: string;
+}
+export interface NativeTranslationReply {
+  type: "native-result";
+  id: string;
+  texts?: string[];
+  error?: string;
+  detail?: string;
+}
 export type ProcessMessage =
+  | NativeTranslationRequest
   | { type: "delta"; id: string; text: string }
   | { type: "progress"; parts: ResultPart[]; stats?: ProcessStats }
   | { type: "done"; result: ProcessResult }
@@ -303,6 +322,7 @@ export interface RequestMap {
   "sync.stop": { payload: {}; result: import("./config-sync.js").SyncStatus };
   "sync.clear": { payload: {}; result: import("./config-sync.js").SyncStatus };
   snapshot: { payload: {}; result: Snapshot };
+  "settings.reset": { payload: {}; result: boolean };
   "settings.public": { payload: {}; result: PublicConfig };
   "settings.open": {
     payload: { tabId?: number | null; route?: string };
@@ -381,7 +401,8 @@ export interface RequestMap {
     payload: {
       tabId: number;
       actionId: string;
-      scope: string;
+      requestMicrosoftPermission?: boolean;
+      scope?: Scope;
       panel?: boolean;
       translation?: TranslationLanguages;
     };

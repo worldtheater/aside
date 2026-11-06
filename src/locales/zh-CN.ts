@@ -1,3 +1,5 @@
+import { RESET_COPY } from "../reset-copy.js";
+import { TRANSLATION_COPY } from "../translation-copy.js";
 import {
   BROWSER_NAME,
   SYNC_ACCOUNT_NAME,
@@ -416,6 +418,7 @@ const full = {
   ...base,
   processingNotice: "内容将发送到你选择的模型服务。",
   real: {
+    translation: TRANSLATION_COPY["zh-CN"].labels,
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
@@ -574,6 +577,7 @@ const full = {
     remove: "删除",
     frameLimit: "受浏览器限制，暂不处理 PDF、跨域内嵌页面及图片中的文字。",
     errors: {
+      ...TRANSLATION_COPY["zh-CN"].errors,
       noDecisionConnection: "请先配置默认决策模型。",
       invalidDecision: "决策服务返回了无效结果。",
       actionLimit: `最多保存 ${MAX_ACTIONS} 个处理方式，请先删除不再使用的自定义方式。`,
@@ -708,5 +712,6 @@ const copy: Copy = {
   nav: { ...full.nav, usage: usage.title },
   usage,
   popup,
+  reset: RESET_COPY["zh-CN"],
 };
 export default copy;

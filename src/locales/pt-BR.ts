@@ -1,3 +1,5 @@
+import { RESET_COPY } from "../reset-copy.js";
+import { TRANSLATION_COPY } from "../translation-copy.js";
 import {
   BROWSER_NAME,
   SYNC_ACCOUNT_NAME,
@@ -463,6 +465,7 @@ const full = {
   ...base,
   processingNotice: "O conteúdo será enviado ao serviço de modelo selecionado.",
   real: {
+    translation: TRANSLATION_COPY["pt-BR"].labels,
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
@@ -634,6 +637,7 @@ const full = {
     frameLimit:
       "PDFs, páginas incorporadas de outras origens e textos em imagens não são processados.",
     errors: {
+      ...TRANSLATION_COPY["pt-BR"].errors,
       noDecisionConnection: "Configure primeiro um modelo de decisão padrão.",
       invalidDecision: "O serviço de decisão retornou um resultado inválido.",
       actionLimit: `Você pode salvar até ${MAX_ACTIONS} ações. Remova primeiro uma ação personalizada que não usa.`,
@@ -790,5 +794,6 @@ const copy: Copy = {
   nav: { ...full.nav, usage: usage.title },
   usage,
   popup,
+  reset: RESET_COPY["pt-BR"],
 };
 export default copy;

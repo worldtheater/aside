@@ -19,6 +19,7 @@ for (const field of [
 ])
   assert.equal(manifest[field], undefined);
 assert(!manifest.permissions.includes("favicon"));
+assert(manifest.permissions.includes("nativeMessaging"));
 assert.deepEqual(manifest.optional_host_permissions, [
   "https://*/*",
   "http://*/*",
@@ -164,6 +165,19 @@ try {
   });
   assert.equal(saved.ok, true, JSON.stringify(saved));
   connection.id = saved.value.id;
+  const initialSettings = await send({ type: "snapshot" });
+  const updated = await send({
+    type: "actions.save",
+    changes: [
+      {
+        ...initialSettings.value.actions.find(
+          (action) => action.id === "translate",
+        ),
+        translationEngine: "ai",
+      },
+    ],
+  });
+  assert.equal(updated.ok, true, JSON.stringify(updated));
   const tested = await send({ type: "connection.test", connection });
   assert.equal(tested.ok, true, JSON.stringify(tested));
   assert.equal(tested.value[0].id, "fixture-model");
@@ -236,6 +250,27 @@ try {
     (await send({ type: "connection.remove", id: connection.id })).ok,
     true,
   );
+  await localStore.set({
+    "native-language-packs": ["fixture"],
+    retiredSetting: true,
+  });
+  assert.equal(
+    (await send({ type: "settings.reset" }, untrusted)).error,
+    "notAllowed",
+  );
+  assert.equal((await send({ type: "settings.reset" })).ok, true);
+  const resetSnapshot = await send({ type: "snapshot" });
+  assert.deepEqual(resetSnapshot.value.connections, []);
+  assert.deepEqual(resetSnapshot.value.collection, []);
+  assert.equal(
+    resetSnapshot.value.actions.find((action) => action.kind === "translate")
+      .translationEngine,
+    "microsoft",
+  );
+  const resetValues = await localStore.get(null);
+  assert.equal(resetValues.protectedConfiguration, undefined);
+  assert.equal(resetValues["native-language-packs"], undefined);
+  assert.equal(resetValues.retiredSetting, undefined);
 } finally {
   await new Promise((resolve) => server.close(resolve));
 }
@@ -251,5 +286,5 @@ execFileSync(process.execPath, [
 `,
 ]);
 console.log(
-  "PASS: Safari background starts without sync, HTTP connection testing, streamed translation, encrypted local persistence, and content-script boundaries.",
+  "PASS: Safari background starts without sync, HTTP connection testing, streamed translation, encrypted local persistence, full local reset, and content-script boundaries.",
 );

@@ -378,6 +378,19 @@ fs.mkdirSync(artifacts, { recursive: true });
     };
     await choose("#ui-locale", "zh-CN");
     assert.equal(await page.locator(".collection-card").count(), 0);
+    if (process.argv.includes("--translation-engines-only")) {
+      await require("./translation-engines-browser.cjs")({
+        page,
+        context,
+        origin,
+        calls,
+        nav,
+        op,
+        choose,
+      });
+      assert.deepEqual(errors, []);
+      return;
+    }
     if (
       process.argv.includes("--onboarding-only") ||
       !process.argv.some((arg) => arg.endsWith("-only"))
@@ -392,6 +405,19 @@ fs.mkdirSync(artifacts, { recursive: true });
       assert.deepEqual(errors, []);
       if (process.argv.includes("--onboarding-only")) return;
     }
+    // The remaining model suites choose AI explicitly; factory translation is Microsoft.
+    await page.evaluate(async () => {
+      const { value } = await chrome.runtime.sendMessage({ type: "snapshot" });
+      await chrome.runtime.sendMessage({
+        type: "actions.save",
+        changes: [
+          {
+            ...value.actions.find((action) => action.id === "translate"),
+            translationEngine: "ai",
+          },
+        ],
+      });
+    });
     if (runMessaging) {
       await require("./messaging-browser.cjs")({
         page,
@@ -838,6 +864,17 @@ fs.mkdirSync(artifacts, { recursive: true });
       assert.deepEqual(errors, []);
       return;
     }
+    if (process.argv.includes("--reset-only")) {
+      await require("./reset-browser.cjs")({
+        page,
+        context,
+        origin,
+        streams,
+        artifacts,
+      });
+      assert.deepEqual(errors, []);
+      return;
+    }
     if (process.argv.includes("--reasoning-only")) {
       await require("./reasoning-browser.cjs")({
         page,
@@ -972,6 +1009,7 @@ fs.mkdirSync(artifacts, { recursive: true });
       "Cancelled result is never applied",
     );
     await op("home").click();
+    await page.locator(".daily-card").hover();
     await op("daily-settings").click();
     await op("daily-preview").click();
     await page
@@ -1156,7 +1194,10 @@ fs.mkdirSync(artifacts, { recursive: true });
         "#selection > .selection-toolbar-row > .selection-actions > [data-selection-action=translate]",
       )
       .click();
-    await host.locator("#output").filter({ hasText: "Processed:" }).waitFor();
+    await host
+      .locator("#output")
+      .filter({ hasText: "Reading is active thinking." })
+      .waitFor();
     await host.locator("#result [data-op=bookmark]").click();
     await page.reload();
     await op("home").click();
@@ -1842,7 +1883,13 @@ fs.mkdirSync(artifacts, { recursive: true });
           p
             .locator("[data-pagework=ui] #status")
             .evaluate(
-              (node) => ({ url: location.href, status: node.textContent }),
+              (node) => ({
+                url: location.href,
+                status: node.textContent,
+                selection: String(getSelection()),
+                tools: node.getRootNode().getElementById("selection")
+                  ?.textContent,
+              }),
               null,
               { timeout: 1000 },
             )

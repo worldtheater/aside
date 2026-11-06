@@ -1,3 +1,5 @@
+import { RESET_COPY } from "../reset-copy.js";
+import { TRANSLATION_COPY } from "../translation-copy.js";
 import {
   BROWSER_NAME,
   SYNC_ACCOUNT_NAME,
@@ -421,6 +423,7 @@ const full = {
   ...base,
   processingNotice: "內容將傳送至你選擇的模型服務。",
   real: {
+    translation: TRANSLATION_COPY["zh-TW"].labels,
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
@@ -581,6 +584,7 @@ const full = {
     remove: "刪除",
     frameLimit: "不處理 PDF、跨來源嵌入頁面或圖片中的文字。",
     errors: {
+      ...TRANSLATION_COPY["zh-TW"].errors,
       noDecisionConnection: "請先設定預設判斷模型。",
       invalidDecision: "判斷服務回傳了無效結果。",
       actionLimit: `最多可儲存 ${MAX_ACTIONS} 個處理方式，請先移除不用的自訂項目。`,
@@ -717,5 +721,6 @@ const copy: Copy = {
   nav: { ...full.nav, usage: usage.title },
   usage,
   popup,
+  reset: RESET_COPY["zh-TW"],
 };
 export default copy;

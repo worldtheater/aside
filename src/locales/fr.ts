@@ -1,3 +1,5 @@
+import { RESET_COPY } from "../reset-copy.js";
+import { TRANSLATION_COPY } from "../translation-copy.js";
 import {
   BROWSER_NAME,
   SYNC_ACCOUNT_NAME,
@@ -466,6 +468,7 @@ const full = {
   ...base,
   processingNotice: "Le contenu sera envoyé au service de modèle sélectionné.",
   real: {
+    translation: TRANSLATION_COPY["fr"].labels,
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
@@ -637,6 +640,7 @@ const full = {
     frameLimit:
       "Les PDF, les pages intégrées d’une autre origine et le texte des images ne sont pas traités.",
     errors: {
+      ...TRANSLATION_COPY["fr"].errors,
       noDecisionConnection:
         "Configurez d’abord un modèle de décision par défaut.",
       invalidDecision: "Le service de décision a renvoyé un résultat invalide.",
@@ -792,5 +796,6 @@ const copy: Copy = {
   nav: { ...full.nav, usage: usage.title },
   usage,
   popup,
+  reset: RESET_COPY["fr"],
 };
 export default copy;

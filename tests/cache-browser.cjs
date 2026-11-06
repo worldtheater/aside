@@ -212,7 +212,7 @@ module.exports = async ({
     .evaluate(
       (n) =>
         (n.textContent =
-          "A new paragraph to verify unobtrusive failure feedback."),
+          "A new paragraph to verify persistent failure recovery."),
     );
   setFailure(true);
   try {
@@ -226,10 +226,12 @@ module.exports = async ({
         }),
       tabId,
     );
-    await host.locator("#notice").filter({ hasText: "认证失败" }).waitFor();
+    const recovery = host.locator("#translation-recovery");
+    await recovery.filter({ hasText: "认证失败" }).waitFor();
+    assert(await recovery.locator("[data-op=retry-page]").isVisible());
     assert(
       await host.locator("#toolbar").isHidden(),
-      "Provider failures use a notice without opening page controls",
+      "Provider failures expose persistent recovery without opening page controls",
     );
   } finally {
     setFailure(false);

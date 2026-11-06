@@ -1,5 +1,23 @@
-import type { Locale, ProcessingAction } from "./types.js";
+import type { Locale, ProcessingAction, Scope } from "./types.js";
 import { resolveOutputLanguage } from "./prompts.js";
+import { ModelError } from "./providers.js";
+
+export function translationScope(action?: Partial<ProcessingAction>): Scope {
+  return action?.kind === "translate"
+    ? (action.translationScope ?? "body")
+    : "body";
+}
+
+export function validateTranslationScope(
+  action: Partial<ProcessingAction>,
+): void {
+  if (
+    action.translationScope !== undefined &&
+    (action.kind !== "translate" ||
+      !["body", "all"].includes(action.translationScope))
+  )
+    throw new ModelError("invalidAction");
+}
 
 export const UI_CONTEXT_LIMITS = { sourceChars: 100, fieldChars: 160 };
 export function needsUiContext(text: string): boolean {

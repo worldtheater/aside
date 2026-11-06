@@ -48,8 +48,10 @@
           Last updated <time datetime="2026-11-05">November 5, 2026</time>
         </p>
         <p class="lead">
-          Your reading stays in your browser until a feature sends content to
-          the model service you choose.
+          Your reading stays in your browser unless you use an online feature.
+          AI actions send content to your chosen model service; Microsoft
+          translation sends text to Microsoft. Browser-local translation runs on
+          your device.
         </p>
         <p>
           Aside (旁白) is an open-source browser extension maintained through
@@ -69,6 +71,7 @@
             <li><a href="#local-data">Data on your device</a></li>
             <li><a href="#configuration-sync">Configuration sync</a></li>
             <li><a href="#model-requests">Model requests</a></li>
+            <li><a href="#translation-engines">Translation engines</a></li>
             <li><a href="#other-connections">Other connections</a></li>
             <li><a href="#your-controls">Your controls</a></li>
             <li><a href="#security">Security</a></li>
@@ -203,9 +206,9 @@
           <section aria-labelledby="model-requests">
             <h2 id="model-requests">Model requests</h2>
             <p>
-              When you translate, explain, summarize, preview an action, or
-              submit a question, Aside sends the required text and instructions
-              directly to the service URL saved in
+              When you use an AI action to translate, explain, summarize,
+              preview an action, or submit a question, Aside sends the required
+              text and instructions directly to the service URL saved in
               <strong>Model connections</strong>. Depending on the feature, this
               may include selected text, extracted page content, your question,
               a quoted passage, and context such as page titles, section titles,
@@ -242,6 +245,50 @@
               Testing a connection sends an authenticated request to retrieve
               its model list; it does not submit page text for generation.
               Requests do not pass through an Aside server.
+            </p>
+          </section>
+          <section aria-labelledby="translation-engines">
+            <h2 id="translation-engines">
+              Translation engines without API keys
+            </h2>
+            <p>
+              <strong>Microsoft online translation.</strong> When you select
+              this engine and start translating, Aside sends the source text and
+              selected languages directly to Microsoft's Edge translation
+              service at edge.microsoft.com. This includes additional passages
+              translated as you scroll. No API key is needed, and Aside sends no
+              model credentials or cookies with these requests. Microsoft
+              receives the submitted text and normal network metadata such as
+              your IP address. Its handling of the data is subject to the
+              <a href="https://privacy.microsoft.com/privacystatement"
+                >Microsoft Privacy Statement</a
+              >. This endpoint is not the authenticated Azure Translator API and
+              may be changed or limited by Microsoft.
+            </p>
+            <p>
+              <strong>Browser-local translation.</strong> Aside uses the
+              browser's Translator and Language Detector APIs to process text on
+              your device. On macOS Safari, it uses Apple's Translation and
+              NaturalLanguage frameworks through its native extension. Aside
+              does not send the text to an online translation service. Your
+              browser may download models or language packs; those downloads are
+              managed by the browser or operating system and can disclose normal
+              network metadata to its download service. If local translation is
+              unavailable, Aside displays an error instead of switching to an
+              online engine.
+            </p>
+            <p>
+              Apple's Translation framework may collect API usage and
+              performance metrics, including the app identifier and language
+              pair; these metrics exclude the original and translated text.
+              Safari language preparation passes only a request identifier and
+              language pair to the Aside Mac app. The native bridge does not
+              store webpage text.
+            </p>
+            <p>
+              Both engines use Aside's local result cache. They do not add model
+              token counts or input/output records to model usage history.
+              Results you choose to save are stored in Collection as usual.
             </p>
           </section>
           <section aria-labelledby="other-connections">

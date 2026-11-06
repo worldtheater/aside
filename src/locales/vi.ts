@@ -1,3 +1,5 @@
+import { RESET_COPY } from "../reset-copy.js";
+import { TRANSLATION_COPY } from "../translation-copy.js";
 import {
   BROWSER_NAME,
   SYNC_ACCOUNT_NAME,
@@ -450,6 +452,7 @@ const full = {
   ...base,
   processingNotice: "Nội dung sẽ được gửi đến dịch vụ mô hình đã chọn.",
   real: {
+    translation: TRANSLATION_COPY["vi"].labels,
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
@@ -617,6 +620,7 @@ const full = {
     remove: "Xóa",
     frameLimit: "Không xử lý PDF, trang nhúng khác nguồn và văn bản trong ảnh.",
     errors: {
+      ...TRANSLATION_COPY["vi"].errors,
       noDecisionConnection: "Thiết lập mô hình ra quyết định mặc định trước.",
       invalidDecision: "Dịch vụ ra quyết định trả về kết quả không hợp lệ.",
       actionLimit: `Bạn có thể lưu tối đa ${MAX_ACTIONS} thao tác. Hãy xóa một thao tác tùy chỉnh không dùng trước.`,
@@ -764,5 +768,6 @@ const copy: Copy = {
   nav: { ...full.nav, usage: usage.title },
   usage,
   popup,
+  reset: RESET_COPY["vi"],
 };
 export default copy;

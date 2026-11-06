@@ -1,3 +1,5 @@
+import { RESET_COPY } from "../reset-copy.js";
+import { TRANSLATION_COPY } from "../translation-copy.js";
 import {
   BROWSER_NAME,
   SYNC_ACCOUNT_NAME,
@@ -436,6 +438,7 @@ const full = {
   ...base,
   processingNotice: "콘텐츠가 선택한 모델 서비스로 전송됩니다.",
   real: {
+    translation: TRANSLATION_COPY["ko"].labels,
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
@@ -604,6 +607,7 @@ const full = {
     frameLimit:
       "PDF, 다른 출처의 삽입 페이지, 이미지 속 텍스트는 처리하지 않습니다.",
     errors: {
+      ...TRANSLATION_COPY["ko"].errors,
       noDecisionConnection: "먼저 기본 판단 모델을 설정하세요.",
       invalidDecision: "판단 서비스가 잘못된 결과를 반환했습니다.",
       actionLimit: `작업은 최대 ${MAX_ACTIONS}개까지 저장할 수 있습니다. 먼저 사용하지 않는 사용자 작업을 삭제하세요.`,
@@ -751,5 +755,6 @@ const copy: Copy = {
   nav: { ...full.nav, usage: usage.title },
   usage,
   popup,
+  reset: RESET_COPY["ko"],
 };
 export default copy;

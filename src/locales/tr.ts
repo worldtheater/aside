@@ -1,3 +1,5 @@
+import { RESET_COPY } from "../reset-copy.js";
+import { TRANSLATION_COPY } from "../translation-copy.js";
 import {
   BROWSER_NAME,
   SYNC_ACCOUNT_NAME,
@@ -454,6 +456,7 @@ const full = {
   ...base,
   processingNotice: "İçerik, seçtiğiniz model hizmetine gönderilecek.",
   real: {
+    translation: TRANSLATION_COPY["tr"].labels,
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
@@ -625,6 +628,7 @@ const full = {
     frameLimit:
       "PDF’ler, farklı kaynaklardan gömülü sayfalar ve görsellerdeki metinler işlenmez.",
     errors: {
+      ...TRANSLATION_COPY["tr"].errors,
       noDecisionConnection: "Önce varsayılan karar modelini ayarlayın.",
       invalidDecision: "Karar hizmeti geçersiz bir sonuç döndürdü.",
       actionLimit: `En fazla ${MAX_ACTIONS} işlem kaydedebilirsiniz. Önce kullanılmayan bir özel işlemi kaldırın.`,
@@ -779,5 +783,6 @@ const copy: Copy = {
   nav: { ...full.nav, usage: usage.title },
   usage,
   popup,
+  reset: RESET_COPY["tr"],
 };
 export default copy;

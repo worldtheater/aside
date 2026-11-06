@@ -317,6 +317,22 @@ for (const url of [
   assert.throws(() => validateConfiguration(invalidUrl), /invalidData/);
 }
 const invalid = structuredClone(initial);
+const scoped = structuredClone(initial);
+scoped.actions.translate.value.translationScope = "all";
+scoped.actions.translate.value.translationEngine = "browser";
+validateConfiguration(scoped);
+const scopeRecipient = store("scope-recipient");
+applyConfiguration(scopeRecipient, scoped);
+assert.equal(
+  scopeRecipient.settings.actions.find((a) => a.id === "translate")
+    .translationScope,
+  "all",
+);
+for (const value of ["invalid", true, null]) {
+  const badScope = structuredClone(scoped);
+  badScope.actions.translate.value.translationScope = value;
+  assert.throws(() => validateConfiguration(badScope), /invalidData/);
+}
 invalid.actions.translate.value.quick = true;
 assert.throws(() => validateConfiguration(invalid), /invalidData/);
 invalid.actions.translate.value = null;
@@ -552,7 +568,7 @@ assert.equal(a.local.daily.result, "new local result");
 // Custom actions retain identity and merge, but quick visibility/order stay local.
 await a.edit((data) =>
   data.settings.actions.push({
-    ...getPresets()[0],
+    ...getPresets().find((action) => action.kind === "explain"),
     id: "custom-a",
     kind: "custom",
     builtin: false,
@@ -564,7 +580,7 @@ await a.edit((data) =>
 );
 await b.edit((data) =>
   data.settings.actions.push({
-    ...getPresets()[0],
+    ...getPresets().find((action) => action.kind === "explain"),
     id: "custom-b",
     kind: "custom",
     builtin: false,
@@ -628,7 +644,7 @@ await assert.rejects(
   () =>
     b.edit((data) => {
       data.settings.actions.push({
-        ...getPresets()[0],
+        ...getPresets().find((action) => action.kind === "explain"),
         id: "custom-b",
         kind: "custom",
       });
@@ -706,7 +722,7 @@ for (let i = 0; i < 25; i++)
     updatedAt: 1,
     writer: "a",
     value: {
-      ...projected.actions.translate,
+      ...projected.actions.explain,
       id: `custom-${i}`,
       kind: "custom",
       builtin: false,

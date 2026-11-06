@@ -35,7 +35,8 @@ class ViewController: NSViewController, WKNavigationDelegate, WKScriptMessageHan
                 if error != nil {
                     self.webView.evaluateJavaScript("showSettingsError()")
                 } else {
-                    NSApplication.shared.terminate(nil)
+                    // A language preparation window may still be active.
+                    self.view.window?.close()
                 }
             }
         }

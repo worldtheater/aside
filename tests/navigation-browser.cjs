@@ -67,6 +67,39 @@ module.exports = async ({
       history.replaceState({}, "", "/navigation-replaced"),
     );
     await assertClosed();
+    // Actual document anchors are reading-position changes, including History API links.
+    await select();
+    await source.evaluate(() => {
+      location.hash = "first";
+    });
+    assert(await selection.isVisible());
+    await source.evaluate(() => history.pushState({}, "", "#second"));
+    assert(await selection.isVisible());
+    await source.goBack();
+    assert(await selection.isVisible());
+    await source.goForward();
+    assert(await selection.isVisible());
+    await source.evaluate(() => {
+      const anchor = document.createElement("a");
+      anchor.name = "章节 说明";
+      document.querySelector("main").append(anchor);
+      history.replaceState({}, "", "#" + encodeURIComponent(anchor.name));
+    });
+    assert(
+      await selection.isVisible(),
+      "Encoded named anchors keep the current panel",
+    );
+    await source.evaluate(() => history.replaceState({}, "", "#top"));
+    assert(await selection.isVisible());
+    await source.evaluate(() =>
+      history.replaceState({}, "", "?article=other#first"),
+    );
+    await assertClosed();
+    await select();
+    await source.evaluate(() => {
+      location.hash = "%E0%A4%A";
+    });
+    await assertClosed();
     await select();
     await source.evaluate(() => (location.hash = "/another-article"));
     await assertClosed();
@@ -134,7 +167,7 @@ module.exports = async ({
     );
     assert.deepEqual(errors, []);
     console.log(
-      "PASS: SPA link, push/replace/hash/back/forward and document navigation clear old tools; state-only updates keep them; pinned streaming work is cancelled; new selection works without automatic requests.",
+      "PASS: document anchors, encoded named anchors, page-top links and their history traversal preserve state; path/query/hash routes and document navigation clear old tools; pinned streaming work is cancelled; new selection works without automatic requests.",
     );
   } finally {
     await source.close();

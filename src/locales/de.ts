@@ -1,3 +1,5 @@
+import { RESET_COPY } from "../reset-copy.js";
+import { TRANSLATION_COPY } from "../translation-copy.js";
 import {
   BROWSER_NAME,
   SYNC_ACCOUNT_NAME,
@@ -466,6 +468,7 @@ const full = {
   ...base,
   processingNotice: "Der Inhalt wird an den gewählten Modelldienst gesendet.",
   real: {
+    translation: TRANSLATION_COPY["de"].labels,
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
@@ -638,6 +641,7 @@ const full = {
     frameLimit:
       "PDFs, eingebettete Seiten anderer Herkunft und Text in Bildern werden nicht verarbeitet.",
     errors: {
+      ...TRANSLATION_COPY["de"].errors,
       noDecisionConnection:
         "Zuerst ein Standardmodell für Entscheidungen einrichten.",
       invalidDecision:
@@ -800,5 +804,6 @@ const copy: Copy = {
   nav: { ...full.nav, usage: usage.title },
   usage,
   popup,
+  reset: RESET_COPY["de"],
 };
 export default copy;

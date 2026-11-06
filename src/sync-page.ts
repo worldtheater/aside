@@ -119,14 +119,14 @@ export function renderSyncPage(
 
 function renderSyncDetails(status: SyncStatus | null): string {
   const copy = C.sync;
-  return `<details class="advanced sync-details"><summary>${e(copy.details)}</summary>
+  return `<details class="advanced help-details sync-details"><summary>${e(copy.details)}</summary>
     <div class="advanced-body">
       <div class="sync-guide-grid sync-scope">
-        <section><h3>${icon("refresh")}${e(copy.scopeTitle)}</h3><ul>${copy.scope.map((item) => `<li>${e(item)}</li>`).join("")}</ul></section>
-        <section><h3>${icon("system")}${e(copy.localOnlyTitle)}</h3><ul>${copy.localOnly.map((item) => `<li>${e(item)}</li>`).join("")}</ul></section>
+        <section><h3>${icon("refresh")}${e(copy.scopeTitle)}</h3><ul class="help-list">${copy.scope.map((item) => `<li>${e(item)}</li>`).join("")}</ul></section>
+        <section><h3>${icon("system")}${e(copy.localOnlyTitle)}</h3><ul class="help-list">${copy.localOnly.map((item) => `<li>${e(item)}</li>`).join("")}</ul></section>
       </div>
       <div class="sync-guide-grid sync-rules">
-        <section><h3>${e(copy.devicesTitle)}</h3><ol class="sync-join-steps">${copy.joinSteps.map((step) => `<li>${e(step)}</li>`).join("")}</ol><p class="field-note">${e(copy.requirements)}</p><p class="field-note">${e(copy.browserBoundary)}</p></section>
+        <section><h3>${e(copy.devicesTitle)}</h3><ol class="help-list sync-join-steps">${copy.joinSteps.map((step) => `<li>${e(step)}</li>`).join("")}</ol><p class="field-note">${e(copy.requirements)}</p><p class="field-note">${e(copy.browserBoundary)}</p></section>
         <section><h3>${e(copy.mergeTitle)}</h3><dl class="sync-merge-rules">${copy.mergeRules.map((rule) => `<div><dt>${e(rule.title)}</dt><dd>${e(rule.description)}</dd></div>`).join("")}</dl></section>
       </div>
       ${status && (status.enabled || status.remote) ? `<section class="sync-guide-grid sync-management" aria-label="${e(copy.manageTitle)}">${status.enabled ? `<div class="sync-management-item">${button(copy.stop, "sync-stop-ask", "ghost", "pause", 'aria-describedby="sync-stop-help"')}<p id="sync-stop-help">${e(copy.stopHelp)}</p></div>` : ""}<div class="sync-management-item">${button(copy.clear, "sync-clear-ask", "ghost sync-delete", "trash", 'aria-describedby="sync-clear-help"')}<p id="sync-clear-help">${e(copy.clearHelp)}</p></div></section>` : ""}

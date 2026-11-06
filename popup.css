@@ -35,6 +35,12 @@ body {
   gap: 9px;
   color: var(--ink);
 }
+.popup-header-actions {
+  --control-height: var(--selection-button-size);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
 .popup-brand .aside-brand-mark {
   width: 28px;
   height: 28px;

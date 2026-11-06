@@ -7,11 +7,13 @@
   --shadow: 0 12px 44px #172b2118;
   --status-processing: #2587ed;
   --status-complete: #28a862;
+  --status-paused: #c17b1a;
 }
 :host([data-theme="dark"]) {
   --shadow: 0 16px 44px #0005;
   --status-processing: #63adff;
   --status-complete: #4dd28b;
+  --status-paused: #edb35c;
 }
 :host([data-palette="graphite"]) {
   --canvas: #f7f7f6;

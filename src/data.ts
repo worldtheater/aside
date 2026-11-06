@@ -17,6 +17,7 @@ export function getPresets(): Action[] {
         placement: "inline",
         quick: true,
         kind: "translate",
+        translationEngine: "microsoft",
         sourceLanguage: "auto",
         targetLanguage: "interface",
       },

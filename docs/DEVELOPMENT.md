@@ -19,8 +19,10 @@ UI 设计原则与验收检查项集中在 [设计规范](../.agents/design-prin
 | `npm test` | 构建并运行核心逻辑测试 |
 | `npm run test:browser` | 构建并运行主浏览器回归、内容脚本恢复和最近标签页测试 |
 | `node tests/browser.cjs --onboarding-only` | 已构建产物的首次安装引导、设置跳转及配置实时更新回归 |
+| `node tests/browser.cjs --reset-only` | 隔离配置中的重置确认/取消、任务停止、数据清理和多页面恢复回归；不操作实际使用的插件数据 |
 | `node tests/credentials-browser.cjs` | 已构建产物的本机凭据加密、升级迁移、重启保留及密文损坏回归 |
 | `node tests/theme-browser.cjs` | 已构建产物的首屏主题专项回归 |
+| `node tests/controls-browser.cjs` | 共享下拉框的宿主尺寸通知、重定位、选项选择及关闭回归；设置 `CONTROLS_BROWSER=webkit` 可运行 WebKit 版本，需先安装 Playwright WebKit |
 | `npm run package` | 构建并生成 `artifacts/aside-<manifest版本>.zip` |
 | `npm run package:dev` | 构建、打包，并将同一 ZIP 解压至固定调试目录 `artifacts/unpacked/` |
 
@@ -99,6 +101,7 @@ git push --force-with-lease="refs/tags/v0.1.1:$previous_release_tag" origin refs
 | `src/background.ts`、`src/store.ts`、`src/client.ts` | 权限、任务、受限存储及消息边界 |
 | `src/providers.ts`、`src/model-spec.ts` | 各协议适配及模型推理能力契约 |
 | `src/processor.ts`、`src/cache.ts`、`src/scheduler.ts` | 内容切分、缓存、共享任务与连接级并发 |
+| `src/translation-engine.ts`、`src/microsoft-translation.ts`、`src/native-translation*.ts` | 翻译引擎选择、微软请求、文档内本地翻译与后台消息桥接 |
 | `src/extract.ts`、`src/content.ts`、`content-*.css` | 网页提取、增量处理、隔离结果面板与原位译文 |
 | `src/selection-tools.ts`、`src/result-content.ts` | 划词工具条状态和结果渲染 |
 | `src/recent-tabs.ts` | 当前窗口最近标签页记录与切换 |
@@ -124,13 +127,41 @@ git push --force-with-lease="refs/tags/v0.1.1:$previous_release_tag" origin refs
 
 服务端前缀缓存与本地结果缓存是两个不同机制。协议适配将稳定指令与变化正文分离；推理参数、协议和模型参与本地缓存身份。服务端是否命中以及用量字段是否完整取决于服务响应；不要把缺失值当成零，或把缓存细分 token 重复计入总量。
 
+### 翻译引擎
+
+翻译处理方式的 `translationEngine` 可选 AI、微软在线或浏览器本地。新安装的预设显式选择微软在线翻译，无需模型连接或 API Key；入口弹窗的开始处理操作申请微软服务权限。已有处理方式保留原选择，未设置该字段的历史配置仍沿用 AI。该字段随处理方式记录同步；微软服务权限仍需在每台设备上单独授予。非 AI 翻译不读取模型连接、不采用补充要求或「跟随指引」输出语言，也不写入模型用量记录。
+
+划词设置同样编辑该处理方式的翻译引擎，点击保存后同步到其他入口，取消不改配置。切换到非 AI 引擎时将「跟随指引」改为「跟随界面语言」，模型与补充要求暂时隐藏并保留，切回 AI 后可继续编辑。
+
+各入口使用 `AVAILABLE_TRANSLATION_ENGINES` 呈现当前浏览器的可用引擎；Firefox 只提供 AI 和微软在线翻译。持久化与同步的引擎枚举仍包含本地翻译，已有不受支持的选择显示待选提示并阻止执行，要求重新选择，不静默改成在线服务。主设置页、入口弹窗与划词设置遵循同一规则。
+
+微软请求只由后台向固定的 Edge 翻译端点发送文字数组，不附带 API Key 或 Cookie；切换引擎时由扩展页面直接申请该域名权限。该匿名端点不是有稳定性承诺的公开 API；服务失败明确提示，不自动换引擎。
+
+浏览器本地翻译通过调用文档中的 `Translator` 和 `LanguageDetector` 执行，后台通过任务端口分派和接收结果，不向网页主世界注入代码。检查安全上下文、API 和语言包能力；下载需要用户激活时给出操作提示，不降级为在线翻译。语言包页面仅在 Chromium 目标显示，再按实际 API 能力禁用不支持的操作。`native-packs.ts` 定义语言组合与进度；`native-pack-channel.ts` / `native-pack-store.ts` 通过独立端口传递进度，并仅在本机记录使用过的组合及首次就绪时间。端口断开清理在途进度，历史记录不作为当前已安装的证明；`availability()` 按当前 origin 检查。`monitor` 的比例进度到 100% 仍显示准备中，直至 `create()` 完成。`native-download-notice.ts` 为页内处理提供持续进度及用户手势下载入口，不保存网页内容或网址。整页、选文和文本翻译在等待激活及下载期间保留原请求，资源就绪后自动收起提示并继续；取消或关闭后不再续接。
+
+页内逐段翻译由整次阅读会话持有 `NativeTranslationSession`，跨任务端口、滚动批次和空闲间隔复用同一语言组合的翻译器；创建及翻译串行执行。实例创建使用会话的取消信号，单批翻译使用该请求与会话合并的信号，批次完成或取消不销毁共享实例。停止、恢复原文、切换语言／处理方式、离开页面时销毁会话；失败立即释放实例并让排队请求保留原始错误，明确重试时创建新会话。迟到的创建结果也必须释放。浮窗整页、选文、文本和试运行由各自的处理任务持有独立会话，跨该任务的批次复用，在整个任务完成或取消时释放，不与阅读会话共享。`tests/native-translation-session.mjs` 验证资源所有权与队列行为，并包含在 `tests/translation-engines.mjs` 中；浏览器回归验证跨滚动复用、失败重建及实际停止、语言切换和导航清理。
+
+非 AI 引擎复用处理器的切分、去重、调度与本地缓存，缓存身份包含引擎和解析后的源／目标语言。长输入按服务批次处理后合并显示；本地引擎的在途任务按文档隔离，避免取消或页面权限影响其他文档。`tests/translation-engines.mjs` 检查这些契约；`node tests/browser.cjs --translation-engines-only` 使用本地 API 替身检查无模型连接时的试运行、文本和页内翻译，不依赖在线服务或首次下载语言包。
+
+本地翻译失败时，在发起请求的网页或扩展页面控制台输出 `[Aside] Native translation failed`，包含请求 ID、失败阶段、实际源／目标语言、完整原文数组及异常说明。`failedTextIndex` 为从 0 开始的原文索引；`prepare-translator` 阶段尚未提交文本，该索引为 `null`。语言检测失败单独输出 `[Aside] Native language detection failed` 及检测原文，不重复记录。正常完成、取消和等待下载不输出原文；诊断只写本机控制台，不持久化或上传。
+
+`availability()` 的 `downloadable` 可能是浏览器对已安装资源的隐私遮蔽，不能据此提前要求点击或宣布开始下载。先调用 `create()`，仅在浏览器明确返回需要用户手势的 `NotAllowedError` 时保留原请求并显示“准备”；权限策略等其他错误仍按真实异常展示。创建初期与仅有 0／1 的初始化进度使用“正在准备”，中间的下载进度事件才显示下载百分比；最终就绪仍以 `create()` 完成为准。
+
 ### 网页处理与取消
 
 划词工具条与悬浮球的显示开关保存在 `WebsiteSettings` 顶层，分别对本机所有网站生效，不参与跨设备配置同步。旧版按网站保存的工具显示值不再采用，未设置的全局开关默认开启；`sites` 仅控制各网站的暗色模式与保留的增强设置。保存后复用 `settings.updated` 通知已打开网页。
 
 页内逐段翻译使用可见区域加上下各 600px 预加载，滚动和 DOM 变化增量调度；原文被编辑时丢弃旧版本结果。插件自己的结果节点不参与重复提取。整页结果面板、总结和提炼要点仍处理全文。
 
-选文处理将完整选文作为一个输入，保留原始换行；后台按选文来源使用整体处理，不随处理方式的整页分段设置拆块或分批。复用整体处理的缓存身份与单次输入上限，超限明确报错，不静默拆分；不修改已保存的处理方式。
+任一批次失败时暂停调度并取消在途请求，保留已完成结果及页面监听；持续显示暂停提示和“重试并继续”，悬浮菜单与工具栏也能恢复。本地 API 的异常名称与说明通过任务端口保留，在通用提示下显示；浏览器控制台的内部诊断不一定包含在 API 异常中，不能由通用错误推断具体崩溃原因。重试按当前原文及视口继续未完成内容，重新进入视口的失败段落仍可处理，不清空成功结果或强制刷新缓存。失败的语言检测可重新执行；恢复原文、切换处理方式和页面导航会结束会话。`tests/page-translation-recovery-browser.cjs` 使用本地 API 替身验证这些状态，包含在 `--translation-engines-only` 中。
+
+翻译处理方式的 `translationScope` 为 `body`（正文，默认）或 `all`（整页），随处理方式保存和同步。弹窗与悬浮菜单均读取所选处理方式的范围；选文和文本翻译只处理其输入，不受页面范围影响。正文优先选择含可见正文的 `main`／`[role=main]`，其次选择 `article`；不按混合选择器的 DOM 顺序取第一个容器。隐藏、空白、仅含代码或编辑内容、位于外围区域的候选不参与正文选择。没有合适语义容器时仍从 `body` 提取并排除导航、侧栏和页面级页眉页脚；保留正文内部的章节标题。提取与空结果诊断共用 `PageworkExtract.root()`，回归包含在 `--page-translation-only` 的 `tests/extract-browser.cjs` 中。
+
+提取以视觉可见性为准，`aria-hidden` 仅表示辅助技术可见性，不单独用来排除文字；例如滚动快讯中仍可见的副本也需翻译。图片内的文字不属于文本提取范围。
+
+显示“没有识别到可处理的文字”时，网页控制台的 `[Aside] No readable page text` 记录当时的范围、正文候选容器、所选容器及标题的祖先属性／可见状态，以及整页范围的提取数量。诊断保存属性值快照，不输出正文或表单值，不持久化或上传；用来区分容器选择、祖先过滤和页面状态差异，不改变正文提取规则。
+
+AI 选文处理将完整选文作为一个输入，保留原始换行；后台按选文来源使用整体处理，不随处理方式的整页分段设置拆块或分批。复用整体处理的缓存身份与单次输入上限，超限明确报错，不静默拆分；不修改已保存的处理方式。
 
 悬浮菜单与快捷键的快问快答直接打开无引文面板，不提取选文或整页内容；划词工具条和整页处理中的问答仍保留对应引文。独立问答与文本翻译共用窗口尺寸、输入框及底部操作区样式；菜单入口靠悬浮球定位，快捷键入口靠视口右下角定位。
 
@@ -138,7 +169,11 @@ git push --force-with-lease="refs/tags/v0.1.1:$previous_release_tag" origin refs
 
 内容脚本处理扩展重载后的失效上下文，后台与页面消息客户端应共用既有错误处理。不要把消息通道断开误报成服务商返回错误。
 
+导航清理区分章节定位与页面切换：URL 的路径和查询参数不变，且前后片段都指向当前文档的 ID、命名锚点或页顶时，保留翻译及暂停状态，让可见区域调度继续工作。路径、查询参数、未解析为章节的 hash 路由变化及文档离开仍清理旧状态。回归命令为 `node tests/browser.cjs --navigation-only` 和 `--page-translation-only`；本地翻译暂停期间的锚点定位还包含在 `--translation-engines-only` 中。
+
 ### 数据与渲染
+
+完整设置页「关于」页面底部的「恢复初始状态」通过可信扩展页面的 `settings.reset` 消息执行。先取消处理任务并等待在途写入、停止本机配置同步，再清理语言包使用记录、翻译缓存、调用记录、配置/收藏/随想与设备加密密钥，复用首次安装初始化流程。未授予内容脚本重置能力；重置期间拒绝新操作，迟到的模型响应不能重建调用记录或旧缓存。完成后通知网页清理译文及工具状态、重载已打开的设置页。云端配置、浏览器权限、浏览器快捷键和实际安装的语言包保留。`tests/reset.mjs` 覆盖 Chrome 存储和 Safari 私有存储的重置、写入排序及损坏凭据恢复；浏览器回归只清理其临时测试配置。
 
 本机 API Key 和含密钥的同步副本统一封装在 `chrome.storage.local.protectedConfiguration`，使用 AES-256-GCM 加密；随机设备密钥以不可导出的 `CryptoKey` 保存在独立 `aside-credentials` IndexedDB 中，不进入 Chrome Sync。存储层负责解密与写回，未变化的敏感内容复用密文，避免触发无意义的同步循环。初始化时先写入加密副本，再移除已发布版本的明文 `credentials` 和 `configurationRecords`；读操作不执行迁移。密钥丢失或密文认证失败时明确报错，不生成替代密钥覆盖数据。此机制降低明文暴露，不提供系统钥匙串或完整浏览器数据被盗时的防护。内容脚本只获得不含密钥的配置快照。模型返回的 Markdown 经 Marked 和 DOMPurify 处理；网页内容和模型输出都是数据，不是可执行指令。提取排除表单、编辑区域、隐藏内容和整块代码。
 
@@ -161,6 +196,7 @@ npm run build
 node tests/browser.cjs --shortcuts-only
 node tests/browser.cjs --qa-only
 node tests/browser.cjs --page-translation-only
+node tests/browser.cjs --translation-engines-only
 node tests/browser.cjs --reasoning-only
 node tests/browser.cjs --connections-only
 node tests/browser.cjs --appearance-only
@@ -229,6 +265,8 @@ Edge 沿用 Chromium 运行时，`npm run build:edge` 输出至 `dist/edge/`；`
 首期仅支持 macOS Safari 26+，不提供跨设备配置同步。`npm run safari:run` 是生成工程、编译、启动的统一入口；`npm run package:safari:dev` 同时生成资源 ZIP、更新 `artifacts/unpacked-safari/`，并输出固定位置的 `artifacts/safari/Debug/Aside.app`。原生工程位于 `artifacts/safari/project/`，每次重新生成；修改应保存在 `safari/config.json` 或 `safari/host/`，不要直接编辑产物。
 
 `src/browser.ts` 集中声明 Safari 能力：不启动同步控制器、不显示同步入口，后台拒绝同步消息；配置沿用 Firefox 的扩展源 IndexedDB 和本机凭据加密。请求网站权限需要由界面直接触发。快捷键说明使用 Safari 设置路径，不尝试打开 Chromium 内部页面。
+
+macOS 26+ 的本地翻译由 `apple-translation.ts` 经受限后台端口与 Safari 原生扩展通信，使用 Apple Translation 框架。原生会话按页面端口及 Safari profile 隔离；语言检测使用 NaturalLanguage。准备语言包时仅将语言和请求 ID 交给容器 App，系统 SwiftUI 下载流程完成后通知后台继续。使用框架 `supportedLanguages` 返回的语言对象，避免手工 Locale 标识与安装状态不一致；macOS 26.4+ 显式选择 `.lowLatency`。`tests/apple-translation.mjs` 检查桥接生命周期，`npm run test:safari:native` 验证实际系统 API，不隐式下载语言包。原生代码、语言资源及 Xcode 文件注册在 `safari/` 与 `scripts/safari-project.mjs` 维护。
 
 `npm run test:safari` 检查构建后的后台、存储边界和 HTTP 模型连接，使用 API 替身而非真实 Safari；编译启动可运行 `./script/build_and_run.sh --verify`。浏览器内的权限、内容脚本和暗色模式仍需 Safari 实机验收。资源 ZIP 不能直接安装到 Safari；本机启用与后续签名边界见 [SAFARI.md](SAFARI.md)。当前发布流水线不增加未签名 Safari 安装包。
 

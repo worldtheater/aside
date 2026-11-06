@@ -5,7 +5,7 @@
       "id": "chrome",
       "name": "Chrome",
       "minimumVersion": "120",
-      "version": "0.1.4",
+      "version": "0.1.6",
       "storeUrl": "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
       "manual": {
         "guideUrl": "https://github.com/worldtheater/aside#manual-installation-chrome",
@@ -18,7 +18,7 @@
       "id": "edge",
       "name": "Edge",
       "minimumVersion": "120",
-      "version": "0.1.5",
+      "version": "0.1.6",
       "storeUrl": "https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp",
       "manual": {
         "guideUrl": "https://github.com/worldtheater/aside#manual-installation-edge",
@@ -31,8 +31,8 @@
       "id": "firefox",
       "name": "Firefox",
       "minimumVersion": "147",
-      "version": null,
-      "storeUrl": null,
+      "version": "0.1.6",
+      "storeUrl": "https://addons.mozilla.org/en-US/firefox/addon/aside-ai/",
       "manual": {
         "guideUrl": "https://github.com/worldtheater/aside#manual-installation-firefox",
         "managementUrl": "about:debugging#/runtime/this-firefox",

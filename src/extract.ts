@@ -5,7 +5,10 @@ import type { ExtractedBlock, UiContext } from "./types.js";
   let sequence = 0;
   const ids = new WeakMap<HTMLElement, string>();
   const excluded =
-    'script,style,noscript,svg,canvas,input,textarea,select,pre,[contenteditable]:not([contenteditable="false"]),[hidden],[aria-hidden="true"],[data-pagework]';
+    'script,style,noscript,svg,canvas,input,textarea,select,pre,[contenteditable]:not([contenteditable="false"]),[hidden],[data-pagework]';
+  const bodyExcluded = `${excluded},nav,aside,[role=navigation],[role=complementary],[role=banner],[role=contentinfo],body>header,body>footer`;
+  // aria-hidden controls assistive technology, not visual visibility. Tickers
+  // and carousels use it on visible copies that still need translation.
   const semantic = "p,li,h1,h2,h3,h4,h5,h6,td,th,blockquote,figcaption,dt,dd";
   function hiddenByDetails(element: HTMLElement) {
     // Closed <details> can retain client rects after being opened. Only its
@@ -23,11 +26,69 @@ import type { ExtractedBlock, UiContext } from "./types.js";
     }
     return false;
   }
+  function visible(element: HTMLElement) {
+    if (hiddenByDetails(element) || !element.getClientRects().length)
+      return false;
+    for (
+      let node: HTMLElement | null = element;
+      node;
+      node = node.parentElement
+    ) {
+      const style = getComputedStyle(node);
+      if (
+        style.display === "none" ||
+        style.visibility === "hidden" ||
+        Number(style.opacity) === 0
+      )
+        return false;
+    }
+    return true;
+  }
+  function root(scope = "body"): HTMLElement {
+    if (scope === "all") return document.body;
+    // A selector list follows DOM order, not selector priority. Navigation cards
+    // can therefore precede the actual main region, even with <main> listed first.
+    for (const selector of ["main,[role=main]", "article"]) {
+      for (const candidate of document.querySelectorAll<HTMLElement>(
+        selector,
+      )) {
+        if (candidate.closest(bodyExcluded)) continue;
+        const walker = document.createTreeWalker(
+          candidate,
+          NodeFilter.SHOW_TEXT,
+          {
+            acceptNode(node) {
+              const parent = node.parentElement!;
+              return /[\p{L}\p{N}]/u.test(node.textContent || "") &&
+                !parent.closest(`${bodyExcluded},code`) &&
+                visible(parent)
+                ? NodeFilter.FILTER_ACCEPT
+                : NodeFilter.FILTER_REJECT;
+            },
+          },
+        );
+        // Test descendants so a display:contents root can still own visible prose.
+        if (walker.nextNode()) return candidate;
+      }
+    }
+    return document.body;
+  }
   function owner(node: Node, root: Element) {
     const paragraph = node.parentElement!.closest<HTMLElement>(semantic);
-    if (paragraph && root.contains(paragraph)) return paragraph;
     const interactive =
       node.parentElement!.closest<HTMLElement>("a,button,label");
+    // List navigation labels own their padding and layout. Prose list items
+    // still regroup inline links with surrounding text below.
+    if (
+      paragraph &&
+      root.contains(paragraph) &&
+      !(
+        paragraph.matches("li") &&
+        interactive &&
+        paragraph.contains(interactive)
+      )
+    )
+      return paragraph;
     if (interactive) return interactive;
     return blockOwner(node.parentElement!, root);
   }
@@ -47,24 +108,6 @@ import type { ExtractedBlock, UiContext } from "./types.js";
   ): UiContext | undefined {
     const contextExcluded = `${excluded},code`;
     if (!needsUiContext(source) || element.closest(contextExcluded)) return;
-    const visible = (element: HTMLElement) => {
-      if (hiddenByDetails(element) || !element.getClientRects().length)
-        return false;
-      for (
-        let node: HTMLElement | null = element;
-        node;
-        node = node.parentElement
-      ) {
-        const style = getComputedStyle(node);
-        if (
-          style.display === "none" ||
-          style.visibility === "hidden" ||
-          Number(style.opacity) === 0
-        )
-          return false;
-      }
-      return true;
-    };
     // Context reads only the three agreed UI labels, without code, form,
     // hidden content or extension results.
     const titleText = (root: Element | null) => {
@@ -119,22 +162,20 @@ import type { ExtractedBlock, UiContext } from "./types.js";
     };
   }
   function extract(scope = "body", within?: HTMLElement): ExtractedBlock[] {
-    const root =
-      scope === "all"
-        ? document.body
-        : document.querySelector<HTMLElement>("main,[role=main],article") ||
-          document.body;
+    const scopeExcluded = scope === "all" ? excluded : bodyExcluded;
+    const pageRoot = root(scope);
     // Re-read the complete owning paragraph when a nested text node changes.
     // Ownership still uses the page root, so partial scans group links and code
     // exactly like the initial extraction.
-    if (within && !root.contains(within) && !within.contains(root)) return [];
+    if (within && !pageRoot.contains(within) && !within.contains(pageRoot))
+      return [];
     const paragraph = within?.closest<HTMLElement>(semantic);
     const scanRoot =
-      !within || within.contains(root)
-        ? root
-        : paragraph && root.contains(paragraph)
+      !within || within.contains(pageRoot)
+        ? pageRoot
+        : paragraph && pageRoot.contains(paragraph)
           ? paragraph
-          : blockOwner(within, root);
+          : blockOwner(within, pageRoot);
     const groups = new Map<HTMLElement, Node[]>(),
       visibility = new WeakMap<HTMLElement, boolean>();
     const visible = (el: HTMLElement | null): boolean => {
@@ -153,7 +194,7 @@ import type { ExtractedBlock, UiContext } from "./types.js";
       acceptNode(node) {
         const el = node.parentElement!;
         return node.textContent &&
-          !el.closest(excluded) &&
+          !el.closest(scopeExcluded) &&
           !hiddenByDetails(el) &&
           visible(el) &&
           el.getClientRects().length
@@ -164,7 +205,7 @@ import type { ExtractedBlock, UiContext } from "./types.js";
     const entries: { node: Node; element: HTMLElement }[] = [];
     while (walker.nextNode()) {
       const node = walker.currentNode;
-      entries.push({ node, element: owner(node, root) });
+      entries.push({ node, element: owner(node, pageRoot) });
     }
     // Inline code is part of its sentence; code-only blocks are not prose.
     const isProse = (node: Node) =>
@@ -187,10 +228,10 @@ import type { ExtractedBlock, UiContext } from "./types.js";
         !element.closest("nav,[role=navigation],[role=menu],[role=menubar]") &&
         /^(inline|contents)/.test(getComputedStyle(element).display)
       ) {
-        const paragraph = blockOwner(element.parentElement!, root);
+        const paragraph = blockOwner(element.parentElement!, pageRoot);
         if (
           proseOwners.has(paragraph) &&
-          getComputedStyle(paragraph).display === "block"
+          ["block", "list-item"].includes(getComputedStyle(paragraph).display)
         )
           target = paragraph;
       }
@@ -212,5 +253,5 @@ import type { ExtractedBlock, UiContext } from "./types.js";
         };
       });
   }
-  globalThis.PageworkExtract = { extract, context };
+  globalThis.PageworkExtract = { extract, context, root };
 })();

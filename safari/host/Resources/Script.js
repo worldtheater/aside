@@ -5,7 +5,7 @@ const copy = {
     off: "Enable Aside in Safari Settings → Extensions.",
     settings: "Open Safari Settings",
     guide:
-      "Then open Aside from the Safari toolbar to connect your model service. Requires Safari 26 or later.",
+      "Then open Aside from the Safari toolbar. On macOS 26+, choose Browser on-device for Apple translation, or connect your model service. Requires Safari 26 or later.",
     local:
       "Settings stay on this Mac. Cross-device configuration sync is not available in Safari.",
     error: "Open Safari → Settings → Extensions manually to enable Aside.",
@@ -16,7 +16,7 @@ const copy = {
     off: "在 Safari 的「设置 → 扩展」中启用旁白。",
     settings: "打开 Safari 设置",
     guide:
-      "启用后，从 Safari 工具栏打开旁白，添加模型连接。需要 Safari 26 或更新版本。",
+      "启用后，从 Safari 工具栏打开旁白。macOS 26 及以上可选择“浏览器本地翻译”使用苹果翻译，也可添加模型连接。需要 Safari 26 或更新版本。",
     local: "配置保存在这台 Mac 上。Safari 版暂不支持跨设备同步。",
     error: "请手动打开 Safari → 设置 → 扩展，启用旁白。",
   },

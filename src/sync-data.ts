@@ -285,6 +285,8 @@ export function validateConfiguration(
       "icon",
       "mode",
       "placement",
+      "translationEngine",
+      "translationScope",
       "sourceLanguage",
       "targetLanguage",
       "outputLanguage",
@@ -318,6 +320,15 @@ export function validateConfiguration(
       ].every((key) => optionalText(a[key])),
     );
     ensure(a.builtin === undefined || typeof a.builtin === "boolean");
+    ensure(
+      a.translationEngine === undefined ||
+        (a.kind === "translate" &&
+          oneOf(a.translationEngine, ["ai", "microsoft", "browser"])),
+    );
+    ensure(
+      a.translationScope === undefined ||
+        (a.kind === "translate" && oneOf(a.translationScope, ["body", "all"])),
+    );
   }
   const d = recordValue(value.daily);
   ensure(

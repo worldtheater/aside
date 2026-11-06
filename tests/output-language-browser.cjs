@@ -65,6 +65,8 @@ module.exports = async ({
       setLocale("zh-CN");
       const { getPresets } = await import("./data.js");
       const actions = getPresets();
+      actions.find((action) => action.id === "translate").translationEngine =
+        "ai";
       Object.assign(
         actions.find((action) => action.id === "plain"),
         {

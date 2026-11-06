@@ -106,6 +106,8 @@ module.exports = async ({
     @media(max-width:400px){.cta-row{flex-direction:column;align-items:stretch}}
     #grid svg{width:14px;height:14px}.table-scroll{overflow-x:auto}
     #grid{display:grid;grid-template-columns:1fr auto;height:24px;max-width:240px}
+    #padded-nav{padding:0;list-style:none;width:280px}#padded-nav a{display:block;padding:8px 32px;border-radius:8px;background:#eee;color:#222}
+    #padded-nav .nested{padding-left:24px}#padded-nav .centered{display:flex;justify-content:center;align-items:center;gap:8px}
     table{width:100%;border-collapse:collapse}th,td{padding:8px;vertical-align:top;border-bottom:1px solid #ddd;text-align:left}th{height:24px}
     @media(max-width:400px){body{margin:12px}h1{font-size:34px}}
   </style></head><body><main>
@@ -120,6 +122,8 @@ module.exports = async ({
     <p><code>STANDALONE_CODE_SECRET</code>.</p>
     <div>Example:<pre><code>BLOCK_CODE_SECRET</code></pre></div></section>
     <nav id="link-nav">Resources: <a href="#nav-one">Navigation one</a> <a href="#nav-two">Navigation two</a></nav>
+    <nav><ul id="padded-nav"><li><a href="#overview">Overview</a></li><li class="nested"><a href="#sessions"><span>Run and continue sessions</span></a></li><li><a class="centered" href="#models"><span>Models</span><svg width="12" height="12"></svg></a></li></ul></nav>
+    <ul><li id="prose-list-link">Read the <a href="#details">linked guide</a> before continuing.</li></ul>
     <div id="block-container">Related resource: <a id="block-link" href="#block">Independent block link</a></div>
     <div id="clip" style="height:24px!important"><div id="clipped-label">Fixed wrapper</div></div><p id="after-clip">The following paragraph must remain unobscured.</p>
     <button id="copy">Copy page<svg aria-hidden="true"></svg></button><p id="after-copy">The next paragraph stays below the button.</p>
@@ -166,7 +170,7 @@ module.exports = async ({
           type: "tab.run",
           tabId,
           actionId: "translate",
-          scope: "body",
+          scope: "all",
         }),
       tabId,
     );
@@ -405,8 +409,8 @@ module.exports = async ({
       await source
         .locator("#copy [data-pagework=result]")
         .evaluate((node) => getComputedStyle(node).textAlign),
-      "start",
-      "Default flex alignment follows the original label, not the user-agent button text alignment",
+      "left",
+      "Control translation aligns to the source text edge",
     );
     assert(boxes.gridResult.bottom <= boxes.grid.bottom + 1);
     assert(!boxes.overflow);
@@ -460,20 +464,42 @@ module.exports = async ({
         layout.result.bottom <= layout.button.bottom - 7,
         "The result stays inside the original button padding",
       );
-      if (id === "left-cta") assert.equal(layout.alignment, "start");
-      else {
-        assert.equal(layout.alignment, "center");
-        assert(
-          Math.abs(
-            layout.label.x +
-              layout.label.width / 2 -
-              layout.text.x -
-              layout.text.width / 2,
-          ) < 1,
-          "Original and translated labels share a horizontal center",
-        );
-      }
+      assert.equal(layout.alignment, "left");
+      assert(
+        Math.abs(layout.label.x - layout.text.x) < 1,
+        `Original and translated labels share a left edge: ${id}`,
+      );
     }
+    for (const link of await source.locator("#padded-nav a").all()) {
+      const edges = await link.evaluate((node) => {
+        const label = node.querySelector("span:not([data-pagework])") || node;
+        const original = document.createRange();
+        original.selectNodeContents(label.firstChild);
+        const result = node.querySelector(":scope > [data-pagework=result]");
+        const translation = document.createRange();
+        translation.selectNodeContents(result.shadowRoot.firstElementChild);
+        return {
+          source: original.getBoundingClientRect().left,
+          translation: translation.getBoundingClientRect().left,
+        };
+      });
+      assert(
+        Math.abs(edges.source - edges.translation) < 1,
+        "Padded and nested navigation labels keep the same left edge",
+      );
+    }
+    assert.equal(
+      await source.locator("#padded-nav li > [data-pagework=result]").count(),
+      0,
+    );
+    assert.equal(
+      await source.locator("#prose-list-link > [data-pagework=result]").count(),
+      1,
+    );
+    assert.equal(
+      await source.locator("#prose-list-link a [data-pagework=result]").count(),
+      0,
+    );
   };
   await assertLayout();
   await source
@@ -509,6 +535,122 @@ module.exports = async ({
     1,
     "Original button handlers survive",
   );
+  // Dark Reader prepends styles to result shadow roots. Layout must target the
+  // translation, not whichever element another component inserts first.
+  const interopErrors = [];
+  const recordInteropError = (error) => interopErrors.push(error.message);
+  source.on("pageerror", recordInteropError);
+  await source
+    .locator("#try-cta > [data-pagework=result]")
+    .evaluate((result) => {
+      const style = document.createElement("style");
+      style.dataset.foreignStyle = "";
+      style.textContent =
+        "[data-darkreader-inline-bgcolor] { background-color: var(--darkreader-inline-bgcolor) !important; }";
+      result.shadowRoot.prepend(style);
+    });
+  await source.setViewportSize({ width: 1400, height: 1000 });
+  await source.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
+  assert.deepEqual(
+    await source
+      .locator("#try-cta > [data-pagework=result]")
+      .evaluate((result) => {
+        const style = result.shadowRoot.querySelector("[data-foreign-style]");
+        return {
+          display: getComputedStyle(style).display,
+          inlineStyle: style.getAttribute("style"),
+        };
+      }),
+    { display: "none", inlineStyle: null },
+    "Injected stylesheet must stay hidden and keep its own styling",
+  );
+  assert.deepEqual(
+    interopErrors,
+    [],
+    "Foreign shadow children must not break result layout",
+  );
+  await source
+    .locator("#try-cta > [data-pagework=result]")
+    .evaluate((result) =>
+      result.shadowRoot.querySelector("[data-foreign-style]").remove(),
+    );
+  // Exercise our bundled dark engine too, rather than relying only on the
+  // deterministic foreign-node fixture above.
+  const permissionPage = await context.newPage();
+  await permissionPage.goto("chrome://extensions");
+  for (const host of ["http://*/*", "https://*/*"])
+    await permissionPage.evaluate(
+      ({ id, host }) => chrome.developerPrivate.addHostPermission(id, host),
+      { id: new URL(page.url()).hostname, host },
+    );
+  await permissionPage.close();
+  await page.evaluate(() =>
+    chrome.permissions.request({ origins: ["http://*/*", "https://*/*"] }),
+  );
+  const lights = async (value) => {
+    const response = await page.evaluate(
+      ({ tabId, value }) =>
+        chrome.runtime.sendMessage({
+          type: "website.update",
+          tabId,
+          patch: { lights: value },
+        }),
+      { tabId, value },
+    );
+    assert(response.ok, JSON.stringify(response));
+  };
+  await lights("on");
+  await source.waitForFunction(() =>
+    document
+      .querySelector("#try-cta > [data-pagework=result]")
+      ?.shadowRoot.querySelector("style.darkreader"),
+  );
+  await source.setViewportSize({ width: 1360, height: 960 });
+  await source.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
+  assert.deepEqual(
+    await source.evaluate(() =>
+      [...document.querySelectorAll('[data-pagework="result"]')].flatMap(
+        (result) =>
+          [...result.shadowRoot.querySelectorAll("style")]
+            .filter((style) => getComputedStyle(style).display !== "none")
+            .map((style) => style.className),
+      ),
+    ),
+    [],
+    "Actual Dark Reader styles remain hidden after translation relayout",
+  );
+  assert.equal(
+    await source
+      .locator("#try-cta > [data-pagework=result]")
+      .evaluate(
+        (result) =>
+          result.shadowRoot.querySelector('[data-pagework="text"]').textContent,
+      ),
+    "Processed: Try Claude",
+  );
+  assert.deepEqual(
+    interopErrors,
+    [],
+    "Dark mode and translation layout coexist without exceptions",
+  );
+  await lights("off");
+  await source.waitForFunction(
+    () => !document.documentElement.hasAttribute("data-darkreader-mode"),
+  );
+  source.off("pageerror", recordInteropError);
+  console.log(
+    "PASS: injected shadow styles and bundled Dark Reader stay hidden during translation relayout; translated labels remain intact.",
+  );
   await page.evaluate(
     (tabId) => chrome.tabs.sendMessage(tabId, { type: "page.restore" }),
     tabId,
@@ -539,30 +681,47 @@ module.exports = async ({
     codeMarkup,
     "Restore keeps inline code unchanged",
   );
-  // A short selected label uses the same bounded context in a direct streaming request.
+  // AI selections use whole-passage processing, so their cache is separate
+  // from paragraph-mode page results even when text and UI context match.
   await source.locator("#returns").evaluate((node) => {
     const range = document.createRange();
     range.selectNodeContents(node);
     getSelection().removeAllRanges();
     getSelection().addRange(range);
   });
-  await page.evaluate(
-    (tabId) =>
-      chrome.tabs.sendMessage(tabId, {
-        type: "selection.process",
-        text: "Returns",
-      }),
-    tabId,
-  );
-  await host
-    .locator("#result-status")
-    .filter({ hasText: "处理完成" })
-    .waitFor();
+  const processSelection = async () => {
+    await page.evaluate(
+      (tabId) =>
+        chrome.tabs.sendMessage(tabId, {
+          type: "selection.process",
+          text: "Returns",
+        }),
+      tabId,
+    );
+    await host
+      .locator("#result-status")
+      .filter({ hasText: "处理完成" })
+      .waitFor();
+  };
+  await processSelection();
   assert.equal(
     calls.length,
-    processed,
-    "Selection of the same label and context reuses the page result",
+    processed + 1,
+    "Whole-passage selection cannot reuse the paragraph-mode page result",
   );
+  const selectedInput = JSON.parse(calls.at(-1).body.messages.at(-1).content);
+  assert.deepEqual(selectedInput, {
+    text: api.text,
+    context: api.context,
+  });
+  const selectedOutput = await host.locator("#output").textContent();
+  await processSelection();
+  assert.equal(
+    calls.length,
+    processed + 1,
+    "Repeated selection with the same text and context reuses its own cache",
+  );
+  assert.equal(await host.locator("#output").textContent(), selectedOutput);
   await source
     .locator("#returns")
     .evaluate(
@@ -571,18 +730,7 @@ module.exports = async ({
           "Typed API results"),
     );
   const changed = calls.length;
-  await page.evaluate(
-    (tabId) =>
-      chrome.tabs.sendMessage(tabId, {
-        type: "selection.process",
-        text: "Returns",
-      }),
-    tabId,
-  );
-  await host
-    .locator("#result-status")
-    .filter({ hasText: "处理完成" })
-    .waitFor();
+  await processSelection();
   assert.equal(
     calls.length,
     changed + 1,

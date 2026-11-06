@@ -111,6 +111,11 @@ const root = path.resolve(__dirname, "..");
       });
       await request("settings.save", {
         patch: {
+          actions: (await request("snapshot")).actions.map((action) =>
+            action.kind === "translate"
+              ? { ...action, translationEngine: "ai" }
+              : action,
+          ),
           defaultConnection: saved.id,
           preferences: { locale: "zh-CN", theme: "light", palette: "graphite" },
         },
@@ -129,7 +134,7 @@ const root = path.resolve(__dirname, "..");
       const get = chrome.storage.local.get.bind(chrome.storage.local);
       globalThis.heldReads = [];
       chrome.storage.local.get = (keys) =>
-        Array.isArray(keys) && keys.includes("credentials")
+        Array.isArray(keys) && keys.includes("protectedConfiguration")
           ? new Promise((resolve) => globalThis.heldReads.push(resolve))
           : get(keys);
     });

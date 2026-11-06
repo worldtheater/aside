@@ -225,6 +225,7 @@ module.exports = async ({
     fullPage: true,
   });
   await nav("home");
+  await page.locator(".daily-card").hover();
   await op("daily-settings").click();
   await choose("#daily-model", connectionId);
   await op("daily-preview").click();
@@ -254,6 +255,7 @@ module.exports = async ({
   await process("fixed-gemini");
   assert.equal(calls.at(-1).body.generation_config.thinking_level, "low");
   await nav("home");
+  await page.locator(".daily-card").hover();
   await op("daily-settings").click();
   await choose("#daily-model", connectionId);
   await op("daily-preview").click();

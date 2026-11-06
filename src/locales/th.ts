@@ -1,3 +1,5 @@
+import { RESET_COPY } from "../reset-copy.js";
+import { TRANSLATION_COPY } from "../translation-copy.js";
 import {
   BROWSER_NAME,
   SYNC_ACCOUNT_NAME,
@@ -442,6 +444,7 @@ const full = {
   ...base,
   processingNotice: "เนื้อหาจะถูกส่งไปยังบริการโมเดลที่เลือก",
   real: {
+    translation: TRANSLATION_COPY["th"].labels,
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
@@ -609,6 +612,7 @@ const full = {
     remove: "ลบ",
     frameLimit: "ไม่ประมวลผล PDF หน้าเว็บฝังจากต่างแหล่ง และข้อความในรูปภาพ",
     errors: {
+      ...TRANSLATION_COPY["th"].errors,
       noDecisionConnection: "ตั้งค่าโมเดลตัดสินใจเริ่มต้นก่อน",
       invalidDecision: "บริการตัดสินใจส่งผลลัพธ์ที่ไม่ถูกต้อง",
       actionLimit: `บันทึกได้สูงสุด ${MAX_ACTIONS} คำสั่ง โปรดลบคำสั่งที่กำหนดเองซึ่งไม่ได้ใช้ก่อน`,
@@ -754,5 +758,6 @@ const copy: Copy = {
   nav: { ...full.nav, usage: usage.title },
   usage,
   popup,
+  reset: RESET_COPY["th"],
 };
 export default copy;

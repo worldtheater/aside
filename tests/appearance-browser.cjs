@@ -118,7 +118,7 @@ module.exports = async ({
       .waitFor({ state: "attached" });
     const inline = source
       .locator("#first > [data-pagework=result]")
-      .locator("span");
+      .locator("[data-pagework=text]");
     await inline.waitFor();
     await page.evaluate(
       (tabId) =>

@@ -287,6 +287,95 @@ module.exports = async ({
     );
     const noCalls = calls.length;
     const initialPrompt = await field("instruction").inputValue();
+    const engineOriginals = (await snapshot()).actions;
+    assert.deepEqual(
+      await field("translationEngine").evaluate((select) =>
+        Array.from(select.options, (option) => option.value),
+      ),
+      ["ai", "microsoft", "browser"],
+    );
+    await field("translationEngine").selectOption("browser");
+    assert.equal(await field("model").count(), 0);
+    assert.equal(await field("instruction").count(), 0);
+    assert.equal(
+      await field("targetLanguage")
+        .locator('option[value="instruction"]')
+        .count(),
+      0,
+    );
+    assert.equal(
+      await source.evaluate(() => getSelection().toString()),
+      selectedText,
+      "Changing the engine preserves the webpage selection",
+    );
+    await field("translationEngine").selectOption("microsoft");
+    assert(
+      (await bar.locator(".field-note").textContent()).includes("Microsoft"),
+    );
+    await command("cancel").click();
+    assert.equal(
+      (await snapshot()).actions.find((a) => a.id === "translate")
+        .translationEngine,
+      engineOriginals.find((a) => a.id === "translate").translationEngine,
+      "Cancel does not persist an engine draft",
+    );
+    await settings();
+    await field("targetLanguage").selectOption("instruction");
+    await field("instruction").fill("Translate into German.");
+    await field("translationEngine").selectOption("browser");
+    assert.equal(
+      await field("targetLanguage").inputValue(),
+      "interface",
+      "Direct engines cannot follow AI-only language instructions",
+    );
+    await field("translationEngine").selectOption("ai");
+    assert.equal(
+      await field("instruction").inputValue(),
+      "Translate into German.",
+      "Switching engines preserves the custom AI instructions",
+    );
+    assert.equal(await field("model").count(), 1);
+    await field("translationEngine").selectOption("browser");
+    await bar.screenshot({
+      path: path.join(artifacts, "selection-translation-engine.png"),
+    });
+    await command("save").click();
+    await command("expand").waitFor();
+    assert.equal(
+      (await snapshot()).actions.find((a) => a.id === "translate")
+        .translationEngine,
+      "browser",
+    );
+    const enginePopup = await context.newPage();
+    await enginePopup.goto(new URL("popup.html", page.url()).href);
+    await enginePopup
+      .locator("#translation-engine")
+      .waitFor({ state: "attached" });
+    assert.equal(
+      await enginePopup.locator("#translation-engine").inputValue(),
+      "browser",
+      "Selection engine changes are shared with the toolbar popup",
+    );
+    await enginePopup.close();
+    await source.bringToFront();
+    await settings();
+    assert.equal(await field("translationEngine").inputValue(), "browser");
+    await field("translationEngine").selectOption("microsoft");
+    await command("save").click();
+    await command("expand").waitFor();
+    assert.equal(
+      (await snapshot()).actions.find((a) => a.id === "translate")
+        .translationEngine,
+      "microsoft",
+    );
+    assert.equal(
+      calls.length,
+      noCalls,
+      "Engine editing and saving do not start translation",
+    );
+    await patch({ actions: engineOriginals });
+    await select();
+    await settings();
     await field("instruction").fill("TRANSLATE_DRAFT");
     await field("sourceLanguage").selectOption("en");
     await field("targetLanguage").selectOption("ja");

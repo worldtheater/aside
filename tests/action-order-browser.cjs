@@ -52,11 +52,12 @@ module.exports = async ({
     const actions = [
       ...original.actions,
       ...Array.from({ length: 6 }, (_, index) => ({
-        ...original.actions[0],
+        ...original.actions.find((action) => action.kind === "explain"),
         id: "order-" + index,
         kind: "custom",
         builtin: false,
         name: "Extra " + index,
+        instruction: "Explain the selected passage.",
         icon: "spark",
         quick: true,
       })),

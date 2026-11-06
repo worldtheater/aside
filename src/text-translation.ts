@@ -1,3 +1,6 @@
+import { nativeProgressText } from "./native-packs.js";
+import type { NativeDownloadNotice } from "./native-download-notice.js";
+import { usesModel } from "./translation-engine.js";
 import { processRequest } from "./client.js";
 import { escapeHtml as escape } from "./html.js";
 import { HoverTips } from "./hover-tips.js";
@@ -31,6 +34,7 @@ export class TextTranslationPanel {
       config(): PublicConfig;
       error(error: unknown): string;
       notify(message: string): void;
+      nativeNotice: NativeDownloadNotice;
     },
   ) {
     const panel = this.element;
@@ -155,7 +159,7 @@ export class TextTranslationPanel {
             ? Object.entries(S.languages)
             : [
                 ["interface", S.followInterfaceLanguage],
-                ...(action.instruction.trim()
+                ...(usesModel(action) && action.instruction.trim()
                   ? [["instruction", S.followInstructionLanguage]]
                   : []),
                 ...Object.entries(S.languages).filter(
@@ -236,6 +240,7 @@ export class TextTranslationPanel {
     this.text = "";
     this.renderOutput("");
     this.status(S.processing);
+    const download = this.options.nativeNotice.track();
     try {
       job = processRequest(
         {
@@ -251,6 +256,14 @@ export class TextTranslationPanel {
           draft += delta;
           this.renderOutput(draft);
         },
+        (event) => {
+          if (this.job !== job) return;
+          download.report(event);
+          this.status(
+            nativeProgressText(event, S.translation.packs, S.languages),
+          );
+        },
+        download.waitForActivation,
       );
       this.job = job;
       this.updateControls();
@@ -262,6 +275,7 @@ export class TextTranslationPanel {
     } catch (error) {
       if (this.job === job) this.status(this.options.error(error), true);
     } finally {
+      download.clear();
       if (this.job === job) {
         this.job = null;
         this.updateControls();

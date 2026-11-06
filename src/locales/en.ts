@@ -1,3 +1,5 @@
+import { RESET_COPY } from "../reset-copy.js";
+import { TRANSLATION_COPY } from "../translation-copy.js";
 import {
   BROWSER_NAME,
   SYNC_ACCOUNT_NAME,
@@ -427,6 +429,7 @@ const full = {
   ...base,
   processingNotice: "Content will be sent to your selected model service.",
   real: {
+    translation: TRANSLATION_COPY["en"].labels,
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
@@ -595,6 +598,7 @@ const full = {
     frameLimit:
       "PDFs, cross-origin embedded pages, and text in images are not processed.",
     errors: {
+      ...TRANSLATION_COPY["en"].errors,
       noDecisionConnection: "Set up a default decision model first.",
       invalidDecision: "The decision service returned an invalid result.",
       actionLimit: `You can save up to ${MAX_ACTIONS} actions. Remove an unused custom action first.`,
@@ -743,6 +747,7 @@ const copy = {
   nav: { ...full.nav, usage: usage.title },
   usage,
   popup,
+  reset: RESET_COPY["en"],
 };
 export default copy;
 export type Copy = typeof copy;

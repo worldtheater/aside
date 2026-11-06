@@ -8,6 +8,7 @@ export const isSafari =
     ?.getURL?.("")
     .startsWith("safari-web-extension://") ?? false;
 export const supportsConfigurationSync = !isSafari;
+export const supportsNativeLanguagePacks = !isFirefox;
 export const usesPrivateSettingsStore = isFirefox || isSafari;
 export const requiresDirectPermissionRequest = isFirefox || isSafari;
 export const isEdge =

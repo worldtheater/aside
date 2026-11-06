@@ -9,6 +9,7 @@ declare global {
   var PageworkExtract: {
     extract(scope?: string, within?: HTMLElement): ExtractedBlock[];
     context(element: HTMLElement, text: string): UiContext | undefined;
+    root(scope?: string): HTMLElement;
   };
   var __pagework: Promise<void> | undefined;
 }

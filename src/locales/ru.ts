@@ -1,3 +1,5 @@
+import { RESET_COPY } from "../reset-copy.js";
+import { TRANSLATION_COPY } from "../translation-copy.js";
 import {
   BROWSER_NAME,
   SYNC_ACCOUNT_NAME,
@@ -464,6 +466,7 @@ const full = {
   ...base,
   processingNotice: "Содержимое будет отправлено выбранному сервису модели.",
   real: {
+    translation: TRANSLATION_COPY["ru"].labels,
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
@@ -636,6 +639,7 @@ const full = {
     frameLimit:
       "PDF, встроенные страницы с других источников и текст на изображениях не обрабатываются.",
     errors: {
+      ...TRANSLATION_COPY["ru"].errors,
       noDecisionConnection: "Сначала настройте модель решений по умолчанию.",
       invalidDecision: "Сервис решений вернул недопустимый результат.",
       actionLimit: `Можно сохранить до ${MAX_ACTIONS} действий. Сначала удалите ненужное пользовательское действие.`,
@@ -792,5 +796,6 @@ const copy: Copy = {
   nav: { ...full.nav, usage: usage.title },
   usage,
   popup,
+  reset: RESET_COPY["ru"],
 };
 export default copy;

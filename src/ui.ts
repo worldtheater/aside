@@ -1,4 +1,6 @@
 import { escapeHtml as e } from "./html.js";
+import { C, locale } from "./copy.js";
+import { LOCALES, type LocalePreference } from "./locale.js";
 
 const paths: Record<string, string> = {
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/>',
@@ -80,3 +82,18 @@ export function heading(title: unknown, intro: unknown, controls = "") {
 
 export const selected = (a: unknown, b: unknown) =>
   a === b ? " selected" : "";
+
+export function languageControl(preference: LocalePreference) {
+  const languages = [
+    ["system", C.systemLanguage],
+    ...Object.entries(LOCALES).map(([key, value]) => [key, value.name]),
+  ];
+  return `<div class="language-control"><select id="ui-locale" class="compact-locale" data-search="false" aria-label="${e(C.uiLanguage)}">${languages
+    .map(
+      ([key, label]) =>
+        `<option value="${key}"${selected(preference, key)}>${e(label)}</option>`,
+    )
+    .join(
+      "",
+    )}</select><span class="language-label" aria-hidden="true">${icon("translate")}<span class="active">${LOCALES[locale].short}</span></span></div>`;
+}

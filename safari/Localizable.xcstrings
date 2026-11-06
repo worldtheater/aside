@@ -1,0 +1,83 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Apple on-device translation requires macOS 26 or later.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "苹果本地翻译需要 macOS 26 或更新版本。"
+          }
+        }
+      }
+    },
+    "The translation session ended. Retry to create a new session.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "翻译会话已结束，请重试以重新创建。"
+          }
+        }
+      }
+    },
+    "Unable to open Aside to prepare languages.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "无法打开旁白 App 来准备语言包。"
+          }
+        }
+      }
+    },
+    "Prepare translation languages": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "准备翻译语言包"
+          }
+        }
+      }
+    },
+    "macOS manages the language download. Translation will continue in Safari when preparation finishes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "macOS 将管理语言包下载。准备完成后，Safari 中的翻译会自动继续。"
+          }
+        }
+      }
+    },
+    "Preparing languages": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "正在准备语言包"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "取消"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

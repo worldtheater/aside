@@ -1,9 +1,20 @@
+import { registerNativePackTracking } from "./native-pack-store.js";
+import { registerAppleTranslation } from "./apple-translation-background.js";
+registerAppleTranslation();
 import {
   supportsConfigurationSync,
   hostPermissionPattern,
   requiresDirectPermissionRequest,
   WEBSITE_RESOURCE_ORIGINS,
 } from "./browser.js";
+import {
+  translationEngine,
+  validateTranslationEngine,
+  translationEngineSupported,
+  MICROSOFT_ORIGIN,
+} from "./translation-engine.js";
+import { microsoftTranslate } from "./microsoft-translation.js";
+import { nativeTranslationPort } from "./native-translation-port.js";
 import { configurationStorage } from "./extension-storage.js";
 import { createSecretRedactor } from "./redaction.js";
 import { ConfigurationSync } from "./config-sync.js";
@@ -47,6 +58,7 @@ import {
   mutate,
   publicSettings,
   addCollection,
+  resetStore,
 } from "./store.js";
 import {
   endpoint,
@@ -71,9 +83,19 @@ import {
   clearUsage,
 } from "./usage-store.js";
 import { actionLimitError, isPresetAction } from "./action-policy.js";
-import { hasSameLanguages } from "./translation.js";
+import { hasSameLanguages, validateTranslationScope } from "./translation.js";
 const resultCache = new IndexedResultCache();
 const processContent = createProcessor(resultCache);
+let resetting: Promise<boolean> | undefined;
+let resetGeneration = 0;
+const requests = new Set<Promise<unknown>>();
+const processJobs = new Map<
+  chrome.runtime.Port,
+  {
+    controller: AbortController;
+    done: Promise<void>;
+  }
+>();
 import { localizeAction, messages, usesPresetDefaults } from "./copy.js";
 const extensionOrigin = chrome.runtime.getURL("");
 const trusted = (sender: chrome.runtime.MessageSender | undefined) =>
@@ -148,6 +170,7 @@ async function broadcastSettings(
   settings: Settings,
   recoverLightsFor?: string,
   sourceTabId?: number,
+  reset = false,
 ) {
   const config = publicConfig(settings);
   await Promise.all(
@@ -156,7 +179,7 @@ async function broadcastSettings(
       .map((tab) => {
         const update = (async () => {
           await chrome.tabs
-            .sendMessage(tab.id!, { type: "settings.updated", config })
+            .sendMessage(tab.id!, { type: "settings.updated", config, reset })
             .catch(() => {});
           if (
             recoverLightsFor !== undefined &&
@@ -364,8 +387,51 @@ chrome.commands.onCommand.addListener(async (command, sourceTab) => {
 });
 chrome.runtime.onMessage.addListener(
   (message: RequestMessage, sender, respond) => {
-    (async () => {
+    if (message.type === "settings.reset") {
+      if (!trusted(sender)) {
+        respond(failure(new ModelError("notAllowed")));
+        return false;
+      }
+      resetting ??= resetExtension().finally(() => {
+        resetting = undefined;
+      });
+      resetting.then(
+        (value) => respond({ ok: true, value }),
+        (error) => respond(failure(error)),
+      );
+      return true;
+    }
+    if (resetting) {
+      respond(failure(new ModelError("cancelled")));
+      return false;
+    }
+    const request = (async () => {
       if (sender.id !== chrome.runtime.id) throw new ModelError("notAllowed");
+      if (message.type === "tab.run" && message.requestMicrosoftPermission) {
+        assertTrusted(sender);
+        const generation = resetGeneration;
+        const originalTab = chrome.tabs
+          .get(message.tabId)
+          .catch(() => undefined);
+        // Chrome may close the popup when showing permission UI. Request before
+        // the first await to retain its gesture, and continue in the worker.
+        const permissions = { origins: [MICROSOFT_ORIGIN] };
+        const granted = requiresDirectPermissionRequest
+          ? await chrome.permissions.contains(permissions)
+          : await chrome.permissions.request(permissions);
+        if (!granted) throw new ModelError("translationPermission");
+        const previous = await originalTab;
+        const current = await chrome.tabs
+          .get(message.tabId)
+          .catch(() => undefined);
+        if (
+          generation !== resetGeneration ||
+          !previous ||
+          !current ||
+          previous.url !== current.url
+        )
+          throw new ModelError("cancelled");
+      }
       if (message.type === "website.update") {
         const fromPage = !trusted(sender);
         if (fromPage) {
@@ -490,7 +556,9 @@ chrome.runtime.onMessage.addListener(
       if (message.type === "settings.open") {
         await openSettings(
           sender.tab?.id || message.tabId || undefined,
-          message.route === "connections" ? "connections" : "home",
+          message.route === "connections" || message.route === "language-packs"
+            ? message.route
+            : "home",
         );
         return true;
       }
@@ -512,16 +580,6 @@ chrome.runtime.onMessage.addListener(
               throw new ModelError("notAllowed");
             if (!change.name?.trim() || typeof change.instruction !== "string")
               throw new ModelError("invalidAction");
-            if (
-              change.model !== "default" &&
-              !settings.connections.some(
-                (c) =>
-                  c.id === change.model &&
-                  c.connected &&
-                  connectionPurpose(c) === "generation",
-              )
-            )
-              throw new ModelError("noConnection");
             const original: Action =
               index >= 0
                 ? resolveAction(settings.actions[index], settings)!
@@ -541,7 +599,20 @@ chrome.runtime.onMessage.addListener(
               name: index >= 0 ? original.name : change.name.trim(),
               instruction: change.instruction.trim(),
               model: change.model,
+              translationEngine:
+                change.translationEngine ?? original.translationEngine,
             };
+            if (
+              translationEngine(next) === "ai" &&
+              next.model !== "default" &&
+              !settings.connections.some(
+                (c) =>
+                  c.id === next.model &&
+                  c.connected &&
+                  connectionPurpose(c) === "generation",
+              )
+            )
+              throw new ModelError("noConnection");
             next.builtin = usesPresetDefaults(next, localeOf(settings));
             if (next.kind === "translate") {
               const languages = messages[localeOf(settings)].languages;
@@ -568,6 +639,8 @@ chrome.runtime.onMessage.addListener(
               validateOutputLength(change.outputLength);
               next.outputLength = change.outputLength || DEFAULT_OUTPUT_LENGTH;
             }
+            validateTranslationEngine(next);
+            validateTranslationScope(next);
             if (requiresInstructions(next) && !next.instruction)
               throw new ModelError("invalidAction");
             if (next.instruction !== original.instruction)
@@ -613,6 +686,8 @@ chrome.runtime.onMessage.addListener(
       if (message.type === "settings.save") {
         if (message.patch?.actions) {
           for (const action of message.patch.actions) {
+            validateTranslationEngine(action);
+            validateTranslationScope(action);
             if (requiresInstructions(action) && !action.instruction.trim())
               throw new ModelError("invalidAction");
             if (hasOutputLanguage(action))
@@ -844,10 +919,14 @@ chrome.runtime.onMessage.addListener(
       if (message.type === "tab.restore")
         return chrome.tabs.sendMessage(message.tabId, { type: "page.restore" });
       throw new ModelError("notAllowed");
-    })().then(
-      (value) => respond({ ok: true, value }),
-      (error) => respond(failure(error)),
-    );
+    })();
+    requests.add(request);
+    request
+      .then(
+        (value) => respond({ ok: true, value }),
+        (error) => respond(failure(error)),
+      )
+      .finally(() => requests.delete(request));
     return true;
   },
 );
@@ -902,6 +981,7 @@ async function trackedCall<T>(
   run: (onUsage: (usage: UsageUpdate) => void) => Promise<T>,
   secrets: readonly string[],
 ): Promise<T> {
+  const generation = resetGeneration;
   const redact = createSecretRedactor(secrets);
   const origin = hostPermissionPattern(endpoint(connection));
   if (!(await chrome.permissions.contains({ origins: [origin] })))
@@ -923,28 +1003,29 @@ async function trackedCall<T>(
     throw error;
   } finally {
     try {
-      await addUsage(
-        {
-          id: crypto.randomUUID(),
-          startedAt,
-          durationMs: Date.now() - startedAt,
-          connectionId: connection.id || null,
-          connectionName: redact.text(connection.name || ""),
-          model: redact.text(connection.model),
-          protocol: connection.protocol,
-          source: context.source,
-          actionName: redact.text(context.actionName || ""),
-          status,
-          errorCode,
-          tokens,
-          usageFinal,
-        },
-        {
-          instructions: redact.content(details.instructions),
-          input: redact.content(details.input),
-          output: redact.content(details.output),
-        },
-      );
+      if (generation === resetGeneration)
+        await addUsage(
+          {
+            id: crypto.randomUUID(),
+            startedAt,
+            durationMs: Date.now() - startedAt,
+            connectionId: connection.id || null,
+            connectionName: redact.text(connection.name || ""),
+            model: redact.text(connection.model),
+            protocol: connection.protocol,
+            source: context.source,
+            actionName: redact.text(context.actionName || ""),
+            status,
+            errorCode,
+            tokens,
+            usageFinal,
+          },
+          {
+            instructions: redact.content(details.instructions),
+            input: redact.content(details.input),
+            output: redact.content(details.output),
+          },
+        );
     } catch (error) {
       console.warn(
         "Aside could not save call history:",
@@ -953,152 +1034,239 @@ async function trackedCall<T>(
     }
   }
 }
+const resetNativePacks = registerNativePackTracking();
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== "process" || port.sender?.id !== chrome.runtime.id) return;
+  if (resetting) {
+    port.disconnect();
+    return;
+  }
   const controller = new AbortController();
-  port.onDisconnect.addListener(() => controller.abort());
   let started = false;
-  port.onMessage.addListener(async (payload: ProcessPayload) => {
+  const job = { controller, done: Promise.resolve() };
+  processJobs.set(port, job);
+  port.onDisconnect.addListener(() => {
+    controller.abort();
+    if (!started) processJobs.delete(port);
+  });
+  port.onMessage.addListener((payload: ProcessPayload) => {
     if (started) return;
     started = true;
-    try {
-      const result = await withKeepAlive(async () => {
-        await initialize();
-        const data = await readStore(),
-          settings = data.settings;
-        let action =
-          trusted(port.sender) && payload.action
-            ? payload.action
-            : resolveAction(
-                settings.actions.find((a) => a.id === payload.actionId),
-                settings,
-              );
-        let blocks = payload.blocks;
-        if (payload.daily) {
-          if (!trusted(port.sender)) throw new ModelError("notAllowed");
-          const config = payload.daily,
-            entries = config.useCollection ? data.collection.slice(0, 5) : [];
-          if (!config.prompt.trim()) throw new ModelError("invalidInput");
-          action = {
-            kind: "custom",
-            mode: "whole",
-            model: config.model || "default",
-            instruction: [
-              config.prompt,
-              "Display context: You are writing the finished text of a compact daily card on a reading homepage. The card is read on its own, with no source excerpts alongside it and no reply field. Write a reflection on reading and thinking. Use any saved passages as thematic inspiration. Keep the text self-contained, natural and brief: one or two short sentences. Do not invent an attribution.",
-              "Output format: Return plain text only. Do not use Markdown formatting.",
-            ].join("\n\n"),
-            outputLanguage: config.outputLanguage || "interface",
-          };
-          blocks = [
-            {
-              id: "daily",
-              text: JSON.stringify({
-                date: new Date().toLocaleDateString("en-CA"),
-                collection: entries.map((c) => ({
-                  title: c.title,
-                  text: c.text.slice(0, 2000),
-                })),
-              }),
-            },
-          ];
-        }
-        if (
-          !action ||
-          typeof action.instruction !== "string" ||
-          (requiresInstructions(action) && !action.instruction.trim()) ||
-          !blocks
-        )
-          throw new ModelError("invalidInput");
-        if (action.kind === "translate" && payload.translation)
-          action = {
-            ...action,
-            sourceLanguage: payload.translation.sourceLanguage,
-            targetLanguage: payload.translation.targetLanguage,
-          };
-        if (action.kind === "translate")
-          action = {
-            ...action,
-            targetLanguage: resolveOutputLanguage(
-              action.targetLanguage,
-              localeOf(settings),
-            ),
-          };
-        if (hasOutputLanguage(action) || payload.daily) {
-          validateOutputLanguage(
-            action.outputLanguage,
-            hasOutputLanguage(action),
-          );
-          action = {
-            ...action,
-            outputLanguage: resolveOutputLanguage(
-              action.outputLanguage,
-              localeOf(settings),
-            ),
-          };
-        }
-        if (requiresInstructions(action) && !action.instruction.trim())
-          throw new ModelError("invalidAction");
-        if (hasSameLanguages(action)) throw new ModelError("sameLanguages");
-        const connection = await connectionFor(settings, action.model),
-          key = data.credentials[connection.id!] || "";
-        const source: UsageSource = payload.daily
-          ? "daily"
-          : ["page", "selection", "text", "trial"].includes(
-                payload.source || "",
-              )
-            ? payload.source!
-            : "processing";
-        const output = await processContent({
-          // Selected or typed text is one passage, even when full pages are divided.
-          action:
-            source === "selection" || source === "text"
-              ? { ...action, mode: "whole" }
-              : action,
-          blocks,
-          connection,
-          key,
-          secrets: Object.values(data.credentials),
-          signal: controller.signal,
-          refresh: Boolean(payload.refresh || payload.daily),
-          invoke: (...args) =>
-            trackedModel({ source, actionName: action.name }, ...args),
-          onProgress: (parts, stats) => {
-            if (!controller.signal.aborted)
-              port.postMessage({ type: "progress", parts, stats });
-          },
-          onDelta: payload.stream
-            ? (id, text) => {
-                if (!controller.signal.aborted)
-                  port.postMessage({ type: "delta", id, text });
-              }
-            : undefined,
-        });
-        if (payload.daily && payload.saveDaily)
-          await mutate((data) => {
-            data.daily = {
-              ...payload.daily!,
-              result: output.parts[0].text,
-              date: new Date().toLocaleDateString("en-CA"),
+    job.done = (async () => {
+      try {
+        const result = await withKeepAlive(async () => {
+          await initialize();
+          const data = await readStore(),
+            settings = data.settings;
+          let action =
+            trusted(port.sender) && payload.action
+              ? payload.action
+              : resolveAction(
+                  settings.actions.find((a) => a.id === payload.actionId),
+                  settings,
+                );
+          let blocks = payload.blocks;
+          if (payload.daily) {
+            if (!trusted(port.sender)) throw new ModelError("notAllowed");
+            const config = payload.daily,
+              entries = config.useCollection ? data.collection.slice(0, 5) : [];
+            if (!config.prompt.trim()) throw new ModelError("invalidInput");
+            action = {
+              kind: "custom",
+              mode: "whole",
+              model: config.model || "default",
+              instruction: [
+                config.prompt,
+                "Display context: You are writing the finished text of a compact daily card on a reading homepage. The card is read on its own, with no source excerpts alongside it and no reply field. Write a reflection on reading and thinking. Use any saved passages as thematic inspiration. Keep the text self-contained, natural and brief: one or two short sentences. Do not invent an attribution.",
+                "Output format: Return plain text only. Do not use Markdown formatting.",
+              ].join("\n\n"),
+              outputLanguage: config.outputLanguage || "interface",
             };
-            return true;
+            blocks = [
+              {
+                id: "daily",
+                text: JSON.stringify({
+                  date: new Date().toLocaleDateString("en-CA"),
+                  collection: entries.map((c) => ({
+                    title: c.title,
+                    text: c.text.slice(0, 2000),
+                  })),
+                }),
+              },
+            ];
+          }
+          if (
+            !action ||
+            typeof action.instruction !== "string" ||
+            (requiresInstructions(action) && !action.instruction.trim()) ||
+            !blocks
+          )
+            throw new ModelError("invalidInput");
+          if (action.kind === "translate" && payload.translation)
+            action = {
+              ...action,
+              sourceLanguage: payload.translation.sourceLanguage,
+              targetLanguage: payload.translation.targetLanguage,
+            };
+          if (action.kind === "translate")
+            action = {
+              ...action,
+              targetLanguage: resolveOutputLanguage(
+                action.targetLanguage,
+                localeOf(settings),
+              ),
+            };
+          if (hasOutputLanguage(action) || payload.daily) {
+            validateOutputLanguage(
+              action.outputLanguage,
+              hasOutputLanguage(action),
+            );
+            action = {
+              ...action,
+              outputLanguage: resolveOutputLanguage(
+                action.outputLanguage,
+                localeOf(settings),
+              ),
+            };
+          }
+          if (requiresInstructions(action) && !action.instruction.trim())
+            throw new ModelError("invalidAction");
+          if (hasSameLanguages(action)) throw new ModelError("sameLanguages");
+          validateTranslationEngine(action);
+          validateTranslationScope(action);
+          const engine = translationEngine(action);
+          if (!translationEngineSupported(action))
+            throw new ModelError("translationUnavailable");
+          const connection =
+            engine === "ai"
+              ? await connectionFor(settings, action.model)
+              : undefined;
+          const key = connection ? data.credentials[connection.id!] || "" : "";
+          const translation =
+            engine === "ai"
+              ? undefined
+              : {
+                  identity: JSON.stringify([
+                    engine,
+                    action.sourceLanguage,
+                    action.targetLanguage,
+                  ]),
+                  translate: (texts: string[], signal: AbortSignal) =>
+                    engine === "microsoft"
+                      ? microsoftTranslate(
+                          texts,
+                          action.sourceLanguage || "auto",
+                          action.targetLanguage!,
+                          signal,
+                        )
+                      : nativeTranslationPort(port)(
+                          texts,
+                          action.sourceLanguage || "auto",
+                          action.targetLanguage!,
+                          signal,
+                        ),
+                };
+          const source: UsageSource = payload.daily
+            ? "daily"
+            : ["page", "selection", "text", "trial"].includes(
+                  payload.source || "",
+                )
+              ? payload.source!
+              : "processing";
+          // Native jobs belong to their document; never share their in-flight work across ports.
+          const processor =
+            engine === "browser"
+              ? createProcessor(resultCache)
+              : processContent;
+          const output = await processor({
+            translation,
+            // Selected or typed text is one passage, even when full pages are divided.
+            action:
+              source === "selection" || source === "text"
+                ? { ...action, mode: "whole" }
+                : action,
+            blocks,
+            connection,
+            key,
+            secrets: Object.values(data.credentials),
+            signal: controller.signal,
+            refresh: Boolean(payload.refresh || payload.daily),
+            invoke: (...args) =>
+              trackedModel({ source, actionName: action.name }, ...args),
+            onProgress: (parts, stats) => {
+              if (!controller.signal.aborted)
+                port.postMessage({ type: "progress", parts, stats });
+            },
+            onDelta: payload.stream
+              ? (id, text) => {
+                  if (!controller.signal.aborted)
+                    port.postMessage({ type: "delta", id, text });
+                }
+              : undefined,
           });
-        return output;
-      });
-      if (!controller.signal.aborted)
-        port.postMessage({ type: "done", result });
-    } catch (caught) {
-      const error = modelError(caught);
-      if (!controller.signal.aborted)
-        port.postMessage({
-          type: "error",
-          error: error.code || "serviceError",
-          detail:
-            error.code && error.message !== error.code ? error.message : "",
+          if (payload.daily && payload.saveDaily && !controller.signal.aborted)
+            await mutate((data) => {
+              data.daily = {
+                ...payload.daily!,
+                result: output.parts[0].text,
+                date: new Date().toLocaleDateString("en-CA"),
+              };
+              return true;
+            });
+          return output;
         });
-    }
+        if (!controller.signal.aborted)
+          port.postMessage({ type: "done", result });
+      } catch (caught) {
+        const error = modelError(caught);
+        if (!controller.signal.aborted)
+          port.postMessage({
+            type: "error",
+            error: error.code || "serviceError",
+            detail:
+              error.code && error.message !== error.code ? error.message : "",
+          });
+      }
+    })().finally(() => processJobs.delete(port));
+    return job.done;
   });
 });
+async function resetExtension(): Promise<boolean> {
+  resetGeneration++;
+  const jobs = [...processJobs.entries()];
+  for (const [port, job] of jobs) {
+    job.controller.abort();
+    port.disconnect();
+  }
+  for (const job of enhancementJobs.values()) job.abort();
+  await Promise.all(
+    (await chrome.tabs.query({}))
+      .filter((tab) => tab.id !== undefined)
+      .map((tab) =>
+        chrome.tabs
+          .sendMessage(tab.id!, { type: "settings.resetting" })
+          .catch(() => {}),
+      ),
+  );
+  await Promise.allSettled([...requests, ...jobs.map(([, job]) => job.done)]);
+  // Stop this device before removing configuration; never publish reset defaults or delete cloud data.
+  await configurationSync?.stop();
+  await resetNativePacks();
+  await resultCache.clear();
+  await clearUsage();
+  await resetStore();
+  await syncSelectionMenu();
+  await broadcastSettings(
+    (await readStore()).settings,
+    undefined,
+    undefined,
+    true,
+  );
+  await chrome.runtime
+    .sendMessage({ type: "settings.reset-complete" })
+    .catch(() => {});
+  return true;
+}
 const enhancementJobs = new Map<string, AbortController>();
 const enhancementScheduler = new RequestScheduler();
 async function lightsDecisionContext(

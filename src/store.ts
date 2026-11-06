@@ -3,6 +3,7 @@ import {
   PROTECTED_CONFIGURATION,
   encryptCredentials,
   decryptCredentials,
+  clearDeviceKey,
 } from "./credential-store.js";
 import type { EncryptedConfiguration } from "./credential-store.js";
 import {
@@ -178,11 +179,29 @@ async function decodeStore(stored: StoredData): Promise<StoreData> {
 export async function readStore(): Promise<StoreData> {
   return decodeStore(await storedData());
 }
+function enqueueWrite<T>(fn: () => Promise<T>) {
+  const job = writes.then(fn);
+  writes = job.then(
+    () => {},
+    () => {},
+  );
+  return job;
+}
+// Reset without decoding the old configuration, including damaged credentials.
+export function resetStore() {
+  return enqueueWrite(async () => {
+    await ready;
+    await localStore.remove(Object.keys(await localStore.get(null)));
+    await clearDeviceKey();
+    initializing = undefined;
+    await initialize();
+  });
+}
 export function mutate<T>(
   fn: (data: StoreData) => T | Promise<T>,
   options?: { sync?: boolean },
 ) {
-  const job = writes.then(async () => {
+  return enqueueWrite(async () => {
     await initialize();
     const stored = await storedData();
     const data = await decodeStore(stored);
@@ -208,11 +227,6 @@ export function mutate<T>(
     });
     return result;
   });
-  writes = job.then(
-    () => {},
-    () => {},
-  );
-  return job;
 }
 export async function snapshot(): Promise<Snapshot> {
   const data = await readStore();

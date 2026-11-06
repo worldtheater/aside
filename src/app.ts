@@ -1,8 +1,19 @@
+import { translationScope } from "./translation.js";
+import { LanguagePacksPage } from "./language-packs-page.js";
+import { nativeProgressText } from "./native-packs.js";
+import {
+  translationEngine,
+  usesModel,
+  authorizeTranslation,
+  AVAILABLE_TRANSLATION_ENGINES,
+  translationEngineSupported,
+} from "./translation-engine.js";
 import {
   faviconUrl,
   openShortcutSettings,
   isSafari,
   supportsConfigurationSync,
+  supportsNativeLanguagePacks,
   hostPermissionPattern,
 } from "./browser.js";
 import { storageChanges } from "./extension-storage.js";
@@ -22,8 +33,14 @@ import {
   mountUsageChart,
   updateUsagePage,
 } from "./usage-page.js";
-import { icon, button, iconButton, heading, selected } from "./ui.js";
-import { LOCALES } from "./locale.js";
+import {
+  icon,
+  button,
+  iconButton,
+  heading,
+  selected,
+  languageControl,
+} from "./ui.js";
 import siteLanguages from "../website/languages.json";
 import { HoverTips } from "./hover-tips.js";
 import { showColorPicker } from "./color-picker.js";
@@ -108,6 +125,7 @@ const [data, initialCommands] = await Promise.all([
   chrome.commands.getAll(),
 ]);
 let commandBindings = initialCommands;
+const languagePacksPage = new LanguagePacksPage();
 let syncStatus: SyncStatus | null = null;
 let syncServices: SyncServiceAccess[] = [];
 let syncBusy = false;
@@ -240,6 +258,11 @@ const errorText = (caught: unknown) => {
 const themeMedia = matchMedia("(prefers-color-scheme: dark)");
 const app = document.querySelector<HTMLElement>("#app")!;
 const dialog = document.querySelector<HTMLDialogElement>("#dialog")!;
+let resetBusy = false;
+function reloadAfterReset() {
+  localStorage.clear();
+  location.replace(chrome.runtime.getURL("index.html"));
+}
 const tips = new HoverTips(document.body, "[data-tooltip]");
 window.addEventListener("resize", () => tips.hide(true));
 window.addEventListener("scroll", () => tips.hide(true));
@@ -293,6 +316,7 @@ const routeNames = [
   "editor",
   "appearance",
   "connections",
+  ...(supportsNativeLanguagePacks ? ["language-packs"] : []),
   "shortcuts",
   ...(supportsConfigurationSync ? ["sync"] : []),
   "usage",
@@ -362,6 +386,10 @@ async function reloadData() {
   persisted = structuredClone(data);
 }
 chrome.runtime.onMessage.addListener((message) => {
+  if (message?.type === "settings.reset-complete") {
+    if (!resetBusy) reloadAfterReset();
+    return;
+  }
   if (message?.type !== "sync.applied") return;
   void (async () => {
     await reloadData();
@@ -395,6 +423,16 @@ const refreshSyncPermissions = () => {
 chrome.permissions.onAdded.addListener(refreshSyncPermissions);
 chrome.permissions.onRemoved.addListener(refreshSyncPermissions);
 storageChanges.addListener((changes, area) => {
+  const preference = (changes.settings?.newValue as Settings | undefined)
+    ?.preferences.locale;
+  if (
+    area === "local" &&
+    preference &&
+    preference !== data.preferences.locale
+  ) {
+    persisted.preferences.locale = preference;
+    changeLocale(preference);
+  }
   if (
     state.route === "sync" &&
     !syncBusy &&
@@ -516,6 +554,7 @@ function showDialog(content: string, { wide = false, showClose = true } = {}) {
   enhanceSelects(dialog);
 }
 function closeDialog(callback?: () => void) {
+  if (resetBusy) return;
   pendingSync = null;
   tips.hide(true);
   dismissNotice();
@@ -575,23 +614,11 @@ function changeLocale(preference: LocalePreference) {
     state.initialDraft = JSON.stringify(state.editor);
     state.trial.stale = Boolean(state.trial.result);
   }
-  persist();
   render();
 }
 function renderPreferences() {
-  const languages = [
-    ["system", C.systemLanguage],
-    ...Object.entries(LOCALES).map(([key, value]) => [key, value.name]),
-  ];
   return `<div class="preference-controls">
-    <div class="language-control">
-    <select id="ui-locale" class="compact-locale" data-search="false" aria-label="${C.uiLanguage}">${languages
-      .map(
-        ([key, label]) =>
-          `<option value="${key}"${selected(data.preferences.locale, key)}>${label}</option>`,
-      )
-      .join("")}</select>
-    <span class="language-label" aria-hidden="true">${icon("translate")}<span class="active">${LOCALES[locale].short}</span></span></div>
+    ${languageControl(data.preferences.locale)}
     ${iconButton(C.uiTheme, "theme-menu", "palette", 'aria-haspopup="true"', false)}
   </div>`;
 }
@@ -600,10 +627,14 @@ function renderSidebar() {
   const homepage = new URL(sitePath ? `${sitePath}/` : "", PRODUCT_SITE_URL)
     .href;
   const route = state.route === "editor" ? "actions" : state.route;
-  const link = (name: keyof typeof C.nav, glyph: string) =>
-    `<button class="sidebar-link" data-route="${name}" ${name === "home" ? 'data-op="home"' : ""} ${route === name ? 'aria-current="page"' : ""}>${icon(glyph)}<span>${C.nav[name]}</span></button>`;
+  const link = (
+    name: string,
+    glyph: string,
+    label = C.nav[name as keyof typeof C.nav],
+  ) =>
+    `<button class="sidebar-link" data-route="${name}" ${name === "home" ? 'data-op="home"' : ""} ${route === name ? 'aria-current="page"' : ""}>${icon(glyph)}<span>${e(label)}</span></button>`;
   return `<aside class="sidebar" id="sidebar" aria-label="${C.pageMenu}"><div class="sidebar-brand"><a class="sidebar-brand-link" href="${e(homepage)}" target="_blank" rel="noopener noreferrer"><img src="icons/icon-32.png" alt="" width="28" height="28"><strong>${C.brand}</strong></a>${iconButton(C.closeNavigation, "navigation-close", "close", "", false)}</div>
-    <nav><div class="sidebar-group"><h2>${C.contentGroup}</h2>${link("home", "bookmark")}</div><div class="sidebar-group"><h2>${C.settings}</h2>${link("actions", "spark")}${link("appearance", "palette")}${link("connections", "plug")}${link("shortcuts", "keyboard")}${link("usage", "list")}${supportsConfigurationSync ? link("sync", "refresh") : ""}</div></nav><div class="sidebar-footer">${link("help", "question")}</div></aside>
+    <nav><div class="sidebar-group"><h2>${C.contentGroup}</h2>${link("home", "bookmark")}</div><div class="sidebar-group"><h2>${C.settings}</h2>${link("actions", "spark")}${link("appearance", "palette")}${link("connections", "plug")}${supportsNativeLanguagePacks ? link("language-packs", "translate", C.real.translation.packs.title) : ""}${link("shortcuts", "keyboard")}${link("usage", "list")}${supportsConfigurationSync ? link("sync", "refresh") : ""}</div></nav><div class="sidebar-footer">${link("help", "question")}</div></aside>
     <button class="sidebar-backdrop" data-op="navigation-close" aria-label="${C.closeNavigation}" tabindex="-1"></button>`;
 }
 const narrowNavigation = matchMedia("(max-width: 860px)");
@@ -672,15 +703,18 @@ function showThemeMenu(trigger: HTMLElement) {
   );
 }
 function render() {
+  languagePacksPage.unmount();
   tips.hide(true);
   closeMenu();
   applyTheme();
   const route = state.route === "editor" ? "actions" : state.route;
   app.innerHTML = `<div class="app-shell">${renderSidebar()}<main class="main"><header class="topbar"><div class="topbar-navigation">${iconButton(C.pageMenu, "navigation-open", "menu", 'aria-controls="sidebar" aria-expanded="false"')}<nav class="history-controls" aria-label="${C.pageMenu}">${iconButton(C.previous, "history-back", "back", history.state.index === 0 ? "disabled" : "", false)}${iconButton(C.forward, "history-forward", "arrow", history.state.index >= maxHistoryIndex ? "disabled" : "", false)}</nav></div>${renderPreferences()}</header>
-    <div class="workspace ${route === "home" ? "home-workspace" : ""}">${state.route === "home" ? renderHome() : state.route === "editor" ? renderEditor() : route === "actions" ? renderLibrary() : route === "appearance" ? renderAppearance() : route === "connections" ? renderConnections() : route === "usage" ? renderUsage(usageView, cacheInfo) : route === "shortcuts" ? renderShortcuts() : route === "sync" ? renderSyncPage(syncStatus, syncFirstSetup, syncServices) : route === "help" ? renderHelp() : renderHome()}</div></main></div>`;
+    <div class="workspace ${route === "home" ? "home-workspace" : ""}">${state.route === "home" ? renderHome() : state.route === "editor" ? renderEditor() : route === "actions" ? renderLibrary() : route === "appearance" ? renderAppearance() : route === "connections" ? renderConnections() : route === "language-packs" ? heading(C.real.translation.packs.title, C.real.translation.packs.intro) + '<section id="language-packs"></section>' : route === "usage" ? renderUsage(usageView, cacheInfo) : route === "shortcuts" ? renderShortcuts() : route === "sync" ? renderSyncPage(syncStatus, syncFirstSetup, syncServices) : route === "help" ? renderHelp() : renderHome()}</div></main></div>`;
   setNavigationOpen(false);
   if (state.route === "editor") renderTrialResult();
   if (state.route === "appearance") renderStylePreview();
+  if (state.route === "language-packs")
+    languagePacksPage.mount(app.querySelector("#language-packs")!);
   enhanceSelects(app);
   if (state.route === "usage") mountUsageChart();
 }
@@ -996,6 +1030,7 @@ function renderHelp() {
       <section class="help-credits" aria-labelledby="help-credits-title"><h2 id="help-credits-title">${e(H.openSource)}</h2><p>${e(H.licenseIntro).replace("{license}", licenseLink)}</p>
         <ul>${libraries.map((library) => `<li><a href="${e(library.url)}" target="_blank" rel="noopener noreferrer"><strong>${e(library.name)}</strong><span>${e(library.role)}</span></a><small>${e(library.license)}</small></li>`).join("")}</ul>
       </section>
+      <footer class="help-footer"><button type="button" class="help-reset" data-op="reset-ask">${e(C.reset.title)}</button></footer>
     </div>`;
 }
 function renderShortcutBinding(name: string) {
@@ -1247,7 +1282,7 @@ function renderEditor() {
   return `<div class="page-heading editor-heading"><div><h1>${a.id ? C.editTitle : C.createTitle}</h1><p>${C.editorIntro}</p></div><div class="row editor-actions"><span id="save-state" class="save-state"${dirty() ? "" : " hidden"}>${C.unsaved}</span>${button(C.cancel, "editor-cancel", "ghost")}${button(C.save, "save", "primary", "check")}</div></div>
   <div class="editor-grid"><section aria-label="${C.editTitle}">
     <label class="field"><span class="field-label">${C.actionName}</span><input id="action-name" data-draft="name" value="${e(a.name)}" placeholder="${C.actionPlaceholder}" maxlength="48"></label>
-    ${a.kind === "translate" ? renderTranslationFields(a) : hasOutputLanguage(a) ? renderOutputLanguageField(a.outputLanguage, 'data-language="outputLanguage"', true) : ""}
+    ${a.kind === "translate" ? renderTranslationEngine(a) + renderTranslationFields(a) + renderTranslationScope(a) : hasOutputLanguage(a) ? renderOutputLanguageField(a.outputLanguage, 'data-language="outputLanguage"', true) : ""}
     ${
       a.kind === "qa"
         ? `<label class="field"><span class="field-label">${C.outputLength}</span><select data-draft="outputLength" aria-label="${C.outputLength}">${Object.entries(
@@ -1262,10 +1297,10 @@ function renderEditor() {
             )}</select><span class="field-note">${C.outputLengthHint}</span></label>`
         : ""
     }
-    <label class="field"><span class="field-label">${followsInstructionLanguage(a) ? C.additionalInstructionsRequired : hasDefaultInstructions(a) ? C.additionalInstructions : C.instruction}</span><textarea id="instruction" data-draft="instruction" rows="6" placeholder="${e(followsInstructionLanguage(a) ? C.instructionLanguageHint : hasDefaultInstructions(a) ? C.additionalInstructionsPlaceholder : C.instructionPlaceholder)}">${e(a.instruction)}</textarea></label>
+    ${usesModel(a) ? `<label class="field"><span class="field-label">${followsInstructionLanguage(a) ? C.additionalInstructionsRequired : hasDefaultInstructions(a) ? C.additionalInstructions : C.instruction}</span><textarea id="instruction" data-draft="instruction" rows="6" placeholder="${e(followsInstructionLanguage(a) ? C.instructionLanguageHint : hasDefaultInstructions(a) ? C.additionalInstructionsPlaceholder : C.instructionPlaceholder)}">${e(a.instruction)}</textarea></label>` : ""}
     <div class="field"><div class="field-label" id="mode-label">${C.mode}</div><div class="mode-options" role="radiogroup" aria-labelledby="mode-label">${["paragraph", "whole"].map((mode) => `<label class="mode-option"><div class="row"><input type="radio" name="process-mode" value="${mode}"${checked(a.mode === mode)}><span>${C.modes[mode as keyof typeof C.modes]}</span></div><p>${C.modeHints[mode as keyof typeof C.modeHints]}</p></label>`).join("")}</div></div>
   </section><div class="editor-advanced"><details class="advanced"><summary>${C.advanced}</summary><div class="advanced-body">
-      <label class="field"><span class="field-label">${C.model}</span><select data-draft="model">${modelOptions(a.model)}</select></label>
+      ${usesModel(a) ? `<label class="field"><span class="field-label">${C.model}</span><select data-draft="model">${modelOptions(a.model)}</select></label>` : ""}
       <label class="field"><span class="field-label">${C.placement}</span><select data-draft="placement">${Object.entries(
         C.placements,
       )
@@ -1280,7 +1315,7 @@ function renderEditor() {
     <div class="test-header"><h2 id="trial-heading">${C.test}</h2></div>
     <textarea id="test-input" class="test-input" aria-label="${C.input}" rows="5" placeholder="${C.testInputPlaceholder}">${e(t.text)}</textarea>
     <div id="test-results" aria-live="polite"></div>
-    <div class="test-run-row"><p class="test-notice">${C.processingNotice}</p><button class="btn primary compact" id="test-run" data-op="test-run"></button></div>
+    <div class="test-run-row"><p class="test-notice">${translationNotice(a)}</p><button class="btn primary compact" id="test-run" data-op="test-run"></button></div>
   </aside></div>`;
 }
 function languageOptions(current: unknown, allowAuto: boolean) {
@@ -1299,10 +1334,35 @@ function renderOutputLanguageField(
 ) {
   return `<label class="field"><span class="field-label">${C.outputLanguage}</span><select ${attrs} data-search="false" aria-label="${C.outputLanguage}"><option value="interface"${selected(value || "interface", "interface")}>${C.followInterfaceLanguage}</option>${allowInstruction ? `<option value="instruction"${selected(value, "instruction")}>${C.followInstructionLanguage}</option>` : ""}${languageOptions(value, false)}</select></label>`;
 }
+function translationNotice(a: Action) {
+  if (!translationEngineSupported(a))
+    return C.real.translation.engineUnavailable;
+  const engine = translationEngine(a);
+  return engine === "ai"
+    ? C.processingNotice
+    : engine === "microsoft"
+      ? C.real.translation.microsoftNotice
+      : C.real.translation.browserNotice;
+}
+function renderTranslationEngine(a: Action) {
+  const T = C.real.translation;
+  return `<label class="field"><span class="field-label">${T.engine}</span><select id="translation-engine" data-search="false">${translationEngineSupported(a) ? "" : `<option value="" disabled selected>${e(T.chooseEngine)}</option>`}${AVAILABLE_TRANSLATION_ENGINES.map((engine) => `<option value="${engine}"${selected(translationEngine(a), engine)}>${T.engines[engine]}</option>`).join("")}</select></label>`;
+}
+function renderTranslationScope(a: Action) {
+  const T = C.real.translation;
+  return `<label class="field"><span class="field-label">${T.scope}</span><select data-draft="translationScope" data-search="false" aria-label="${T.scope}">${Object.entries(
+    T.scopes,
+  )
+    .map(
+      ([value, label]) =>
+        `<option value="${value}"${selected(translationScope(a), value)}>${label}</option>`,
+    )
+    .join("")}</select></label>`;
+}
 function renderTranslationFields(a: Action) {
   return `<div class="translation-fields"><label class="field"><span class="field-label">${C.sourceLanguage}</span><select data-language="sourceLanguage" data-search="false" aria-label="${C.sourceLanguage}">${languageOptions(a.sourceLanguage, true)}</select></label>
     ${iconButton(C.swapLanguages, "swap-languages", "swap", a.sourceLanguage === "auto" || followsInstructionLanguage(a) ? "disabled" : "")}
-    <label class="field"><span class="field-label">${C.targetLanguage}</span><select data-language="targetLanguage" data-search="false" aria-label="${C.targetLanguage}"><option value="interface"${selected(a.targetLanguage, "interface")}>${C.followInterfaceLanguage}</option><option value="instruction"${selected(a.targetLanguage, "instruction")}>${C.followInstructionLanguage}</option>${languageOptions(a.targetLanguage, false)}</select></label></div><p class="field-note translation-hint">${C.translationHint}</p>`;
+    <label class="field"><span class="field-label">${C.targetLanguage}</span><select data-language="targetLanguage" data-search="false" aria-label="${C.targetLanguage}"><option value="interface"${selected(a.targetLanguage, "interface")}>${C.followInterfaceLanguage}</option>${usesModel(a) ? `<option value="instruction"${selected(a.targetLanguage, "instruction")}>${C.followInstructionLanguage}</option>` : ""}${languageOptions(a.targetLanguage, false)}</select></label></div><p class="field-note translation-hint">${C.translationHint}</p>`;
 }
 function renderTrialResult() {
   if (state.route !== "editor") return;
@@ -1310,6 +1370,8 @@ function renderTrialResult() {
   const t = state.trial,
     a = state.editor!,
     result = document.querySelector<HTMLElement>("#test-results")!;
+  document.querySelector<HTMLButtonElement>("#test-run")!.disabled =
+    !t.busy && !translationEngineSupported(a);
   document.querySelector<HTMLElement>("#test-run")!.innerHTML =
     `${t.busy ? '<span class="spinner"></span>' : icon("play")}${t.busy ? C.stop : t.result ? C.rerun : C.run}`;
   if (t.busy) {
@@ -1317,7 +1379,7 @@ function renderTrialResult() {
     return;
   }
   if (!t.result) {
-    result.innerHTML = `<div class="test-result result-empty"><span>${C.emptyResult}</span><p class="test-model">${e(connection(a.model).model)}</p></div>`;
+    result.innerHTML = `<div class="test-result result-empty"><span>${C.emptyResult}</span><p class="test-model">${e(!translationEngineSupported(a) ? C.real.translation.engineUnavailable : usesModel(a) ? connection(a.model).model : C.real.translation.engines[translationEngine(a)])}</p></div>`;
     return;
   }
   result.innerHTML = `<div class="test-result"><div class="result-label"><span>${C.output}</span><div class="row result-actions">${bookmarkButton()}${iconButton(C.copy, "copy-trial", "copy")}</div></div>${t.stale ? `<div class="stale">${C.stale}</div>` : ""}<div class="result-paper"></div></div>`;
@@ -1348,19 +1410,39 @@ async function runTrial() {
     notify(C.real.errors.invalidInput, "error");
     return;
   }
+  try {
+    await authorizeTranslation(state.editor);
+  } catch (error) {
+    notify(errorText(modelError(error)), "error");
+    return;
+  }
   const refresh = Boolean(state.trial.result);
   state.trial.busy = true;
   state.trial.result = null;
   renderTrialResult();
-  const job = processRequest({
-    source: "trial",
-    refresh,
-    action: structuredClone(state.editor),
-    blocks: splitText(state.trial.text).map((text, i) => ({
-      id: String(i),
-      text,
-    })),
-  });
+  const job = processRequest(
+    {
+      source: "trial",
+      refresh,
+      action: structuredClone(state.editor),
+      blocks: splitText(state.trial.text).map((text, i) => ({
+        id: String(i),
+        text,
+      })),
+    },
+    undefined,
+    undefined,
+    (event) => {
+      if (activeTrial !== job || state.route !== "editor") return;
+      const status = document.querySelector("#test-results .result-busy");
+      if (status)
+        status.textContent = nativeProgressText(
+          event,
+          C.real.translation.packs,
+          C.languages,
+        );
+    },
+  );
   activeTrial = job;
   try {
     const result = await job.promise;
@@ -1390,6 +1472,12 @@ async function saveAction() {
         !a.name.trim() ? "#action-name" : "#instruction",
       )!
       .focus();
+    return;
+  }
+  try {
+    await authorizeTranslation(a);
+  } catch (error) {
+    notify(errorText(modelError(error)), "error");
     return;
   }
   const next = {
@@ -1859,7 +1947,37 @@ document.addEventListener("click", async (event) => {
     }
     const op = target.dataset.op;
     if (op?.startsWith("sync-") && syncBusy) return;
-    if (op === "sync-authorize") {
+    if (op === "reset-ask") {
+      setNavigationOpen(false);
+      showDialog(
+        `<h2>${e(C.reset.title)}</h2><p>${e(C.reset.intro)}</p><ul class="reset-details">${C.reset.items.map((item) => `<li>${e(item)}</li>`).join("")}</ul>${supportsConfigurationSync ? `<p>${e(C.reset.sync)}</p>` : ""}<p>${e(C.reset.keep)}</p><div class="dialog-actions">${button(C.cancel, "dialog-close", "ghost")}${button(C.reset.confirm, "reset-confirm", "danger dialog-delete")}</div>`,
+        { showClose: false },
+      );
+    } else if (op === "reset-confirm") {
+      if (resetBusy) return;
+      resetBusy = true;
+      stopJob();
+      dailyJob?.cancel();
+      dialog.setAttribute("aria-busy", "true");
+      dialog.querySelectorAll<HTMLButtonElement>("button").forEach((button) => {
+        button.disabled = true;
+      });
+      target.textContent = C.reset.working;
+      try {
+        await request("settings.reset");
+        reloadAfterReset();
+      } catch {
+        resetBusy = false;
+        dialog.removeAttribute("aria-busy");
+        dialog
+          .querySelectorAll<HTMLButtonElement>("button")
+          .forEach((button) => {
+            button.disabled = false;
+          });
+        target.textContent = C.reset.confirm;
+        notify(C.reset.failed, "error");
+      }
+    } else if (op === "sync-authorize") {
       const origins = syncServices
         .filter((service) => !service.granted)
         .map((service) => hostPermissionPattern(service.origin));
@@ -2415,6 +2533,7 @@ document.addEventListener("change", async (event) => {
     if (t.dataset.connection === "protocol") refreshConnections();
   } else if (t.id === "ui-locale") {
     changeLocale(t.value as LocalePreference);
+    void persist();
   } else if (t.id === "daily-model") {
     dailyDraft.model = t.value;
     invalidateDailyPreview();
@@ -2424,6 +2543,25 @@ document.addEventListener("change", async (event) => {
   } else if (t.id === "usage-period" || t.id === "usage-model") {
     usageView[t.id === "usage-period" ? "period" : "model"] = t.value;
     await loadUsage("reset");
+  } else if (t.id === "translation-engine") {
+    const action = state.editor;
+    if (!action) return;
+    const engine = AVAILABLE_TRANSLATION_ENGINES.find(
+      (value) => value === t.value,
+    );
+    if (!engine) return;
+    try {
+      await authorizeTranslation({ ...action, translationEngine: engine });
+    } catch (error) {
+      notify(errorText(modelError(error)), "error");
+      render();
+      return;
+    }
+    action.translationEngine = engine;
+    if (!usesModel(action) && action.targetLanguage === "instruction")
+      action.targetLanguage = "interface";
+    invalidateTrial();
+    render();
   } else if (t.dataset.language) {
     const action = state.editor;
     if (!action) return;

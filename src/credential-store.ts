@@ -38,6 +38,16 @@ async function readDeviceKey(): Promise<CryptoKey | undefined> {
     tx.onabort = () => reject(new ModelError("credentialsUnavailable"));
   });
 }
+export async function clearDeviceKey(): Promise<void> {
+  const db = await openDatabase();
+  await new Promise<void>((resolve, reject) => {
+    const tx = db.transaction("keys", "readwrite");
+    tx.objectStore("keys").clear();
+    tx.oncomplete = () => resolve();
+    tx.onabort = () =>
+      reject(tx.error || new ModelError("credentialsUnavailable"));
+  });
+}
 async function ensureDeviceKey(): Promise<CryptoKey> {
   const existing = await readDeviceKey();
   if (existing) return existing;

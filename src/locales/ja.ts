@@ -1,3 +1,5 @@
+import { RESET_COPY } from "../reset-copy.js";
+import { TRANSLATION_COPY } from "../translation-copy.js";
 import {
   BROWSER_NAME,
   SYNC_ACCOUNT_NAME,
@@ -436,6 +438,7 @@ const full = {
   ...base,
   processingNotice: "コンテンツは選択したモデルサービスに送信されます。",
   real: {
+    translation: TRANSLATION_COPY["ja"].labels,
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
@@ -606,6 +609,7 @@ const full = {
     remove: "削除",
     frameLimit: "PDF、別オリジンの埋め込みページ、画像内の文字は処理しません。",
     errors: {
+      ...TRANSLATION_COPY["ja"].errors,
       noDecisionConnection: "先に既定の判定モデルを設定してください。",
       invalidDecision: "判定サービスから無効な結果が返されました。",
       actionLimit: `アクションは最大${MAX_ACTIONS}件保存できます。不要なカスタムアクションを先に削除してください。`,
@@ -753,5 +757,6 @@ const copy: Copy = {
   nav: { ...full.nav, usage: usage.title },
   usage,
   popup,
+  reset: RESET_COPY["ja"],
 };
 export default copy;

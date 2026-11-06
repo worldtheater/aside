@@ -7,7 +7,7 @@
     <meta name="referrer" content="no-referrer" />
     <meta
       name="description"
-      content="旁白是免費開源的 Chrome / Edge AI 閱讀擴充功能，支援網頁雙語對照翻譯、古文釋義、內容解說、快速問答與片段收藏。無需註冊，可連接自己的雲端或本機模型；模型服務可能收費。"
+      content="旁白是免費開源的 Chrome / Edge / Firefox AI 閱讀擴充功能，支援網頁雙語對照翻譯、古文釋義、內容解說、快速問答與片段收藏。無需註冊，可連接自己的雲端或本機模型；模型服務可能收費。"
     />
     <meta
       name="google-site-verification"
@@ -106,11 +106,11 @@
         "@id": "https://worldtheater.github.io/aside/#application",
         "name": "Aside",
         "alternateName": "旁白",
-        "description": "旁白是免費開源的 Chrome / Edge AI 閱讀擴充功能，支援網頁雙語對照翻譯、古文釋義、內容解說、快速問答與片段收藏。無需註冊，可連接自己的雲端或本機模型；模型服務可能收費。",
+        "description": "旁白是免費開源的 Chrome / Edge / Firefox AI 閱讀擴充功能，支援網頁雙語對照翻譯、古文釋義、內容解說、快速問答與片段收藏。無需註冊，可連接自己的雲端或本機模型；模型服務可能收費。",
         "url": "https://worldtheater.github.io/aside/zh-tw/",
         "applicationCategory": "BrowserApplication",
         "operatingSystem": ["Windows", "macOS", "Linux", "ChromeOS"],
-        "softwareRequirements": "Chrome 120+ / Edge 120+",
+        "softwareRequirements": "Chrome 120+ / Edge 120+ / Firefox 147+",
         "softwareVersion": "0.1.6",
         "inLanguage": [
           "en",
@@ -134,11 +134,13 @@
         "downloadUrl": "https://github.com/worldtheater/aside/releases/download/v0.1.6/aside-0.1.6.zip",
         "installUrl": [
           "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
-          "https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp"
+          "https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp",
+          "https://addons.mozilla.org/en-US/firefox/addon/aside-ai/"
         ],
         "sameAs": [
           "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
-          "https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp"
+          "https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp",
+          "https://addons.mozilla.org/en-US/firefox/addon/aside-ai/"
         ],
         "image": "https://worldtheater.github.io/aside/assets/social-preview.png"
       }
@@ -151,7 +153,7 @@
     />
     <meta
       property="og:description"
-      content="旁白是免費開源的 Chrome / Edge AI 閱讀擴充功能，支援網頁雙語對照翻譯、古文釋義、內容解說、快速問答與片段收藏。無需註冊，可連接自己的雲端或本機模型；模型服務可能收費。"
+      content="旁白是免費開源的 Chrome / Edge / Firefox AI 閱讀擴充功能，支援網頁雙語對照翻譯、古文釋義、內容解說、快速問答與片段收藏。無需註冊，可連接自己的雲端或本機模型；模型服務可能收費。"
     />
     <meta
       property="og:url"
@@ -175,7 +177,7 @@
     />
     <meta
       name="twitter:description"
-      content="旁白是免費開源的 Chrome / Edge AI 閱讀擴充功能，支援網頁雙語對照翻譯、古文釋義、內容解說、快速問答與片段收藏。無需註冊，可連接自己的雲端或本機模型；模型服務可能收費。"
+      content="旁白是免費開源的 Chrome / Edge / Firefox AI 閱讀擴充功能，支援網頁雙語對照翻譯、古文釋義、內容解說、快速問答與片段收藏。無需註冊，可連接自己的雲端或本機模型；模型服務可能收費。"
     />
     <meta
       name="twitter:image"
@@ -377,7 +379,7 @@
                   >新增至 Chrome</a
                 ><a class="text-link" href="#install">手動安裝</a>
               </div>
-              <p class="browser-note">適用於桌面版 Chrome 120+。 版本 0.1.4</p>
+              <p class="browser-note">適用於桌面版 Chrome 120+。 版本 0.1.6</p>
             </div>
             <div id="hero-install-edge" data-install-browser="edge" hidden>
               <div class="install-actions">
@@ -387,7 +389,7 @@
                   >新增至 Edge</a
                 ><a class="text-link" href="#install">手動安裝</a>
               </div>
-              <p class="browser-note">適用於桌面版 Edge 120+。 版本 0.1.5</p>
+              <p class="browser-note">適用於桌面版 Edge 120+。 版本 0.1.6</p>
             </div>
             <div
               id="hero-install-firefox"
@@ -395,15 +397,17 @@
               hidden
             >
               <div class="install-actions">
-                <button class="button" type="button" disabled>
-                  Firefox · 審核中</button
+                <a
+                  class="button primary"
+                  href="https://addons.mozilla.org/en-US/firefox/addon/aside-ai/"
+                  >新增至 Firefox</a
                 ><a class="text-link" href="#install">手動安裝</a>
               </div>
-              <p class="browser-note">適用於桌面版 Firefox 147+。</p>
+              <p class="browser-note">適用於桌面版 Firefox 147+。 版本 0.1.6</p>
             </div>
           </div>
           <p class="install-note">
-            無需註冊，免費使用。自由串接各種雲端或本機模型（模型服務可能收費）。
+            無需註冊，免費使用。預設微軟翻譯，開箱即用；AI 模型服務可能收費。
           </p>
           <div class="project-meta">
             <a href="https://github.com/worldtheater/aside/blob/main/LICENSE"
@@ -716,7 +720,7 @@
           <details>
             <summary>我的閱讀資料會傳到哪裡？</summary>
             <p>
-              翻譯與其他 AI
+              微軟翻譯會將文字直接傳送至微軟。AI
               功能會將所需內容直接傳送給選定的模型服務。啟動整頁翻譯後，捲動可能傳送更多段落。設定模型後，每天首次開啟收藏頁會生成今日隨想，並可選擇參考收藏；隱藏隨想即可停止自動生成。資料處理遵循服務商的政策。<a
                 href="../privacy.html"
                 >閱讀隱私權政策（英文）</a
@@ -944,7 +948,7 @@
           </div>
         </div>
         <p class="after-install">
-          接著開啟旁白設定，新增模型連線。回到一般網頁，即可開始翻譯或提問。
+          微軟翻譯無需設定模型。使用 AI 功能時，可在設定中新增模型連線。
         </p>
       </section>
     </main>

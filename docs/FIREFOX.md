@@ -1,6 +1,6 @@
 # Firefox build and review
 
-Aside shares its TypeScript sources with Chrome. The Firefox target supports **desktop Firefox 147+**. Firefox for Android is not a supported target. The Firefox build is under review on Mozilla Add-ons (AMO); the store listing is not yet available.
+Aside shares its TypeScript sources with Chrome. The Firefox target supports **desktop Firefox 147+**. Firefox for Android is not a supported target. Version **0.1.6** is available on [Mozilla Add-ons](https://addons.mozilla.org/en-US/firefox/addon/aside-ai/). Use the store version for permanent installation and automatic updates; the unsigned development ZIP is for temporary testing.
 
 ## Try it locally
 
@@ -34,6 +34,7 @@ The base `manifest.json` remains the Chrome manifest. `manifests/firefox.json` r
 - **Storage:** Chrome retains trusted-context `storage.local`. Firefox uses extension-origin IndexedDB for local settings because `storage.setAccessLevel` is unavailable. API keys remain AES-256-GCM encrypted with a non-exportable device key in a separate IndexedDB. Content scripts receive only the public settings projection. Configuration changes between extension pages are delivered through an extension-origin BroadcastChannel.
 - **Sync:** Firefox uses Mozilla account sync for Add-ons; Chrome uses Google Chrome Sync. The same passphrase does not connect the two ecosystems. Firefox and Chrome can each synchronize between their own desktop installations. The passphrase-derived key stays in privileged session storage and must be entered again after browser restart or extension reload.
 - **Shortcuts:** The settings button opens Firefox’s **Manage Extension Shortcuts** page directly. Firefox and the operating system may reserve some defaults; users can reassign them.
+- **Translation engines:** The action editor, toolbar popup and selection settings offer AI and Microsoft online translation. Aside has no on-device translation integration on Firefox, so that option is hidden. A previously saved native-engine choice prompts for a supported engine and cannot run; it is never silently switched to an online service.
 - **Icons:** The popup uses the current tab's browser-provided favicon. Saved passages use a local page icon; Firefox does not provide Chrome's `/_favicon` API.
 - **Dark mode access:** Firefox requires optional permissions to be requested directly from an extension-page click. If access is missing, use the dark-mode control in Aside’s browser-toolbar popup to grant it. The floating control then uses the existing grant.
 - **Page navigation:** Firefox 147+ provides the Navigation API used to reset tools after same-document page navigation.

@@ -19,13 +19,27 @@ module.exports = async ({
   let source, popup;
   try {
     await page.evaluate(async () => {
-      const { settings } = await chrome.storage.local.get("settings");
+      const { settings, daily } = await chrome.storage.local.get([
+        "settings",
+        "daily",
+      ]);
       const { getPresets } = await import("./data.js");
       const { setLocale } = await import("./copy.js");
       setLocale("en");
       settings.actions = getPresets();
+      settings.actions.find(
+        (action) => action.id === "translate",
+      ).translationEngine = "ai";
       settings.preferences.theme = "light";
-      await chrome.storage.local.set({ settings });
+      // Keep automatic first-visit generation out of the locale interaction check.
+      await chrome.storage.local.set({
+        settings,
+        daily: {
+          ...daily,
+          result: "Today's saved reflection.",
+          date: new Date().toLocaleDateString("en-CA"),
+        },
+      });
     });
     await page.reload();
     await page.locator("h1").waitFor();
@@ -40,6 +54,91 @@ module.exports = async ({
     );
     popup = await context.newPage();
     const popupURL = new URL("popup.html", page.url()).href;
+    await popup.setViewportSize({ width: 400, height: 600 });
+    await popup.goto(popupURL);
+    const choosePopup = async (id, value) => {
+      await popup.locator(`[data-select-for="${id}"]`).click();
+      assert.equal(await popup.locator(".option-search").count(), 0);
+      await popup.locator(`[role=option][data-value="${value}"]`).click();
+    };
+    const beforePopup = calls.length;
+    await choosePopup("action", "explain");
+    await choosePopup("ui-locale", "en");
+    await popup.waitForFunction(() => document.documentElement.lang === "en");
+    await page.waitForFunction(() => document.documentElement.lang === "en");
+    assert.equal(await popup.locator("#action").inputValue(), "explain");
+    assert.equal(
+      await popup.locator("#settings").getAttribute("aria-label"),
+      "Settings",
+    );
+    await choosePopup("action", "translate");
+    const targetId = await popup
+      .locator("[data-language=targetLanguage]")
+      .getAttribute("id");
+    await choosePopup(targetId, "de");
+    await choosePopup("ui-locale", "ja");
+    await popup.waitForFunction(() => document.documentElement.lang === "ja");
+    await page.waitForFunction(() => document.documentElement.lang === "ja");
+    assert.equal(
+      await popup.locator("[data-language=targetLanguage]").inputValue(),
+      "de",
+    );
+    const preference = await page.evaluate(async () => {
+      const { value } = await chrome.runtime.sendMessage({ type: "snapshot" });
+      return {
+        locale: value.preferences.locale,
+        target: value.actions.find((a) => a.id === "translate").targetLanguage,
+      };
+    });
+    assert.deepEqual(preference, { locale: "ja", target: "interface" });
+    await choose("#ui-locale", "zh-CN");
+    await popup.waitForFunction(
+      () => document.documentElement.lang === "zh-CN",
+    );
+    assert.equal(
+      await popup.locator("[data-language=targetLanguage]").inputValue(),
+      "de",
+    );
+    const languageBox = await popup.locator(".language-control").boundingBox();
+    const settingsBox = await popup.locator("#settings").boundingBox();
+    assert(languageBox.x + languageBox.width <= settingsBox.x);
+    assert(
+      Math.abs(
+        languageBox.y +
+          languageBox.height / 2 -
+          settingsBox.y -
+          settingsBox.height / 2,
+      ) < 1,
+    );
+    await popup.screenshot({
+      path: path.join(artifacts, "popup-language.png"),
+    });
+    await popup.locator('[data-select-for="ui-locale"]').click();
+    assert.equal(
+      await popup.locator("[role=option]").count(),
+      Object.keys(LOCALES).length + 1,
+    );
+    await popup.screenshot({
+      path: path.join(artifacts, "popup-language-menu.png"),
+    });
+    await popup.keyboard.press("Escape");
+    await choosePopup("ui-locale", "system");
+    await page.waitForFunction(
+      async () =>
+        (await chrome.storage.local.get("settings")).settings.preferences
+          .locale === "system",
+    );
+    await popup.reload();
+    assert.equal(await popup.locator("#ui-locale").inputValue(), "system");
+    assert.equal(await popup.locator("html").getAttribute("lang"), "zh-CN");
+    assert.equal(
+      calls.length,
+      beforePopup,
+      "Popup language changes never invoke a model",
+    );
+    console.log(
+      "PASS: shared popup language control, live two-way locale updates, preserved action/output drafts, persistence and compact menu layout.",
+    );
     for (const locale of Object.keys(LOCALES)) {
       const C = messages[locale];
       const beforeSwitch = calls.length;

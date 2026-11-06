@@ -2,7 +2,11 @@
 
 Safari support is a local development preview. It uses the same TypeScript source as the other browsers and a small macOS app containing a Safari Web Extension. The debug build is ad-hoc signed; the App Store commands below create a separate team-signed archive. It is not yet available in the App Store. iOS and iPadOS are outside this initial scope.
 
-Requirements: macOS 14 or later with **Safari 26 or later**, full Xcode (26 or later), Node.js 22+, and Python 3. If the active developer directory points to Command Line Tools, select the installed Xcode in Xcode Settings → Locations before building.
+Requirements: macOS 14 or later with **Safari 26 or later**, full Xcode (26.4 or later), Node.js 22+, and Python 3. If the active developer directory points to Command Line Tools, select the installed Xcode in Xcode Settings → Locations before building.
+
+Apple on-device translation requires **macOS 26 or later**. In the translation action, choose **Browser on-device**. Aside uses Apple's Translation framework with the low-latency on-device models; webpage text stays on this Mac. The first translation of an unprepared language pair opens the Aside app for the system's language download flow, then resumes the pending translation. Installed languages are shared with other apps using Apple's Translation framework. AI model and Microsoft online translation remain available on earlier supported macOS versions.
+
+The native extension owns one translation session per page connection and releases it when that connection closes or the language changes. A failed session is discarded; **Retry and continue** creates a new one. If macOS terminates the native extension process, a lost session is reported for explicit retry. Native messaging is restricted to translation, language detection, readiness checks and preparation; page content is neither persisted by the native bridge nor included in the app-opening URL.
 
 ## Build and run
 
@@ -39,6 +43,7 @@ npm run package:safari        # resource ZIP only
 npm run package:safari:dev    # ZIP + fixed resources + Xcode project + debug app
 ./script/build_and_run.sh --verify  # rebuild, launch, confirm app process
 npm run test:safari           # Safari background/storage regression checks
+npm run test:safari:native    # Real Apple API smoke test; uses installed packs only
 ```
 
 `script/build_and_run.sh` is also the Codex Run action. `--debug` attaches LLDB after launch; `--logs` streams app logs; `--telemetry` filters the app's subsystem. The app does not log model requests or API keys.

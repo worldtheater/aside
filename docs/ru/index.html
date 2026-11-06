@@ -7,7 +7,7 @@
     <meta name="referrer" content="no-referrer" />
     <meta
       name="description"
-      content="Бесплатное расширение Chrome / Edge с открытым кодом: двуязычный ИИ-перевод страниц, пояснения, ответы и сохранение фрагментов. Подключайте свои облачные или локальные модели."
+      content="Бесплатное расширение Chrome / Edge / Firefox с открытым кодом: двуязычный ИИ-перевод страниц, пояснения, ответы и сохранение фрагментов. Подключайте свои облачные или локальные модели."
     />
     <meta
       name="google-site-verification"
@@ -106,11 +106,11 @@
         "@id": "https://worldtheater.github.io/aside/#application",
         "name": "Aside",
         "alternateName": "旁白",
-        "description": "Бесплатное расширение Chrome / Edge с открытым кодом: двуязычный ИИ-перевод страниц, пояснения, ответы и сохранение фрагментов. Подключайте свои облачные или локальные модели.",
+        "description": "Бесплатное расширение Chrome / Edge / Firefox с открытым кодом: двуязычный ИИ-перевод страниц, пояснения, ответы и сохранение фрагментов. Подключайте свои облачные или локальные модели.",
         "url": "https://worldtheater.github.io/aside/ru/",
         "applicationCategory": "BrowserApplication",
         "operatingSystem": ["Windows", "macOS", "Linux", "ChromeOS"],
-        "softwareRequirements": "Chrome 120+ / Edge 120+",
+        "softwareRequirements": "Chrome 120+ / Edge 120+ / Firefox 147+",
         "softwareVersion": "0.1.6",
         "inLanguage": [
           "en",
@@ -134,11 +134,13 @@
         "downloadUrl": "https://github.com/worldtheater/aside/releases/download/v0.1.6/aside-0.1.6.zip",
         "installUrl": [
           "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
-          "https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp"
+          "https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp",
+          "https://addons.mozilla.org/en-US/firefox/addon/aside-ai/"
         ],
         "sameAs": [
           "https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf",
-          "https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp"
+          "https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp",
+          "https://addons.mozilla.org/en-US/firefox/addon/aside-ai/"
         ],
         "image": "https://worldtheater.github.io/aside/assets/social-preview.png"
       }
@@ -151,7 +153,7 @@
     />
     <meta
       property="og:description"
-      content="Бесплатное расширение Chrome / Edge с открытым кодом: двуязычный ИИ-перевод страниц, пояснения, ответы и сохранение фрагментов. Подключайте свои облачные или локальные модели."
+      content="Бесплатное расширение Chrome / Edge / Firefox с открытым кодом: двуязычный ИИ-перевод страниц, пояснения, ответы и сохранение фрагментов. Подключайте свои облачные или локальные модели."
     />
     <meta
       property="og:url"
@@ -175,7 +177,7 @@
     />
     <meta
       name="twitter:description"
-      content="Бесплатное расширение Chrome / Edge с открытым кодом: двуязычный ИИ-перевод страниц, пояснения, ответы и сохранение фрагментов. Подключайте свои облачные или локальные модели."
+      content="Бесплатное расширение Chrome / Edge / Firefox с открытым кодом: двуязычный ИИ-перевод страниц, пояснения, ответы и сохранение фрагментов. Подключайте свои облачные или локальные модели."
     />
     <meta
       name="twitter:image"
@@ -378,7 +380,7 @@
                 ><a class="text-link" href="#install">Установка вручную</a>
               </div>
               <p class="browser-note">
-                Для настольного Chrome 120 и новее. Версия 0.1.4
+                Для настольного Chrome 120 и новее. Версия 0.1.6
               </p>
             </div>
             <div id="hero-install-edge" data-install-browser="edge" hidden>
@@ -390,7 +392,7 @@
                 ><a class="text-link" href="#install">Установка вручную</a>
               </div>
               <p class="browser-note">
-                Для настольного Edge 120 и новее. Версия 0.1.5
+                Для настольного Edge 120 и новее. Версия 0.1.6
               </p>
             </div>
             <div
@@ -399,16 +401,20 @@
               hidden
             >
               <div class="install-actions">
-                <button class="button" type="button" disabled>
-                  Firefox · На проверке</button
+                <a
+                  class="button primary"
+                  href="https://addons.mozilla.org/en-US/firefox/addon/aside-ai/"
+                  >Добавить в Firefox</a
                 ><a class="text-link" href="#install">Установка вручную</a>
               </div>
-              <p class="browser-note">Для настольного Firefox 147 и новее.</p>
+              <p class="browser-note">
+                Для настольного Firefox 147 и новее. Версия 0.1.6
+              </p>
             </div>
           </div>
           <p class="install-note">
-            Бесплатно, без регистрации. Подключайте облачные или локальные
-            модели на свой выбор (сервисы моделей могут взимать плату).
+            Бесплатно, без регистрации. Перевод Microsoft готов к работе сразу;
+            сервисы ИИ-моделей могут взимать плату.
           </p>
           <div class="project-meta">
             <a href="https://github.com/worldtheater/aside/blob/main/LICENSE"
@@ -768,6 +774,7 @@
           <details>
             <summary>Куда отправляется содержимое страниц?</summary>
             <p>
+              Перевод Microsoft отправляет текст напрямую в Microsoft.
               ИИ-функции отправляют необходимые материалы прямо выбранному
               провайдеру. После запуска перевода страницы при прокрутке могут
               отправляться новые фрагменты. Если модель настроена, мысль дня
@@ -1009,9 +1016,8 @@
           </div>
         </div>
         <p class="after-install">
-          Затем откройте настройки Aside и добавьте подключение модели.
-          Вернитесь на обычную веб-страницу, чтобы начать перевод или задать
-          вопрос.
+          Для перевода Microsoft не нужна настройка модели. Для ИИ-функций
+          добавьте подключение модели в настройках Aside.
         </p>
       </section>
     </main>

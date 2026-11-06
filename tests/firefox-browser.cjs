@@ -2,7 +2,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const http = require("node:http");
-const { Builder, By, Key } = require("selenium-webdriver");
+const { Builder, By, Key, Select } = require("selenium-webdriver");
 const firefox = require("selenium-webdriver/firefox");
 const root = path.resolve(__dirname, "..");
 const id = "aside-ai@worldtheater.github.io";
@@ -108,8 +108,8 @@ const server = http.createServer(async (req, res) => {
       await driver.wait(
         () =>
           driver.executeScript(
-            'return location.href.startsWith(arguments[0]) && document.readyState === "complete";',
-            extensionUrl,
+            'return location.origin === new URL(arguments[0]).origin && location.pathname === new URL(arguments[0]).pathname && document.readyState === "complete";',
+            extensionUrl + page,
           ),
         10000,
       );
@@ -186,9 +186,84 @@ const server = http.createServer(async (req, res) => {
     await send({
       type: "settings.save",
       patch: {
+        actions: snapshot.actions.map((action) =>
+          action.kind === "translate"
+            ? { ...action, translationEngine: "browser" }
+            : action,
+        ),
         preferences: { ...snapshot.preferences, hideDaily: true, locale: "en" },
       },
     });
+    // A previously saved/synced native engine stays explicit until another engine is chosen.
+    await driver.navigate().refresh();
+    await driver.wait(
+      () =>
+        driver
+          .findElements(By.css('.sidebar [data-route="actions"]'))
+          .then((elements) => elements.length),
+      10000,
+    );
+    await driver.findElement(By.css('.sidebar [data-route="actions"]')).click();
+    await driver.wait(
+      () =>
+        driver
+          .findElements(By.css('[data-op="edit-action"][data-id="translate"]'))
+          .then((elements) => elements.length),
+      10000,
+    );
+    await driver
+      .findElement(By.css('[data-op="edit-action"][data-id="translate"]'))
+      .click();
+    await driver.wait(
+      () =>
+        driver
+          .findElements(By.css("#translation-engine"))
+          .then((elements) => elements.length),
+      5000,
+    );
+    const checkEngines = async (select) => {
+      assert.deepEqual(
+        await evaluate(
+          "return Array.from(arguments[0].options).filter(option => !option.disabled).map(option => option.value);",
+          select,
+        ),
+        ["ai", "microsoft"],
+      );
+      assert.equal(await evaluate("return arguments[0].value;", select), "");
+      assert.equal(
+        await evaluate(
+          "return arguments[0].querySelector('option[value=browser]');",
+          select,
+        ),
+        null,
+      );
+    };
+    await checkEngines(await driver.findElement(By.css("#translation-engine")));
+    assert.equal(
+      await driver.findElement(By.css("#test-run")).isEnabled(),
+      false,
+    );
+    await openExtension("popup.html");
+    await driver.wait(
+      () =>
+        driver
+          .findElements(By.css("#translation-engine"))
+          .then((elements) => elements.length),
+      5000,
+    );
+    await checkEngines(await driver.findElement(By.css("#translation-engine")));
+    assert(
+      (await driver.findElement(By.css("#status")).getText()).includes(
+        "Choose another",
+      ),
+    );
+    assert.equal(
+      (await send({ type: "snapshot" })).actions.find(
+        (action) => action.id === "translate",
+      ).translationEngine,
+      "browser",
+    );
+    await openExtension();
     await driver.switchTo().newWindow("tab");
     const websiteTab = await driver.getWindowHandle();
     await driver.get(origin);
@@ -209,6 +284,49 @@ const server = http.createServer(async (req, res) => {
         .move({ origin: await element(selector) })
         .click()
         .perform();
+    await driver
+      .actions()
+      .move({ origin: await driver.findElement(By.css("#source")) })
+      .doubleClick()
+      .perform();
+    await driver.wait(
+      async () => (await element("#selection")).isDisplayed(),
+      5000,
+    );
+    await click('[data-selection-command="expand"]');
+    await evaluate(
+      "await Promise.all(arguments[0].getAnimations({subtree:true}).map(animation=>animation.finished));return true;",
+      await element("#selection"),
+    );
+    await click('[data-selection-command="settings"]');
+    await driver.wait(
+      () =>
+        shadow
+          .findElements(By.css('[data-selection-field="translationEngine"]'))
+          .then((elements) => elements.length),
+      5000,
+    );
+    const selectionEngine = await element(
+      '[data-selection-field="translationEngine"]',
+    );
+    await checkEngines(selectionEngine);
+    await new Select(selectionEngine).selectByValue("ai");
+    await click('[data-selection-command="save"]');
+    await driver.wait(
+      async () =>
+        (await element("#selection"))
+          .getAttribute("class")
+          .then((value) => !value.includes("selection-editing")),
+      5000,
+    );
+    await driver.switchTo().window(appTab);
+    assert.equal(
+      (await send({ type: "snapshot" })).actions.find(
+        (action) => action.id === "translate",
+      ).translationEngine,
+      "ai",
+    );
+    await driver.switchTo().window(websiteTab);
     await click("#dock");
     await driver.wait(
       async () =>
@@ -396,7 +514,7 @@ const server = http.createServer(async (req, res) => {
       true,
     );
     console.log(
-      "Firefox: HTTP provider connection and generation, model storage, custom text and inline page translation, Q&A, usage, dark mode, sync encryption, cross-page updates and content-script isolation passed.",
+      "Firefox: supported engine choices and explicit reselection, HTTP provider connection and generation, model storage, custom text and inline page translation, Q&A, usage, dark mode, sync encryption, cross-page updates and content-script isolation passed.",
     );
   } catch (error) {
     if (driver) {

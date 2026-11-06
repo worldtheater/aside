@@ -6,7 +6,9 @@ let popup: HTMLDivElement | null = null,
   select: HTMLSelectElement | null = null,
   activeIndex = 0,
   menuOptions: HTMLOptionElement[] = [],
-  sequence = 0;
+  sequence = 0,
+  viewportWidth = 0,
+  viewportHeight = 0;
 
 export function closeMenu(restoreFocus = false) {
   const previous = anchor;
@@ -19,6 +21,8 @@ export function closeMenu(restoreFocus = false) {
 }
 function positionMenu() {
   if (!popup || !anchor) return;
+  viewportWidth = innerWidth;
+  viewportHeight = innerHeight;
   const rect = anchor.getBoundingClientRect();
   const preferredWidth =
     parseFloat(getComputedStyle(popup).getPropertyValue("--popover-width")) ||
@@ -231,4 +235,10 @@ document.addEventListener(
   },
   true,
 );
-window.addEventListener("resize", () => closeMenu());
+// Safari's auto-sized extension popup emits resize even when its dimensions
+// stay unchanged. Reposition only on an actual size change: writing layout on
+// every notification would trigger another auto-size pass in the host.
+window.addEventListener("resize", () => {
+  if (innerWidth !== viewportWidth || innerHeight !== viewportHeight)
+    positionMenu();
+});

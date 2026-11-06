@@ -54,6 +54,14 @@ for (const [scheme, userAgent, browser, account, settings] of [
     };
     const platform = await import("./browser.js");
     const assert = (await import("node:assert/strict")).default;
+    const engines = await import("./translation-engine.js");
+    const nativeAction = { kind: "translate", translationEngine: "browser" };
+    assert.deepEqual(engines.AVAILABLE_TRANSLATION_ENGINES, platform.isFirefox ? ["ai", "microsoft"] : ["ai", "microsoft", "browser"]);
+    assert.equal(engines.translationEngineSupported(nativeAction), !platform.isFirefox);
+    assert.equal(engines.actionAvailable(nativeAction, { connections: [] }), !platform.isFirefox);
+    assert.equal(engines.translationEngine(nativeAction), "browser", "A stored local engine is never silently changed to an online service");
+    engines.validateTranslationEngine(nativeAction);
+    if (platform.isFirefox) await assert.rejects(engines.authorizeTranslation(nativeAction), error => error.code === "translationUnavailable");
     const safari = platform.isSafari;
     for (const [address, expected] of [
       ["http://192.0.2.27:8317/v1/models", safari ? "http://192.0.2.27/*" : "http://192.0.2.27:8317/*"],

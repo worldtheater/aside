@@ -1,3 +1,5 @@
+import { RESET_COPY } from "../reset-copy.js";
+import { TRANSLATION_COPY } from "../translation-copy.js";
 import {
   BROWSER_NAME,
   SYNC_ACCOUNT_NAME,
@@ -457,6 +459,7 @@ const full = {
   ...base,
   processingNotice: "Konten akan dikirim ke layanan model yang Anda pilih.",
   real: {
+    translation: TRANSLATION_COPY["id"].labels,
     brand: base.brand,
     actionName: base.actionName,
     instruction: base.instruction,
@@ -630,6 +633,7 @@ const full = {
     frameLimit:
       "PDF, halaman tersemat dari asal berbeda, dan teks dalam gambar tidak diproses.",
     errors: {
+      ...TRANSLATION_COPY["id"].errors,
       noDecisionConnection: "Atur model keputusan default terlebih dahulu.",
       invalidDecision:
         "Layanan keputusan mengembalikan hasil yang tidak valid.",
@@ -781,5 +785,6 @@ const copy: Copy = {
   nav: { ...full.nav, usage: usage.title },
   usage,
   popup,
+  reset: RESET_COPY["id"],
 };
 export default copy;

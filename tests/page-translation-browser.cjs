@@ -1,7 +1,16 @@
 const assert = require("node:assert/strict");
 const path = require("node:path");
 
-module.exports = async ({ page, context, origin, calls, artifacts }) => {
+module.exports = async ({
+  page,
+  context,
+  origin,
+  calls,
+  artifacts,
+  nav,
+  op,
+  choose,
+}) => {
   const source = await context.newPage(),
     errors = [];
   source.on("pageerror", (error) => errors.push(error.message));
@@ -20,10 +29,12 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
     #reveal{display:none}#scrollbox{height:250px;overflow:auto;border:1px solid #888}
     #scrollbox p{min-height:180px}button{font:inherit}
     @media(prefers-color-scheme:dark){body{background:#181c20;color:#e0e6ed}p{border-color:#444}}
-    </style></head><body><nav>Navigation outside the article</nav><main>
+    </style></head><body><nav>Navigation outside the article <a id="section-link" href="#row-18">Jump to a later section</a><article hidden>Navigation preview card</article></nav><main>
     <h1>Read at your own pace</h1>
     <details id="native-details"><summary>More reading</summary><p>Native details revealed paragraph.</p></details>
-    ${Array.from({ length: 48 }, (_, i) => `<p id="row-${i}">Viewport paragraph ${i}: <em>original emphasis</em><span> with an inline <code>field_${i}</code> and source detail.</span>${[4, 18].includes(i) ? " DELAY_FIXTURE" : ""}</p>`).join("")}
+    <p aria-hidden="true" hidden>HIDDEN_TICKER_SECRET</p>
+    <p aria-hidden="true" style="display:none">INVISIBLE_TICKER_SECRET</p>
+    ${Array.from({ length: 48 }, (_, i) => `<p id="row-${i}" ${i === 0 ? 'aria-hidden="true"' : ""}>Viewport paragraph ${i}: <em>original emphasis</em><span> with an inline <code>field_${i}</code> and source detail.</span>${[4, 18].includes(i) ? " DELAY_FIXTURE" : ""}</p>`).join("")}
     <section id="reveal"><p>Newly revealed paragraph.</p></section>
     <section id="scrollbox">${Array.from({ length: 10 }, (_, i) => `<p id="nested-${i}">Nested reading paragraph ${i}.</p>`).join("")}</section>
     <p id="only-number">68.8</p><p id="last">Far end summary evidence.</p>
@@ -231,6 +242,13 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
       clip: { x: 1220, y: 350, width: 220, height: 300 },
     });
     await waitResult("#row-0");
+    // NHK's ticker uses aria-hidden on visible text copies. Visual content
+    // still translates, while genuinely hidden copies remain excluded.
+    assert.equal(
+      await source.locator("#row-0").getAttribute("aria-hidden"),
+      "true",
+    );
+    assert(!inputs(before).some((text) => text.includes("TICKER_SECRET")));
     await waitResult("#row-4");
     await idle();
     await expectState("translated");
@@ -277,7 +295,7 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
     assert.equal(
       await source.locator("nav [data-pagework=result]").count(),
       0,
-      "Body scope stays inside the article",
+      "Default main-content translation excludes peripheral navigation",
     );
     assert(
       !inputs(before).some((text) => text.includes("Processed:")),
@@ -291,7 +309,17 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
       "Output insertion does not trigger a translation loop",
     );
 
-    await source.locator("#row-18").scrollIntoViewIfNeeded();
+    await source.locator("#row-0 > [data-pagework=result]").evaluate((node) => {
+      globalThis.beforeSectionJump = node;
+    });
+    await source.locator("#section-link").click();
+    await source.waitForURL("**#row-18");
+    assert(
+      await source
+        .locator("#row-0 > [data-pagework=result]")
+        .evaluate((node) => node === globalThis.beforeSectionJump),
+      "A section link preserves existing translation nodes",
+    );
     await expectState("processing");
     await source.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
     await expectState("processing");
@@ -307,6 +335,19 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
     await waitResult("#row-18");
     await idle();
     await expectState("translated");
+    await source.goBack();
+    await source.waitForURL(url);
+    await idle();
+    assert(
+      await source
+        .locator("#row-0 > [data-pagework=result]")
+        .evaluate((node) => node === globalThis.beforeSectionJump),
+      "Back from a section anchor preserves the translation session",
+    );
+    await source.goForward();
+    await source.waitForURL("**#row-18");
+    await waitResult("#row-18");
+    await idle();
     await source.screenshot({
       path: path.join(artifacts, "translation-state-complete-dark.png"),
       clip: { x: 1220, y: 350, width: 220, height: 300 },
@@ -761,7 +802,107 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
     await source.locator("#row-40").scrollIntoViewIfNeeded();
     await idle();
     assert.equal(calls.length, afterSummary);
+
+    // The saved action scope drives both the floating menu and the popup.
+    await send({ type: "page.restore" });
+    await source.locator("main").evaluate((node) => {
+      node.innerHTML =
+        '<header><h1 id="scope-heading">Article heading retained.</h1></header><nav id="inside-main-nav">Navigation within the main container.</nav><p id="scope-main">Main content for the saved scope.</p>';
+      scrollTo(0, 0);
+    });
+    await nav("actions");
+    await page.locator("[data-op=edit-action][data-id=translate]").click();
+    const scopeField = page.locator('[data-draft="translationScope"]');
+    assert.equal(await scopeField.inputValue(), "body");
+    await choose('[data-draft="translationScope"]', "all");
+    await op("save").click();
+    await page.waitForURL(/#actions$/);
+    await page.reload();
+    await page.locator("[data-op=edit-action][data-id=translate]").click();
+    assert.equal(
+      await scopeField.inputValue(),
+      "all",
+      "Saved scope survives reload",
+    );
+    await page.screenshot({
+      path: path.join(artifacts, "translation-scope-settings.png"),
+    });
+
+    await source.bringToFront();
+    await source.keyboard.press("Escape");
+    await dock.click();
+    await translationButton.click();
+    await waitResult("#scope-main");
+    await waitResult("body > nav");
+    await waitResult("#inside-main-nav");
+    await idle();
+
+    const popupRun = async () => {
+      await send({ type: "page.restore" });
+      const popup = await context.newPage();
+      try {
+        await source.bringToFront();
+        await popup.goto(new URL("popup.html", page.url()).href);
+        await popup.locator('[data-op="run"]').click();
+        await waitResult("#scope-main");
+        await idle();
+      } finally {
+        if (!popup.isClosed()) await popup.close();
+      }
+    };
+    await popupRun();
+    await waitResult("body > nav");
+    await waitResult("#inside-main-nav");
+    await choose('[data-draft="translationScope"]', "body");
+    await op("save").click();
+    await page.waitForURL(/#actions$/);
+    await popupRun();
+    assert.equal(
+      await source.locator("nav [data-pagework=result]").count(),
+      0,
+      "Popup respects main-content scope after it is changed in settings",
+    );
+    await waitResult("#scope-heading");
+    // A page without a semantic main still excludes peripheral navigation.
+    await send({ type: "page.restore" });
+    await source.locator("main").evaluate((node) => {
+      const section = document.createElement("section");
+      section.innerHTML = node.innerHTML;
+      node.replaceWith(section);
+    });
+    await popupRun();
+    assert.equal(await source.locator("nav [data-pagework=result]").count(), 0);
+    await waitResult("#scope-heading");
+    // Failed extraction reports the actual selected root and ancestor state,
+    // without dumping the document text or altering extraction rules.
+    await send({ type: "page.restore" });
+    await source.evaluate(() => {
+      document
+        .querySelector("#scope-heading")
+        .closest("section")
+        .setAttribute("role", "navigation");
+      const hidden = document.createElement("article");
+      hidden.id = "hidden-main-fixture";
+      hidden.hidden = true;
+      hidden.textContent = "UNLOGGED_DIAGNOSTIC_TEXT";
+      document.body.prepend(hidden);
+    });
+    const noContent = source.waitForEvent("console", {
+      predicate: (message) =>
+        message.text().startsWith("[Aside] No readable page text"),
+    });
+    await start();
+    const diagnostic = await (await noContent).args()[1].jsonValue();
+    assert.equal(diagnostic.scope, "body");
+    assert.equal(diagnostic.candidates[0].id, "hidden-main-fixture");
+    assert.equal(diagnostic.rootAncestors[0].tag, "BODY");
+    assert(
+      diagnostic.headingAncestors.some((node) => node.role === "navigation"),
+    );
+    assert(diagnostic.allScopeBlocks > 0);
+    assert(!JSON.stringify(diagnostic).includes("UNLOGGED_DIAGNOSTIC_TEXT"));
     assert.deepEqual(errors, []);
+    await require("./extract-browser.cjs")({ context });
     console.log(
       "PASS: steady blue/green translation indicator with completion debounce, no button animation/background change or dock status; viewport + small preload; document/inner scrolling; incremental insert/edit/reveal/remove; no self-translation or duplicate requests; stale response isolation; restore/cancel/cache/navigation cleanup; full-document summary; desktop/mobile light/dark layout.",
     );

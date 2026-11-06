@@ -16,6 +16,9 @@ if (!scenario) {
     "plain-custom",
     "plain-renamed",
     "plain-copy",
+    "translation-ai",
+    "translation-browser",
+    "translation-microsoft",
   ]) {
     const result = spawnSync(
       process.execPath,
@@ -35,6 +38,11 @@ setLocale("en");
 const actions = getPresets().filter(
   (action) => !scenario.includes("missing") || action.id !== "qa",
 );
+// Existing profiles may have an explicit engine or the original implicit AI choice.
+const translation = actions.find((action) => action.id === "translate");
+if (scenario.startsWith("translation-"))
+  translation.translationEngine = scenario.slice("translation-".length);
+else delete translation.translationEngine;
 const previousQa = actions.find((action) => action.id === "qa");
 if (previousQa)
   Object.assign(previousQa, {

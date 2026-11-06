@@ -2,7 +2,7 @@
 
 # Aside / 旁白
 
-An AI reading assistant for Chrome, Microsoft Edge, and Firefox. Translate pages in place, ask about passages, and save what matters. Free and open source, with no registration required. Connect your own cloud or local model service; model providers may charge for API usage.
+An AI reading assistant for Chrome, Microsoft Edge, and Firefox. Translate pages in place, ask about passages, and save what matters. Free and open source, with no registration required. Microsoft translation works out of the box without model setup. Connect your own cloud or local model for AI features; model providers may charge for API usage.
 
 [Product website](https://worldtheater.github.io/aside/) · [中文介绍](https://worldtheater.github.io/aside/zh/) · [Installation](#installation) · [Privacy policy](https://worldtheater.github.io/aside/privacy.html)
 
@@ -22,12 +22,12 @@ An AI reading assistant for Chrome, Microsoft Edge, and Firefox. Translate pages
 
 | Browser | Minimum desktop version | Installation |
 | --- | --- | --- |
-| Google Chrome | 120 | [Chrome Web Store](https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf) or [manual installation](#manual-installation-chrome) |
-| Microsoft Edge | 120 | [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp) or [manual installation](#manual-installation-edge) — version 0.1.5 available |
-| Firefox | 147 | Under review on Mozilla Add-ons; [manual installation](#manual-installation-firefox) for temporary testing |
+| Google Chrome | 120 | [Chrome Web Store](https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf) or [manual installation](#manual-installation-chrome) — version 0.1.6 available |
+| Microsoft Edge | 120 | [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp) or [manual installation](#manual-installation-edge) — version 0.1.6 available |
+| Firefox | 147 | [Mozilla Add-ons](https://addons.mozilla.org/en-US/firefox/addon/aside-ai/) — version 0.1.6 available; [manual installation](#manual-installation-firefox) for temporary testing |
 | Safari for macOS | 26 | [Local development preview](docs/SAFARI.md) — requires Xcode; no cross-device sync |
 
-After installing, open Aside’s **Settings → Model connections**, add your service URL, API key, and protocol, test the connection, choose a model, and save. Open a regular HTTP/HTTPS page to use the selection toolbar, floating menu, or extension popup.
+Microsoft translation is selected by default and needs no API key or model setup. For AI features, add a model under **Settings → Model connections**. Open a regular HTTP/HTTPS page to use the selection toolbar, floating menu, or extension popup.
 
 ### Manual installation (Chrome)
 
@@ -137,7 +137,7 @@ Read the [Privacy Policy](https://worldtheater.github.io/aside/privacy.html) for
 
 - API keys are encrypted locally with AES-256-GCM, including copies in the local sync records. The non-exportable encryption key is kept in this browser’s IndexedDB and is never included in browser sync. This reduces plaintext exposure but is not an operating-system keychain or protection against access to the full browser profile or a compromised extension. Existing plaintext credentials are converted on upgrade; old backups are not rewritten. Settings and collections stay in local extension storage. Usage summaries and request details share the `aside-usage` IndexedDB database; the result cache has its own database. Optional encrypted configuration sync uses the browser’s sync service; collections, request history, generated reflections, and caches are not synchronized. History is read in pages of 50 using time and model indexes, while totals and daily charts are queried separately.
 - Each new usage record has a **Details** view with the model instructions, submitted input (including context or batched passages), and received output. Interrupted calls retain any text already received. Authorization headers are not stored. Known configured API keys are redacted from new request details and results, including streamed output; existing history is not rewritten. Clearing usage history also deletes these details; clearing the result cache does not. Older records have no request details.
-- Running an action sends the relevant page content to your selected model service. Reflections can include up to five saved passages when collection references are enabled.
+- Microsoft translation sends text directly to Microsoft. AI actions send the relevant page content to your selected model service. Reflections can include up to five saved passages when collection references are enabled.
 - API keys are available only to trusted extension pages and the background worker, not content scripts.
 - Page access supports text selection, result insertion, and dark mode. Model connections request access to the configured service address.
 - Aside has no telemetry or hosted relay. Uninstalling the extension deletes its local data.

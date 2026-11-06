@@ -54,6 +54,7 @@ if (browser !== "chrome") {
       (permission) => permission !== "favicon",
     );
     Object.assign(manifest, overrides);
+    if (safari) manifest.permissions.push("nativeMessaging");
   }
   await writeFile(
     path.join(output, "manifest.json"),

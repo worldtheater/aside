@@ -1,4 +1,16 @@
+import {
+  actionAvailable,
+  translationEngine,
+  usesModel,
+} from "./translation-engine.js";
+import {
+  detectNativeLanguage,
+  NativeTranslationSession,
+} from "./native-translation.js";
+import { trackNativePacks } from "./native-pack-channel.js";
 import { TextTranslationPanel } from "./text-translation.js";
+import { NativeDownloadNotice } from "./native-download-notice.js";
+import { nativeProgressText } from "./native-packs.js";
 import contentStyles from "../content-ui.css";
 import themeStyles from "../content-themes.css";
 import selectionStyles from "../selection-tools.css";
@@ -21,9 +33,13 @@ import {
   selectedPageText,
   selectionResultMarkup,
 } from "./selection-tools.js";
-import { modelError, hasDefaultModel } from "./providers.js";
+import { modelError } from "./providers.js";
 import { renderMarkdown } from "./result-content.js";
-import { hasSameLanguages, isNumericOnly } from "./translation.js";
+import {
+  hasSameLanguages,
+  isNumericOnly,
+  translationScope,
+} from "./translation.js";
 import type {
   ProcessJob,
   ProcessStats,
@@ -32,6 +48,7 @@ import type {
   AppearanceTarget,
   TranslationLanguages,
   UiContext,
+  Scope,
 } from "./types.js";
 // Reuse a pending/ready controller; a later entry can retry a failed startup.
 globalThis.__pagework =
@@ -44,13 +61,18 @@ async function initializePagework() {
     selectionPanelTop: number | null = null,
     selectionPanelLeft: number | null = null,
     currentAction = config.actions[0]?.id,
-    scope = "body",
+    scopeOverride: Scope | undefined,
     translation: TranslationLanguages | undefined,
     dockSide: "left" | "right" = "right",
     dockY = 0.5,
     draggedAt = -Infinity,
     run: ProcessJob | null = null,
-    pageTranslation: { readonly busy: boolean; cancel(): void } | null = null,
+    pageTranslation: {
+      readonly busy: boolean;
+      readonly error: ReturnType<typeof modelError> | null;
+      retry(): void;
+      cancel(): void;
+    } | null = null,
     blocks: ExtractedBlock[] = [],
     parts: ResultPart[] = [],
     original = "",
@@ -78,7 +100,7 @@ async function initializePagework() {
     },
   );
   document.documentElement.append(host);
-  shadow.innerHTML = `<button id="dock" class="dock" data-op="toggle-tools" aria-controls="toolbar radial selection" aria-expanded="false">${brandMark}</button><div id="toolbar" class="panel tools-panel" hidden></div><div id="selection" class="selection-tools" hidden></div><div id="result" class="panel result" hidden></div><div id="notice" class="notice" hidden></div>`;
+  shadow.innerHTML = `<button id="dock" class="dock" data-op="toggle-tools" aria-controls="toolbar radial selection" aria-expanded="false">${brandMark}</button><div id="toolbar" class="panel tools-panel" hidden></div><div id="selection" class="selection-tools" hidden></div><div id="result" class="panel result" hidden></div><div id="notice" class="notice" hidden></div><div id="translation-recovery" class="notice translation-recovery" hidden></div>`;
   const $ = (id: string) => shadow.getElementById(id)!;
   const paths: Record<string, string> = {
     close: "M6 6l12 12M6 18 18 6",
@@ -130,6 +152,7 @@ async function initializePagework() {
       ? { ...selected, ...translation }
       : selected;
   };
+  const pageScope = () => scopeOverride ?? translationScope(action());
   const errorText = (caught: unknown) => {
     const e = modelError(caught);
     const label =
@@ -138,13 +161,17 @@ async function initializePagework() {
         : S.errors[e.code as keyof typeof S.errors] || S.failed;
     return e.message !== e.code ? `${label}\n${e.message}` : label;
   };
+  const nativeNotice = new NativeDownloadNotice(() => config);
+  shadow.append(nativeNotice.element);
   const selectionTools = new SelectionTools($("selection"), {
     config: () => config,
     selected: () => currentAction,
     icon: (name) => icon(name === "book" ? "read" : name),
     home: async () => {
       await send("settings.open", {
-        route: hasDefaultModel(config) ? "home" : "connections",
+        route: config.actions.some((a) => actionAvailable(a, config))
+          ? "home"
+          : "connections",
       });
     },
     selection: () => selectedPageText(),
@@ -190,6 +217,7 @@ async function initializePagework() {
     config: () => config,
     error: errorText,
     notify,
+    nativeNotice,
   });
   shadow.append(textTranslation.element);
   const panelResize = new ResizeObserver(() => {
@@ -287,7 +315,7 @@ async function initializePagework() {
     if (focus)
       (show
         ? $("toolbar").querySelector<HTMLElement>(
-            hasDefaultModel(config)
+            actionAvailable(action(), config)
               ? "[data-op=choose]"
               : "[data-op=open-settings]",
           )
@@ -320,7 +348,7 @@ async function initializePagework() {
   const questionAction = () =>
     config.actions.find((action) => action.kind === "qa");
   async function openTextTranslation(fromDock = false) {
-    if (!hasDefaultModel(config)) {
+    if (!actionAvailable(translateAction(), config)) {
       await send("settings.open", { route: "connections" });
       return;
     }
@@ -409,6 +437,7 @@ async function initializePagework() {
     toolbar();
   }
   function translationState() {
+    if (pageTranslation?.error) return "paused";
     if (
       pageTranslation?.busy ||
       (resultKind === "page" && run && action()?.kind === "translate")
@@ -454,7 +483,9 @@ async function initializePagework() {
     target.dataset.translationState = translationIndicatorState;
     target.setAttribute(
       "aria-label",
-      S.translationStates[translationIndicatorState],
+      translationIndicatorState === "paused"
+        ? `${S.translation.paused} · ${S.translation.retryContinue}`
+        : S.translationStates[translationIndicatorState],
     );
     target.setAttribute(
       "aria-pressed",
@@ -470,7 +501,7 @@ async function initializePagework() {
     radialTips.hide(true);
     const tr = translateAction(),
       qa = questionAction(),
-      configured = hasDefaultModel(config),
+      configured = config.actions.some((a) => actionAvailable(a, config)),
       lightsMode = websiteFeatures().lights,
       slots = [
         button("open-settings", S.settings, "", "settings"),
@@ -479,7 +510,7 @@ async function initializePagework() {
           S.translationStates.original,
           "",
           "translate",
-          configured && tr ? "" : "disabled",
+          actionAvailable(tr, config) ? "" : "disabled",
         ),
         button(
           "toggle-lights",
@@ -501,14 +532,14 @@ async function initializePagework() {
           qa?.name || S.quickQuestion,
           "",
           "question",
-          configured && qa ? "" : "disabled",
+          actionAvailable(qa, config) ? "" : "disabled",
         ),
         button(
           "text-translate",
           S.textTranslation,
           "",
           "text",
-          configured && tr ? "" : "disabled",
+          actionAvailable(tr, config) ? "" : "disabled",
         ),
       ];
     radialEl.innerHTML = slots
@@ -528,7 +559,7 @@ async function initializePagework() {
     radialTips.setHint(
       radialOpen &&
         radialEl.classList.contains("open") &&
-        !hasDefaultModel(config)
+        !config.actions.some((a) => actionAvailable(a, config))
         ? radialEl.querySelector<HTMLElement>('[data-op="open-settings"]')
         : null,
       S.configureModelHint,
@@ -598,7 +629,7 @@ async function initializePagework() {
     )
       .map(
         (field) =>
-          `<label><span>${escape(S[field])}</span><select data-language="${field}" aria-label="${escape(S[field])}" ${run ? "disabled" : ""}>${field === "targetLanguage" ? `<option value="interface" ${selected[field] === "interface" ? "selected" : ""}>${escape(S.followInterfaceLanguage)}</option><option value="instruction" ${selected[field] === "instruction" ? "selected" : ""} ${selected.instruction.trim() ? "" : "disabled"}>${escape(S.followInstructionLanguage)}</option>` : ""}${Object.entries(
+          `<label><span>${escape(S[field])}</span><select data-language="${field}" aria-label="${escape(S[field])}" ${run ? "disabled" : ""}>${field === "targetLanguage" ? `<option value="interface" ${selected[field] === "interface" ? "selected" : ""}>${escape(S.followInterfaceLanguage)}</option>${usesModel(selected) ? `<option value="instruction" ${selected[field] === "instruction" ? "selected" : ""} ${selected.instruction.trim() ? "" : "disabled"}>${escape(S.followInstructionLanguage)}</option>` : ""}` : ""}${Object.entries(
             S.languages,
           )
             .filter(([value]) => field === "sourceLanguage" || value !== "auto")
@@ -631,21 +662,32 @@ async function initializePagework() {
       same = hasSameLanguages(chosen, resolveLocale(config.preferences.locale));
     const dock = $("dock");
     const busy = Boolean(run || pageTranslation?.busy);
+    const paused = pageTranslation?.error;
+    if (paused) status = `${S.translation.paused} · ${errorText(paused)}`;
     dock.hidden = !websiteFeatures().floating;
     updateDockExpanded();
     $("toolbar").setAttribute("aria-busy", String(busy));
     $("toolbar").innerHTML =
-      `<div class="header"><button class="icon tools-brand" data-op="open-settings" aria-label="${escape(S.settings)}">${brandMark}</button><strong>${escape(S.currentPage)}</strong>${button("open-settings", S.settings, "icon", "settings")}${button("hide-toolbar", S.collapseTools, "icon", "close")}</div><div class="body"><button class="choose" data-op="choose">${escape(chosen?.name || S.noConnection)}${icon("down")}</button><div id="actions" class="menu" hidden>${config.actions.map((a: { id: string; name: string }) => `<button data-action="${escape(a.id)}" class="${a.id === currentAction ? "active" : ""}">${escape(a.name)}</button>`).join("")}</div>${languageFields()}<div class="row scope">${button("scope-body", S.body, scope === "body" ? "primary" : "")}${button("scope-all", S.all, scope === "all" ? "primary" : "")}</div><div class="row">${button("run", run || pageTranslation ? S.stop : S.start, "primary", "", same && !run && !pageTranslation ? "disabled" : "")}${button("restore", S.restore)}${parts.length && !busy ? button("refresh-page", S.regenerate, "icon", "refresh", same ? "disabled" : "") : ""}${parts.length ? button("bookmark", S.bookmark, "icon", "book") : ""}</div><div id="status" class="status" role="status">${escape(same ? S.errors.sameLanguages : status)}</div></div>`;
-    if (!hasDefaultModel(config))
+      `<div class="header"><button class="icon tools-brand" data-op="open-settings" aria-label="${escape(S.settings)}">${brandMark}</button><strong>${escape(S.currentPage)}</strong>${button("open-settings", S.settings, "icon", "settings")}${button("hide-toolbar", S.collapseTools, "icon", "close")}</div><div class="body"><button class="choose" data-op="choose">${escape(chosen?.name || S.noConnection)}${icon("down")}</button><div id="actions" class="menu" hidden>${config.actions.map((a: { id: string; name: string }) => `<button data-action="${escape(a.id)}" class="${a.id === currentAction ? "active" : ""}">${escape(a.name)}</button>`).join("")}</div>${languageFields()}<div class="row scope">${button("scope-body", S.body, pageScope() === "body" ? "primary" : "")}${button("scope-all", S.all, pageScope() === "all" ? "primary" : "")}</div><div class="row">${button("run", paused ? S.translation.retryContinue : run || pageTranslation ? S.stop : S.start, "primary", "", same && !run && !pageTranslation ? "disabled" : "")}${button("restore", S.restore)}${parts.length && !busy ? button("refresh-page", S.regenerate, "icon", "refresh", same ? "disabled" : "") : ""}${parts.length ? button("bookmark", S.bookmark, "icon", "book") : ""}</div><div id="status" class="status" role="status">${escape(same ? S.errors.sameLanguages : status)}</div></div>`;
+    if (!actionAvailable(chosen, config))
       $("toolbar")
         .querySelectorAll<HTMLButtonElement | HTMLSelectElement>(
-          'button:not([data-op="open-settings"]), select',
+          '[data-op="run"], [data-op="refresh-page"]',
         )
         .forEach((control) => {
           control.disabled = true;
         });
     positionTools();
     updateTranslationButton();
+    renderTranslationRecovery();
+  }
+  function renderTranslationRecovery() {
+    const notice = $("translation-recovery");
+    const error = pageTranslation?.error;
+    notice.hidden = !error;
+    if (!error) return;
+    const markup = `<div role="alert"><strong>${escape(S.translation.paused)}</strong><span>${escape(errorText(error))}</span></div><div class="translation-recovery-actions">${button("restore", S.restore)}${button("retry-page", S.translation.retryContinue)}</div>`;
+    if (notice.innerHTML !== markup) notice.innerHTML = markup;
   }
   function translationAllowed() {
     if (!hasSameLanguages(action(), resolveLocale(config.preferences.locale)))
@@ -752,13 +794,40 @@ async function initializePagework() {
     showRadial(false);
     $("notice").hidden = true;
   }
-  // Native navigation events cover SPA History API changes without polling or
-  // patching the page's router. State-only updates do not leave the current page.
+  function isDocumentFragment(hash: string) {
+    const fragment = hash.slice(1).split(":~:")[0];
+    const hasTarget = (id: string) =>
+      Boolean(document.getElementById(id)) ||
+      [...document.getElementsByName(id)].some(
+        (element) => element instanceof HTMLAnchorElement,
+      );
+    if (!fragment || hasTarget(fragment)) return true;
+    try {
+      const decoded = decodeURIComponent(fragment);
+      return decoded.toLowerCase() === "top" || hasTarget(decoded);
+    } catch {
+      return false;
+    }
+  }
+  // Same-page section links keep the reading session. Unknown fragments can
+  // belong to hash routers, so only actual document anchors bypass cleanup.
   window.navigation.addEventListener(
     "currententrychange",
     (event) => {
       const previous = (event as Event & { from: NavigationHistoryEntry }).from;
-      if (previous.url !== location.href) resetPageTools();
+      if (previous.url === location.href) return;
+      const before = previous.url ? new URL(previous.url) : null;
+      const after = new URL(location.href);
+      if (
+        before &&
+        before.origin === after.origin &&
+        before.pathname === after.pathname &&
+        before.search === after.search &&
+        isDocumentFragment(before.hash) &&
+        isDocumentFragment(after.hash)
+      )
+        return;
+      resetPageTools();
     },
     { signal },
   );
@@ -769,7 +838,7 @@ async function initializePagework() {
       const block = blocks.find((b) => b.id === part.id);
       if (
         !block?.element.isConnected ||
-        !PageworkExtract.extract(scope, block.element).some(
+        !PageworkExtract.extract(pageScope(), block.element).some(
           (current) => current.id === part.id && current.text === part.source,
         )
       ) {
@@ -791,31 +860,35 @@ async function initializePagework() {
         result.dataset.pagework = "result";
         result.dataset.id = part.id;
         result.dataset.kind = action()?.kind;
+        const text = document.createElement("span");
+        text.dataset.pagework = "text";
+        const line = document.createElement("span");
+        line.dataset.pagework = "line";
+        line.append(text);
+        result.attachShadow({ mode: "open" }).append(line);
         block.element.append(result);
-        result.attachShadow({ mode: "open" });
       }
-      const text = document.createElement("span");
+      const text = result.shadowRoot!.querySelector<HTMLElement>(
+        '[data-pagework="text"]',
+      )!;
       text.textContent = part.text;
-      result.shadowRoot!.replaceChildren(text);
       stylePageResult(result);
       fitPageResult(result);
     }
   }
-  function controlLabelStyle(element: HTMLElement) {
+  function controlLabel(element: HTMLElement) {
     const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, {
       acceptNode(node) {
         const parent = node.parentElement!;
         return node.textContent?.trim() &&
-          !parent.closest(
-            "script,style,svg,[data-pagework],[hidden],[aria-hidden=true]",
-          ) &&
+          !parent.closest("script,style,svg,[data-pagework],[hidden]") &&
           parent.getClientRects().length &&
           getComputedStyle(parent).visibility === "visible"
           ? NodeFilter.FILTER_ACCEPT
           : NodeFilter.FILTER_REJECT;
       },
     });
-    return getComputedStyle(walker.nextNode()?.parentElement || element);
+    return walker.nextNode();
   }
   function stylePageResult(result: HTMLElement) {
     const style = config.appearance.page,
@@ -824,30 +897,15 @@ async function initializePagework() {
       control = source.matches("a,button,[role=button]"),
       flex = ["flex", "inline-flex"].includes(sourceStyle.display),
       horizontal = flex && sourceStyle.flexDirection.startsWith("row"),
-      labelStyle = control ? controlLabelStyle(source) : sourceStyle,
+      label = control ? controlLabel(source) : null,
+      labelStyle = label ? getComputedStyle(label.parentElement!) : sourceStyle,
       color =
         style.color === "auto"
           ? labelStyle.color
           : style.color === "theme"
             ? getComputedStyle(host).getPropertyValue("--result-accent").trim()
             : resultColor(style.color, host.dataset.theme);
-    let textAlign = sourceStyle.textAlign;
-    if (control) {
-      let alignment = horizontal
-        ? sourceStyle.justifyContent
-        : flex
-          ? sourceStyle.alignItems
-          : sourceStyle.justifyItems;
-      if (horizontal && ["normal", "stretch"].includes(alignment))
-        alignment = "flex-start";
-      if (["center", "start", "end", "left", "right"].includes(alignment))
-        textAlign = alignment;
-      else if (alignment === "flex-start" || alignment === "flex-end") {
-        const reverse =
-          horizontal && sourceStyle.flexDirection === "row-reverse";
-        textAlign = (alignment === "flex-start") !== reverse ? "start" : "end";
-      }
-    }
+    const textAlign = control ? "left" : sourceStyle.textAlign;
     if (horizontal) {
       adjustPageLayout(source, "flex-wrap", "wrap");
       // The existing gap spaces items on the original row, not bilingual rows.
@@ -868,9 +926,29 @@ async function initializePagework() {
           )
           .join("")
       : "";
-    result.style.cssText = `display:block!important;font:inherit!important;${typography}text-align:${textAlign}!important;margin-top:${control ? "0.2em" : "0.45em"}!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;min-width:0!important;max-width:100%!important;${style.customTypography ? `font-size:${style.size}px!important;line-height:${style.line}!important;` : ""}${horizontal ? "flex:0 0 100%!important;" : ""}${sourceStyle.display.includes("grid") ? "grid-column:1 / -1!important;" : ""}`;
-    const text = result.shadowRoot!.firstElementChild as HTMLElement;
-    text.style.cssText = `font:inherit;color:${color};${style.tint ? `background:rgba(128,128,128,.12);padding:4px 7px;border-radius:calc(4px * ${getComputedStyle(host).getPropertyValue("--corner-radius-scale")});corner-shape:${getComputedStyle(host).getPropertyValue("--corner-shape")};` : ""}`;
+    result.style.cssText = `display:block!important;box-sizing:border-box!important;font:inherit!important;${typography}text-align:${textAlign}!important;text-indent:0!important;margin:${control ? "0.2em" : "0.45em"} 0 0!important;padding:0!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;min-width:0!important;max-width:100%!important;${style.customTypography ? `font-size:${style.size}px!important;line-height:${style.line}!important;` : ""}${horizontal ? "flex:0 0 100%!important;width:0!important;" : ""}${sourceStyle.display.includes("grid") ? "grid-column:1 / -1!important;" : ""}`;
+    let inset = 0;
+    if (label) {
+      const range = document.createRange();
+      range.selectNodeContents(label);
+      // Match the actual text edge, including nested padding and leading icons.
+      // Recomputed by the existing resize/style update path for responsive pages.
+      inset = Math.max(
+        0,
+        range.getBoundingClientRect().left -
+          result.getBoundingClientRect().left,
+      );
+    }
+    // The inset belongs inside the row; padding on the flex item itself would
+    // widen intrinsically sized buttons and move the original label again.
+    // Dark Reader and other page tools can prepend their own shadow styles.
+    // Only our explicitly marked nodes belong to the translation layout.
+    const line = result.shadowRoot!.querySelector<HTMLElement>(
+      '[data-pagework="line"]',
+    )!;
+    line.style.cssText = `font:inherit;color:${color};${control ? `display:block;margin-left:${inset}px;` : ""}`;
+    const text = line.querySelector<HTMLElement>('[data-pagework="text"]')!;
+    text.style.cssText = `font:inherit;${style.tint ? `background:rgba(128,128,128,.12);padding:4px 7px;border-radius:calc(4px * ${getComputedStyle(host).getPropertyValue("--corner-radius-scale")});corner-shape:${getComputedStyle(host).getPropertyValue("--corner-shape")};` : ""}`;
   }
   function startPageTranslation(refresh: boolean) {
     // Only near-viewport paragraphs enter the existing cache/batch scheduler.
@@ -886,20 +964,90 @@ async function initializePagework() {
       jobs = new Set<ProcessJob>(),
       changed = new Set<HTMLElement>(),
       actionId = currentAction,
-      languages = translation;
+      chosen = action(),
+      languages = translation,
+      detection = new AbortController();
+    let detectedLanguages: Promise<TranslationLanguages> | undefined;
+    let nativeSession =
+      translationEngine(chosen) === "browser"
+        ? new NativeTranslationSession()
+        : undefined;
+    let failure: ReturnType<typeof modelError> | null = null;
+    function resolveLanguages() {
+      if (
+        translationEngine(chosen) !== "browser" ||
+        (chosen?.sourceLanguage && chosen.sourceLanguage !== "auto")
+      )
+        return languages;
+      // Short labels are unreliable detection samples. Resolve the source once
+      // from the page's extracted original text and reuse it across scroll jobs.
+      return (detectedLanguages ??= (async () => {
+        const download = nativeNotice.track();
+        try {
+          const sourceLanguage = await trackNativePacks(
+            (report) =>
+              detectNativeLanguage(
+                [...entries.values()]
+                  .map((entry) => entry.block.text)
+                  .join("\n\n"),
+                detection.signal,
+                report,
+                download.waitForActivation,
+              ),
+            detection.signal,
+            download.report,
+          );
+          return {
+            sourceLanguage,
+            targetLanguage: chosen?.targetLanguage || "interface",
+          };
+        } catch (error) {
+          detectedLanguages = undefined;
+          throw error;
+        } finally {
+          download.clear();
+        }
+      })());
+    }
     let flushTimer: number | undefined,
       scanTimer: number | undefined,
       stats: ProcessStats = { total: 0, hits: 0, shared: 0, requests: 0 };
     const session = {
+      get error() {
+        return failure;
+      },
       get busy() {
         return (
-          jobs.size > 0 ||
-          flushTimer !== undefined ||
-          [...entries.values()].some((entry) => entry.state === "pending")
+          !failure &&
+          (jobs.size > 0 ||
+            flushTimer !== undefined ||
+            [...entries.values()].some(
+              (entry) =>
+                entry.state === "pending" || entry.state === "processing",
+            ))
         );
       },
+      retry() {
+        if (pageTranslation !== session || !failure) return;
+        if (nativeSession) nativeSession = new NativeTranslationSession();
+        failure = null;
+        scan();
+        for (const entry of entries.values()) {
+          if (entry.result) continue;
+          entry.state = "waiting";
+          observer.unobserve(entry.block.element);
+          observer.observe(entry.block.element);
+        }
+        flushTimer = window.setTimeout(flush, collectMs);
+        publish();
+      },
       cancel() {
-        if (pageTranslation === session) pageTranslation = null;
+        if (pageTranslation === session) {
+          pageTranslation = null;
+          renderTranslationRecovery();
+        }
+        detection.abort();
+        nativeSession?.destroy();
         observer.disconnect();
         mutations.disconnect();
         clearTimeout(flushTimer);
@@ -917,7 +1065,7 @@ async function initializePagework() {
             continue;
           entry.state = intersection.isIntersecting ? "pending" : "waiting";
         }
-        if (flushTimer === undefined)
+        if (!failure && flushTimer === undefined)
           flushTimer = window.setTimeout(flush, collectMs);
       },
       { rootMargin: `${preloadPx}px 0px` },
@@ -941,7 +1089,7 @@ async function initializePagework() {
           ? `${parts.length} / ${blocks.length}`
           : completionText(S, stats),
       );
-      pageStatus(!session.busy);
+      pageStatus(!session.busy, failure?.code);
     }
     function forget(element: HTMLElement, entry: Entry) {
       observer.unobserve(element);
@@ -955,7 +1103,7 @@ async function initializePagework() {
     function scan(within?: HTMLElement) {
       let updated = false;
       const found = new Map(
-        PageworkExtract.extract(scope, within)
+        PageworkExtract.extract(pageScope(), within)
           .filter((block) => !isNumericOnly(block.text))
           .map((block) => [block.element, block]),
       );
@@ -1001,7 +1149,7 @@ async function initializePagework() {
         )
           continue;
         if (
-          !PageworkExtract.extract(scope, entry.block.element).some(
+          !PageworkExtract.extract(pageScope(), entry.block.element).some(
             (current) => current.id === part.id && current.text === part.source,
           )
         ) {
@@ -1018,7 +1166,7 @@ async function initializePagework() {
     }
     async function flush() {
       flushTimer = undefined;
-      if (pageTranslation !== session) return;
+      if (pageTranslation !== session || failure) return;
       const pending = [...entries.values()].filter(
         (entry) => entry.state === "pending",
       );
@@ -1031,12 +1179,16 @@ async function initializePagework() {
       );
       for (const entry of pending) entry.state = "processing";
       let job: ProcessJob | undefined;
+      const download = nativeNotice.track();
       try {
+        publish();
+        const resolvedLanguages = await resolveLanguages();
+        if (pageTranslation !== session || failure) return;
         job = process(
           {
             source: "page",
             actionId,
-            translation: languages,
+            translation: resolvedLanguages,
             refresh,
             blocks: pending.map(({ block: { id, text, element } }) => {
               const rect = element.getBoundingClientRect();
@@ -1052,13 +1204,20 @@ async function initializePagework() {
             }),
           },
           (received) => {
-            if (pageTranslation === session) receive(received, submitted);
+            if (pageTranslation === session && !failure)
+              receive(received, submitted);
           },
+          undefined,
+          (event) => {
+            if (pageTranslation === session && !failure) download.report(event);
+          },
+          download.waitForActivation,
+          nativeSession?.translate,
         );
         jobs.add(job);
         publish();
         const result = await job.promise;
-        if (pageTranslation !== session) return;
+        if (pageTranslation !== session || failure) return;
         receive(result.parts, submitted);
         if (result.stats) {
           stats = {
@@ -1070,14 +1229,31 @@ async function initializePagework() {
           };
         }
       } catch (caught) {
-        if (pageTranslation !== session) return;
-        session.cancel();
+        if (pageTranslation !== session || failure) return;
         const error = modelError(caught);
-        toolbar(errorText(error));
-        pageStatus(true, error.code);
-        if (error.code !== "cancelled" && $("toolbar").hidden)
-          notify(errorText(error));
+        if (error.code === "cancelled") {
+          session.cancel();
+          toolbar(errorText(error));
+          pageStatus(true, error.code);
+          return;
+        }
+        failure = error;
+        nativeSession?.destroy();
+        clearTimeout(flushTimer);
+        flushTimer = undefined;
+        for (const active of jobs) active.cancel();
+        jobs.clear();
+        // Keep completed results and the document observers. Re-observing
+        // unfinished blocks records the current viewport without dispatching.
+        for (const entry of entries.values()) {
+          if (entry.state !== "processing") continue;
+          entry.state = "waiting";
+          observer.unobserve(entry.block.element);
+          observer.observe(entry.block.element);
+        }
+        publish();
       } finally {
+        download.clear();
         if (job) jobs.delete(job);
         if (pageTranslation === session) publish();
       }
@@ -1137,10 +1313,50 @@ async function initializePagework() {
     scan();
     if (entries.size) flushTimer = window.setTimeout(flush, collectMs);
     publish();
-    if (!entries.size) {
-      toolbar(S.noContent);
-      if ($("toolbar").hidden) notify(S.noContent);
-    }
+    if (!entries.size) reportNoPageContent();
+  }
+  function reportNoPageContent() {
+    const describe = (element: HTMLElement) => {
+      const style = getComputedStyle(element);
+      return {
+        tag: element.tagName,
+        id: element.id,
+        classes: element.className,
+        role: element.getAttribute("role"),
+        hidden: element.getAttribute("hidden"),
+        open: element.getAttribute("open"),
+        contenteditable: element.getAttribute("contenteditable"),
+        pagework: element.getAttribute("data-pagework"),
+        display: style.display,
+        visibility: style.visibility,
+        opacity: style.opacity,
+        rectangles: element.getClientRects().length,
+        textCharacters: element.textContent?.trim().length || 0,
+      };
+    };
+    const ancestors = (element: HTMLElement | null) => {
+      const result = [];
+      for (; element; element = element.parentElement)
+        result.push(describe(element));
+      return result;
+    };
+    const candidates = [
+      ...document.querySelectorAll<HTMLElement>("main,[role=main],article"),
+    ];
+    const root = PageworkExtract.root(pageScope());
+    // Capture values at failure time, not live DOM references. Keep page text,
+    // form values and URL parameters out of this local diagnostic.
+    console.warn("[Aside] No readable page text", {
+      extensionId: chrome.runtime.id,
+      scope: pageScope(),
+      readyState: document.readyState,
+      candidates: candidates.map(describe),
+      rootAncestors: ancestors(root),
+      headingAncestors: ancestors(document.querySelector<HTMLElement>("h1")),
+      allScopeBlocks: PageworkExtract.extract("all").length,
+    });
+    toolbar(S.noContent);
+    if ($("toolbar").hidden) notify(S.noContent);
   }
   async function runPage(
     refresh = false,
@@ -1154,10 +1370,14 @@ async function initializePagework() {
     if (chosen.kind === "qa") {
       const quote =
         selectedPageText() ||
-        PageworkExtract.extract(scope)
+        PageworkExtract.extract(pageScope())
           .map((block) => block.text)
           .join("\n\n");
       openQuestion(quote, chosen, "page");
+      return;
+    }
+    if (!refresh && pageTranslation?.error) {
+      pageTranslation.retry();
       return;
     }
     if (!refresh && (run || pageTranslation)) {
@@ -1181,7 +1401,7 @@ async function initializePagework() {
       startPageTranslation(refresh);
       return;
     }
-    blocks = PageworkExtract.extract(scope);
+    blocks = PageworkExtract.extract(pageScope());
     if (
       chosen.kind === "translate" &&
       chosen.mode === "paragraph" &&
@@ -1189,14 +1409,14 @@ async function initializePagework() {
     )
       blocks = blocks.filter(({ text }) => !isNumericOnly(text));
     if (!blocks.length) {
-      toolbar(S.noContent);
-      if ($("toolbar").hidden) notify(S.noContent);
+      reportNoPageContent();
       return;
     }
     original = blocks.map((b) => b.text).join("\n\n");
     resultSource = location.href;
     resultTitle = document.title;
     if (inPanel) showResult(true);
+    const download = nativeNotice.track();
     const draft = new Map<string, string>();
     const job = process(
       {
@@ -1238,6 +1458,18 @@ async function initializePagework() {
             resultText([...draft.values()].join("\n\n"));
           }
         : undefined,
+      (event) => {
+        if (run !== job) return;
+        download.report(event);
+        const status = nativeProgressText(
+          event,
+          S.translation.packs,
+          S.languages,
+        );
+        if (inPanel) resultStatus(true, status);
+        toolbar(status);
+      },
+      download.waitForActivation,
     );
     run = job;
     toolbar();
@@ -1256,10 +1488,16 @@ async function initializePagework() {
       const error = modelError(caught);
       if (inPanel) resultStatus(false, errorText(error));
       toolbar(errorText(error));
-      if (!inPanel && error.code !== "cancelled" && $("toolbar").hidden)
+      if (
+        !inPanel &&
+        error.code !== "cancelled" &&
+        $("toolbar").hidden &&
+        nativeNotice.element.hidden
+      )
         notify(errorText(error));
       pageStatus(true, error.code);
     } finally {
+      download.clear();
       if (run === job) {
         run = null;
         toolbar($("status")?.textContent || S.done);
@@ -1358,6 +1596,7 @@ async function initializePagework() {
     const context =
       action()?.kind === "translate" ? originalContext : undefined;
     showResult(true, integrated);
+    const download = nativeNotice.track();
     const draft = new Map<string, string>();
     const job = process(
       {
@@ -1374,6 +1613,15 @@ async function initializePagework() {
         draft.set(id, (draft.get(id) || "") + delta);
         resultText([...draft.values()].join("\n\n"));
       },
+      (event) => {
+        if (run !== job) return;
+        download.report(event);
+        resultStatus(
+          true,
+          nativeProgressText(event, S.translation.packs, S.languages),
+        );
+      },
+      download.waitForActivation,
     );
     run = job;
     toolbar();
@@ -1387,6 +1635,7 @@ async function initializePagework() {
       const error = modelError(caught);
       if (run === job) resultStatus(false, errorText(error));
     } finally {
+      download.clear();
       if (run === job) {
         run = null;
         toolbar();
@@ -1451,6 +1700,7 @@ async function initializePagework() {
         restore();
         if (currentAction !== target.dataset.action) translation = undefined;
         currentAction = target.dataset.action;
+        scopeOverride = undefined;
         toolbar();
         return;
       }
@@ -1473,11 +1723,15 @@ async function initializePagework() {
         } else {
           showRadial(!radialOpen, (event as MouseEvent).detail === 0);
         }
+      } else if (op === "retry-page") {
+        pageTranslation?.retry();
       } else if (op === "page-translate") {
-        if (translationState() !== "original") restore();
+        if (pageTranslation?.error) pageTranslation.retry();
+        else if (translationState() !== "original") restore();
         else {
           restore();
           useTranslate();
+          scopeOverride = undefined;
           await runPage();
         }
       } else if (op === "quick-question") {
@@ -1514,7 +1768,7 @@ async function initializePagework() {
         await send("settings.open", { route: "connections" });
       else if (op === "scope-body" || op === "scope-all") {
         restore();
-        scope = op.slice(6);
+        scopeOverride = op.slice(6) as Scope;
         toolbar();
       } else if (op === "run") await runPage();
       else if (op === "refresh-page") await runPage(true);
@@ -1792,6 +2046,7 @@ async function initializePagework() {
       sender.id !== chrome.runtime.id ||
       ![
         "settings.updated",
+        "settings.resetting",
         "ui.show",
         "page.run",
         "selection.process",
@@ -1802,11 +2057,25 @@ async function initializePagework() {
     )
       return;
     (async () => {
+      if (message.type === "settings.resetting") {
+        resetPageTools();
+        return true;
+      }
       if (message.type === "settings.updated") {
+        if (message.reset) resetPageTools();
         const selectionChanged =
-          JSON.stringify([config.actions, config.strings]) !==
-            JSON.stringify([message.config.actions, message.config.strings]) ||
-          hasDefaultModel(config) !== hasDefaultModel(message.config);
+          JSON.stringify([
+            config.actions,
+            config.strings,
+            config.connections,
+            config.defaultConnection,
+          ]) !==
+          JSON.stringify([
+            message.config.actions,
+            message.config.strings,
+            message.config.connections,
+            message.config.defaultConnection,
+          ]);
         const oldAction = JSON.stringify(action());
         const oldBase = JSON.stringify(
           config.actions.find((a) => a.id === currentAction),
@@ -1820,6 +2089,7 @@ async function initializePagework() {
         S = config.strings;
         if (!action()) currentAction = config.actions[0]?.id;
         if (oldAction !== JSON.stringify(action())) {
+          scopeOverride = undefined;
           restore();
         }
         theme();
@@ -1861,7 +2131,7 @@ async function initializePagework() {
           currentAction = message.actionId;
         }
         if (message.translation) translation = message.translation;
-        if (message.scope) scope = message.scope;
+        scopeOverride = message.scope;
         runPage(false, message.panel);
         return true;
       }
@@ -1894,6 +2164,7 @@ async function initializePagework() {
       lifetime.abort();
       panelResize.disconnect();
       textTranslation.destroy();
+      nativeNotice.destroy();
       selectionTools.destroy();
       radialTips.destroy();
       restore();

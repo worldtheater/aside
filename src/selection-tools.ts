@@ -1,3 +1,10 @@
+import {
+  actionAvailable,
+  usesModel,
+  translationEngine,
+  AVAILABLE_TRANSLATION_ENGINES,
+  translationEngineSupported,
+} from "./translation-engine.js";
 import { randomUUID } from "./uuid.js";
 import { escapeHtml as escape } from "./html.js";
 import { HoverTips } from "./hover-tips.js";
@@ -10,7 +17,7 @@ import {
   DEFAULT_OUTPUT_LENGTH,
 } from "./prompts.js";
 import { MAX_ACTIONS, toolbarActions } from "./action-policy.js";
-import { ModelError, hasDefaultModel } from "./providers.js";
+import { ModelError } from "./providers.js";
 import { request } from "./client.js";
 import { hasSameLanguages } from "./translation.js";
 import { resolveLocale } from "./locale.js";
@@ -25,7 +32,11 @@ const fields = (a: Action): ActionEdit => ({
     ? { outputLength: a.outputLength || DEFAULT_OUTPUT_LENGTH }
     : {}),
   ...(a.kind === "translate"
-    ? { sourceLanguage: a.sourceLanguage, targetLanguage: a.targetLanguage }
+    ? {
+        sourceLanguage: a.sourceLanguage,
+        targetLanguage: a.targetLanguage,
+        translationEngine: a.translationEngine,
+      }
     : hasOutputLanguage(a)
       ? { outputLanguage: a.outputLanguage || "interface" }
       : {}),
@@ -238,12 +249,19 @@ export class SelectionTools {
       if (!input.dataset.selectionField || !this.drafts || this.busy) return;
       const draft = this.drafts.find((a) => a.id === this.selected)!;
       Object.assign(draft, { [input.dataset.selectionField]: input.value });
+      if (
+        input.dataset.selectionField === "translationEngine" &&
+        !usesModel(draft) &&
+        draft.targetLanguage === "instruction"
+      )
+        draft.targetLanguage = "interface";
       this.error = "";
       const error = root.querySelector<HTMLElement>(".selection-error");
       if (error) error.hidden = true;
       if (
         input.dataset.selectionField === "targetLanguage" ||
-        input.dataset.selectionField === "outputLanguage"
+        input.dataset.selectionField === "outputLanguage" ||
+        input.dataset.selectionField === "translationEngine"
       )
         this.render();
     };
@@ -367,14 +385,26 @@ export class SelectionTools {
     const source = this.options.selection(),
       active = this.visibleResultAction(),
       needsSetup =
-        !hasDefaultModel(this.options.config()) &&
+        !this.options
+          .config()
+          .actions.some((a) => actionAvailable(a, this.options.config())) &&
         !this.root.closest("[inert]");
     this.root
       .querySelectorAll<HTMLButtonElement>("[data-selection-command=action]")
       .forEach((button) => {
         const isResult = button.dataset.selectionAction === active;
         button.disabled =
-          needsSetup || this.busy || (!this.drafts && !source && !isResult);
+          needsSetup ||
+          this.busy ||
+          (!this.drafts && !source && !isResult) ||
+          (!this.drafts &&
+            !this.root.closest("[inert]") &&
+            !actionAvailable(
+              this.options
+                .config()
+                .actions.find((a) => a.id === button.dataset.selectionAction),
+              this.options.config(),
+            ));
         if (!this.drafts) {
           if (isResult) button.setAttribute("aria-pressed", "true");
           else button.removeAttribute("aria-pressed");
@@ -495,12 +525,14 @@ export class SelectionTools {
         !action.name.trim() ||
         (requiresInstructions(action) && !action.instruction.trim())
           ? S.requiredAction
-          : hasSameLanguages(
-                action,
-                resolveLocale(this.options.config().preferences.locale),
-              )
-            ? S.errors.sameLanguages
-            : "";
+          : !translationEngineSupported(action)
+            ? S.translation.engineUnavailable
+            : hasSameLanguages(
+                  action,
+                  resolveLocale(this.options.config().preferences.locale),
+                )
+              ? S.errors.sameLanguages
+              : "";
       if (error) {
         this.selected = action.id;
         this.error = error;
@@ -542,7 +574,9 @@ export class SelectionTools {
     this.tips.hide(true);
     const config = this.options.config(),
       S = config.strings,
-      needsSetup = !hasDefaultModel(config) && !this.root.closest("[inert]");
+      needsSetup =
+        !config.actions.some((a) => actionAvailable(a, config)) &&
+        !this.root.closest("[inert]");
     const actions = this.drafts || config.actions;
     const active = actions.find((a) => a.id === this.selected);
     const visibleActions = toolbarActions(actions, this.expanded);
@@ -667,8 +701,9 @@ export class SelectionTools {
       label: string,
       entries: [string, string][],
       value: string | undefined,
+      placeholder?: string,
     ) =>
-      `<label><span class="field-label">${escape(label)}</span><span class="selection-select"><select data-selection-field="${field}" aria-label="${escape(label)}" ${this.busy ? "disabled" : ""}>${options(entries, value)}</select></span></label>`;
+      `<label><span class="field-label">${escape(label)}</span><span class="selection-select"><select data-selection-field="${field}" aria-label="${escape(label)}" ${this.busy ? "disabled" : ""}>${placeholder ? `<option value="" disabled selected>${escape(placeholder)}</option>` : ""}${options(entries, value)}</select></span></label>`;
     const defaultModel = config.connections.find(
       (c) => c.id === config.defaultConnection,
     )?.model;
@@ -681,7 +716,14 @@ export class SelectionTools {
               S.targetLanguage,
               [
                 ["interface", S.followInterfaceLanguage],
-                ["instruction", S.followInstructionLanguage],
+                ...(usesModel(a)
+                  ? [
+                      ["instruction", S.followInstructionLanguage] as [
+                        string,
+                        string,
+                      ],
+                    ]
+                  : []),
                 ...Object.entries(S.languages).filter(([id]) => id !== "auto"),
               ],
               a.targetLanguage,
@@ -702,8 +744,28 @@ export class SelectionTools {
             : ""
       }
       ${a.kind === "qa" ? select("outputLength", S.outputLength, Object.entries(S.outputLengths), a.outputLength || DEFAULT_OUTPUT_LENGTH) : ""}
-      ${select("model", S.model, [["default", `${S.defaultModel}${defaultModel ? ` · ${defaultModel}` : ""}`], ...config.connections.filter((c) => c.connected && c.protocol !== "typesafe").map((c) => [c.id!, `${c.name} · ${c.model}`] as [string, string])], a.model)}
-      <label><span class="field-label">${escape(instructionLabel)}</span><textarea rows="4" data-selection-field="instruction" aria-label="${escape(instructionLabel)}" placeholder="${escape(instructionPlaceholder)}" ${this.busy ? "disabled" : ""}>${escape(a.instruction)}</textarea></label>
+      ${
+        a.kind === "translate"
+          ? select(
+              "translationEngine",
+              S.translation.engine,
+              AVAILABLE_TRANSLATION_ENGINES.map((engine) => [
+                engine,
+                S.translation.engines[engine],
+              ]),
+              translationEngine(a),
+              translationEngineSupported(a)
+                ? undefined
+                : S.translation.chooseEngine,
+            )
+          : ""
+      }
+      ${
+        usesModel(a)
+          ? `${select("model", S.model, [["default", `${S.defaultModel}${defaultModel ? ` · ${defaultModel}` : ""}`], ...config.connections.filter((c) => c.connected && c.protocol !== "typesafe").map((c) => [c.id!, `${c.name} · ${c.model}`] as [string, string])], a.model)}
+      <label><span class="field-label">${escape(instructionLabel)}</span><textarea rows="4" data-selection-field="instruction" aria-label="${escape(instructionLabel)}" placeholder="${escape(instructionPlaceholder)}" ${this.busy ? "disabled" : ""}>${escape(a.instruction)}</textarea></label>`
+          : `<p class="field-note">${escape(!translationEngineSupported(a) ? S.translation.engineUnavailable : translationEngine(a) === "microsoft" ? S.translation.microsoftNotice : S.translation.browserNotice)}</p>`
+      }
     </div>`;
   }
 }

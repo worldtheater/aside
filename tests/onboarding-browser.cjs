@@ -19,6 +19,12 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
     0,
     "This suite starts with a fresh install",
   );
+  assert.equal(
+    original.actions.find((action) => action.id === "translate")
+      .translationEngine,
+    "microsoft",
+    "A fresh install can translate without configuring an AI model",
+  );
   const before = calls.length;
   const hint = "点击这里配置模型";
   const source = await context.newPage();
@@ -123,6 +129,67 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
       radial = host.locator("#radial");
     const settings = radial.locator("[data-op=open-settings]");
     await dock.waitFor();
+    await source.locator("#first").dblclick({ position: { x: 14, y: 10 } });
+    await bar.waitFor();
+    assert(
+      await bar.locator('[data-selection-action="translate"]').isEnabled(),
+    );
+    assert(await bar.locator('[data-selection-action="explain"]').isDisabled());
+    assert.equal(await bar.locator(".model-setup-needed").count(), 0);
+    assert(
+      await page.evaluate(
+        (origin) => chrome.permissions.request({ origins: [origin + "/*"] }),
+        origin,
+      ),
+    );
+    popup = await context.newPage();
+    const currentTab = await page.evaluate(
+      async (url) =>
+        (await chrome.tabs.query({})).find((tab) => tab.url === url),
+      source.url(),
+    );
+    assert(currentTab, "The fixture webpage is visible to the test extension");
+    // This test tab renders popup.html while preserving the invoking webpage.
+    await popup.addInitScript((tab) => {
+      const query = chrome.tabs.query.bind(chrome.tabs);
+      chrome.tabs.query = (info) =>
+        info.active ? Promise.resolve([tab]) : query(info);
+    }, currentTab);
+    await source.bringToFront();
+    await popup.goto(new URL("popup.html", page.url()).href);
+    assert.equal(
+      await popup.locator("#translation-engine").inputValue(),
+      "microsoft",
+    );
+    assert(await popup.locator('[data-op="run"]').isEnabled());
+    assert.equal(await popup.locator(".model-setup-needed").count(), 0);
+    assert(
+      (await popup.locator("#status").textContent()).includes(
+        "文字会发送到微软",
+      ),
+    );
+    await require("./popup-permissions-browser.cjs")({
+      page,
+      context,
+      source,
+      popup,
+      tab: currentTab,
+    });
+    assert.equal(calls.length, before);
+    popup = null;
+    // The existing guidance cases intentionally select AI without a model.
+    await request({
+      type: "settings.save",
+      patch: {
+        actions: original.actions.map((action) =>
+          action.kind === "translate"
+            ? { ...action, translationEngine: "ai" }
+            : action,
+        ),
+      },
+    });
+    await source.reload();
+    await dock.waitFor();
     const select = async () => {
       await source.locator("#first").dblclick({ position: { x: 14, y: 10 } });
       await bar.waitFor();
@@ -219,13 +286,12 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
     }, sourceTabId);
     const tools = host.locator("#toolbar");
     await tools.waitFor();
-    assert.equal(
-      await tools
-        .locator('button:enabled:not([data-op="open-settings"])')
-        .count(),
-      0,
+    assert(await tools.locator('[data-op="run"]').isDisabled());
+    assert(
+      await tools.locator('[data-op="choose"]').isEnabled(),
+      "An unavailable action does not block choosing another action",
     );
-    assert.equal(await tools.locator("select:enabled").count(), 0);
+    assert(await tools.locator('[data-op="hide-toolbar"]').isEnabled());
     await openConnections(() => tools.locator(".tools-brand").click());
     await source.bringToFront();
     await source.keyboard.press("Escape");
@@ -336,29 +402,25 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
         flatten: false,
       }));
       await evaluate(
-        `new Promise(resolve=>{const ready=()=>document.querySelector('.hover-tip:popover-open')?resolve(true):requestAnimationFrame(ready);ready();})`,
+        `new Promise(resolve=>{const ready=()=>document.querySelector('[data-select-for="ui-locale"]')?resolve(true):requestAnimationFrame(ready);ready();})`,
       );
       await evaluate(
         `Promise.all(document.getAnimations().filter(a=>a.effect.getTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})))`,
       );
       const view = await evaluate(`(()=>{
-        const button=document.querySelector('#settings'),tip=document.querySelector('.hover-tip');
-        return {button:button.getBoundingClientRect().toJSON(),tip:tip.getBoundingClientRect().toJSON(),text:tip.textContent,
-          width:innerWidth,height:innerHeight,label:button.getAttribute('aria-label'),outlineAnimation:getComputedStyle(button,'::before').animationName,tipAnimation:getComputedStyle(tip).animationName,iconOpacity:getComputedStyle(button.querySelector('svg')).opacity};
+        const button=document.querySelector('#settings'),language=document.querySelector('[data-select-for="ui-locale"]');
+        return {button:button.getBoundingClientRect().toJSON(),language:language.getBoundingClientRect().toJSON(),
+          label:button.getAttribute('aria-label'),outlineAnimation:getComputedStyle(button,'::before').animationName,iconOpacity:getComputedStyle(button.querySelector('svg')).opacity};
       })()`);
-      assert.equal(view.text, hint);
       assert.equal(view.label, "设置");
       assert.equal(view.outlineAnimation, "none");
-      assert.equal(view.tipAnimation, "model-setup-float");
       assert.equal(view.iconOpacity, "1");
-      assert(
-        view.tip.x >= 8 &&
-          view.tip.right <= view.width - 7 &&
-          view.tip.bottom <= view.height - 7,
-      );
-      assert(
-        view.tip.top >= view.button.bottom,
-        "At the viewport top, the tip appears below the Settings button",
+      assert.equal(view.button.height, view.language.height);
+      assert.equal(
+        await evaluate(
+          `document.querySelectorAll('.hover-tip:popover-open').length`,
+        ),
+        0,
       );
       const capture = await send("Page.captureScreenshot", { format: "png" });
       fs.writeFileSync(
@@ -398,7 +460,7 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
     popup = await context.newPage();
     await popup.setViewportSize({ width: 400, height: 600 });
     await popup.goto(new URL("popup.html", page.url()).href);
-    await verifyHint(popup.locator("#popup"), popup.locator("#settings"), true);
+    assert.equal(await popup.locator(".hover-tip:popover-open").count(), 0);
     await select();
     connection = await request({
       type: "connection.save",
@@ -426,11 +488,7 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
       .waitFor({ state: "hidden" });
     await popup.locator(".hover-tip:popover-open").waitFor({ state: "hidden" });
     await popup.locator("#settings").hover();
-    await popup
-      .locator(".hover-tip:popover-open")
-      .filter({ hasText: "设置" })
-      .waitFor();
-    assert.equal(await popup.locator(".hover-tip").textContent(), "设置");
+    assert.equal(await popup.locator(".hover-tip:popover-open").count(), 0);
     await source.keyboard.press("Escape");
     await dock.click();
     await settle(radial);
@@ -458,10 +516,10 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
     await source.keyboard.press("Escape");
     await select();
     await verifyLocked(bar, ".selection-toolbar-row button", brand);
-    await verifyHint(popup.locator("#popup"), popup.locator("#settings"), true);
+    assert.equal(await popup.locator(".hover-tip:popover-open").count(), 0);
     assert.equal(calls.length, before, "Setup guidance never calls a model");
     console.log(
-      "PASS: unconfigured toolbar and floating menu expose only Settings; disabled buttons ignore hover/click, no in-page glow, logo mouse/keyboard routes work, popup guidance remains intact, and setup/removal updates controls live.",
+      "PASS: fresh installs enable Microsoft translation without AI setup; declined service permission leaves a retryable entry; explicitly selected AI keeps model guidance, safe disabled actions and live setup/removal updates.",
     );
   } finally {
     if (connection)
@@ -470,7 +528,7 @@ module.exports = async ({ page, context, origin, calls, artifacts }) => {
     await source.close();
     await request({
       type: "settings.save",
-      patch: { preferences: original.preferences },
+      patch: { preferences: original.preferences, actions: original.actions },
     });
     await page.reload();
     await page.locator("h1").waitFor();
