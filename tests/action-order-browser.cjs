@@ -246,5 +246,7 @@ module.exports = async ({
   } finally {
     await patch(original.actions);
     if (source) await source.close();
+    // Fixture writes bypass the open editor's snapshot; drop removed test actions.
+    await page.reload();
   }
 };
