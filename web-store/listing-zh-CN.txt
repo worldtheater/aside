@@ -35,5 +35,6 @@ AI 功能需要自行配置兼容的模型服务地址，以及该服务要求�
 
 旁白采用 MIT 许可证开源。
 产品主页：https://worldtheater.github.io/aside/
-源码与反馈：https://github.com/worldtheater/aside
+意见反馈（无需登录）：https://tally.so/r/jebJOJ
+源码：https://github.com/worldtheater/aside
 隐私政策：https://worldtheater.github.io/aside/privacy.html

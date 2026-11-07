@@ -230,6 +230,8 @@ node tests/browser.cjs --lights-recovery-only
 
 ## 产品介绍页
 
+插件「意见反馈」和各语言官网页脚共用 `website/links.json` 中的 `feedback.en`、`feedback.zh` 地址：按当前界面语言，简体和繁体中文打开简体中文表单，其他语言打开英文表单。点击后在浏览器打开 Tally，不附加网页、模型或使用记录。两个表单在 Tally 分别管理，只有反馈内容必填，类型、截图和邮箱选填；分别在 Settings 中开启 Self email notifications 后，新反馈会发送到创建者账号邮箱。修改问题时同步两份表单的文案及必填设置；更换地址时同步隐私政策、README 和商店支持地址，并重新生成官网页面。
+
 GitHub Pages 从 `main` 分支的 `docs/` 提供静态页面。首页使用 `website/template.html` 共用模板，文案在 `website/locales/`，语言名称与路由在 `website/languages.json`。运行 `npm run build:site` 生成十五种语言的静态页面；`npm run check:site` 检查文案完整性和生成结果是否最新。不要直接修改生成的首页 HTML。页面共享 `docs/home.css` 和 `docs/home.js`，图片位于 `docs/assets/`。英文首页仍位于根目录，简体中文仍位于 `zh/`；隐私政策仍位于 `privacy.html`，其他语言的链接会标明其为英文。
 
 搜索标题和摘要分别使用各语言文案的 `seoTitle`、`seoDescription`，与可见主标题分开维护。模板保留 Google Search Console 的 `google-site-verification` 验证标记，验证成功后也不要删除。构建同时生成产品 `SoftwareApplication` JSON-LD 和 `docs/sitemap.xml`；结构化数据中的公开下载版本和各浏览器兼容要求来自 `website/release.json`，网站地图包含全部语言首页与隐私政策，不填写虚构的更新时间、评分或评论。

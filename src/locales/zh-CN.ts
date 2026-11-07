@@ -106,7 +106,7 @@ const base = {
     version: "当前版本",
     resources: "项目与支持",
     project: "项目地址",
-    feedback: "反馈问题",
+    feedback: "意见反馈",
     privacy: "隐私政策",
     openSource: "开源致谢",
     licenseName: "MIT 许可证",

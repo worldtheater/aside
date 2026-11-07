@@ -122,7 +122,7 @@ const base = {
     version: "เวอร์ชันปัจจุบัน",
     resources: "โครงการและการสนับสนุน",
     project: "หน้าโครงการ",
-    feedback: "รายงานปัญหา",
+    feedback: "ส่งความคิดเห็น",
     privacy: "นโยบายความเป็นส่วนตัว",
     openSource: "ขอบคุณโครงการโอเพนซอร์ส",
     licenseName: "สัญญาอนุญาต MIT",

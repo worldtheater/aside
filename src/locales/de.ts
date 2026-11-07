@@ -128,7 +128,7 @@ const base = {
     version: "Aktuelle Version",
     resources: "Projekt und Support",
     project: "Projektseite",
-    feedback: "Problem melden",
+    feedback: "Feedback senden",
     privacy: "Datenschutzerklärung",
     openSource: "Open-Source-Danksagungen",
     licenseName: "MIT-Lizenz",

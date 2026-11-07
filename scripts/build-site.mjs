@@ -9,6 +9,7 @@ const readJson = async (name) =>
   JSON.parse(await readFile(path.join(root, name), "utf8"));
 const languages = await readJson("website/languages.json");
 const reference = await readJson("website/locales/en.json");
+const { feedback: feedbackUrls } = await readJson("website/links.json");
 // Public download links must not advance when the next release is still a draft.
 const { version, browsers } = await readJson("website/release.json");
 const browserIcons = Object.fromEntries(
@@ -194,6 +195,9 @@ for (const language of languages) {
     releaseUrl: `${repo}/releases/tag/v${version}`,
     downloadUrl,
     heroInstall: renderStoreInstall(),
+    feedbackUrl: escape(
+      feedbackUrls[language.code.startsWith("zh") ? "zh" : "en"],
+    ),
     manualInstall: renderManualInstall(),
     structuredData: `<script type="application/ld+json">${JSON.stringify(
       {

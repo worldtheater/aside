@@ -116,7 +116,7 @@ const base = {
     version: "현재 버전",
     resources: "프로젝트 및 지원",
     project: "프로젝트 페이지",
-    feedback: "문제 신고",
+    feedback: "의견 보내기",
     privacy: "개인정보 처리방침",
     openSource: "오픈 소스 감사의 말",
     licenseName: "MIT 라이선스",

@@ -121,7 +121,7 @@ const base = {
     version: "Versi saat ini",
     resources: "Proyek dan dukungan",
     project: "Halaman proyek",
-    feedback: "Laporkan masalah",
+    feedback: "Kirim masukan",
     privacy: "Kebijakan privasi",
     openSource: "Ucapan terima kasih sumber terbuka",
     licenseName: "lisensi MIT",

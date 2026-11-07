@@ -35,5 +35,6 @@ Page tools work on regular HTTP/HTTPS pages where Chrome permits extensions. Bro
 
 Aside is open source under the MIT License.
 Website: https://worldtheater.github.io/aside/
-Source and support: https://github.com/worldtheater/aside
+Feedback (no account required): https://tally.so/r/Eq5ZGL
+Source: https://github.com/worldtheater/aside
 Privacy policy: https://worldtheater.github.io/aside/privacy.html

@@ -124,7 +124,7 @@ const base = {
     version: "Geçerli sürüm",
     resources: "Proje ve destek",
     project: "Proje sayfası",
-    feedback: "Sorun bildir",
+    feedback: "Geri bildirim gönder",
     privacy: "Gizlilik politikası",
     openSource: "Açık kaynak teşekkürleri",
     licenseName: "MIT lisansı",

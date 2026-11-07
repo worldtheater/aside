@@ -110,7 +110,7 @@ const base = {
     version: "目前版本",
     resources: "專案與支援",
     project: "專案網址",
-    feedback: "回報問題",
+    feedback: "意見回饋",
     privacy: "隱私政策",
     openSource: "開源致謝",
     licenseName: "MIT 授權條款",

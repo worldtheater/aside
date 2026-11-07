@@ -131,6 +131,19 @@ Open **Settings → Sync** to enable optional sync through your existing browser
 - On first joining, records with no known modification time adopt the synced version for matching IDs after confirmation; unique local records are retained. Synced default-generation and default-decision model choices only fill unset defaults; an existing local choice is never replaced. A suggestion is used only if its connection still exists and matches the model purpose. Stopping sync affects only this device. **Delete synced settings** removes the encrypted synced copy while preserving local settings; use this to start again if you forget the passphrase. The passphrase cannot be recovered.
 - Aside uses a 100 KB total quota and an 8 KB per-item quota across supported browsers. Aside splits encrypted snapshots into chunks and reserves room for publication; a snapshot is limited to 42,000 base64 characters after compression and encryption. Oversized settings are rejected without replacing the previous synced copy.
 
+## Feedback
+
+Use **About → Send feedback** in the extension or the
+[English feedback form](https://tally.so/r/Eq5ZGL) / [中文反馈表单](https://tally.so/r/jebJOJ)
+to share a problem, suggestion, or experience without an account.
+The extension and website open the Chinese form for Simplified and Traditional
+Chinese interfaces, and the English form for other interface languages.
+The form is hosted by Tally. Screenshots and an email address are optional;
+leave an email address if you would like a reply. Submitted feedback is sent to
+the maintainer and is not published publicly. The link does not automatically
+attach page content, API keys, or request history. GitHub Issues remains available
+for public technical discussions.
+
 ## Data and permissions
 
 Read the [Privacy Policy](https://worldtheater.github.io/aside/privacy.html) for details about local storage, model requests, third parties, and your deletion controls.

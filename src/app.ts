@@ -42,6 +42,7 @@ import {
   languageControl,
 } from "./ui.js";
 import siteLanguages from "../website/languages.json";
+import productLinks from "../website/links.json";
 import { HoverTips } from "./hover-tips.js";
 import { showColorPicker } from "./color-picker.js";
 import { escapeHtml as e } from "./html.js";
@@ -996,6 +997,8 @@ function dailyCard() {
 }
 function renderHelp() {
   const H = C.about;
+  const feedbackUrl =
+    productLinks.feedback[locale.startsWith("zh") ? "zh" : "en"];
   const manifest = chrome.runtime.getManifest();
   const repository = manifest.homepage_url!;
   const licenseLink = `<a class="help-license" href="${e(repository + "/blob/main/LICENSE")}" target="_blank" rel="noopener noreferrer">${e(H.licenseName)}</a>`;
@@ -1025,7 +1028,7 @@ function renderHelp() {
     <div class="help-layout">
       <section class="help-current-version" aria-labelledby="help-version-title"><h2 id="help-version-title">${e(H.version)}</h2><span class="help-version">${e(manifest.version)}</span></section>
       <section class="help-resources" aria-labelledby="help-links-title"><h2 id="help-links-title">${e(H.resources)}</h2><div class="help-links">
-        ${externalLink(H.project, repository, "github")}${externalLink(H.feedback, repository + "/issues", "explain")}${externalLink(H.privacy, PRODUCT_SITE_URL + "privacy.html", "lock")}
+        ${externalLink(H.project, repository, "github")}${externalLink(H.feedback, feedbackUrl, "explain")}${externalLink(H.privacy, PRODUCT_SITE_URL + "privacy.html", "lock")}
       </div></section>
       <section class="help-credits" aria-labelledby="help-credits-title"><h2 id="help-credits-title">${e(H.openSource)}</h2><p>${e(H.licenseIntro).replace("{license}", licenseLink)}</p>
         <ul>${libraries.map((library) => `<li><a href="${e(library.url)}" target="_blank" rel="noopener noreferrer"><strong>${e(library.name)}</strong><span>${e(library.role)}</span></a><small>${e(library.license)}</small></li>`).join("")}</ul>

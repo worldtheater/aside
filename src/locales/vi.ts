@@ -121,7 +121,7 @@ const base = {
     version: "Phiên bản hiện tại",
     resources: "Dự án và hỗ trợ",
     project: "Trang dự án",
-    feedback: "Báo cáo sự cố",
+    feedback: "Gửi phản hồi",
     privacy: "Chính sách quyền riêng tư",
     openSource: "Ghi nhận nguồn mở",
     licenseName: "giấy phép MIT",

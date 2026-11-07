@@ -15,7 +15,7 @@
 | 分类 | Education，以控制台当前选项为准 |
 | 产品主页 | https://worldtheater.github.io/aside/ |
 | 商店页面 | https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf |
-| 支持 / 反馈地址 | https://github.com/worldtheater/aside/issues |
+| 支持 / 反馈地址 | 英文 https://tally.so/r/Eq5ZGL；中文 https://tally.so/r/jebJOJ（免登录；联系方式和截图选填） |
 | 隐私政策 | https://worldtheater.github.io/aside/privacy.html |
 | 图标 | [assets/store-icon-128.png](assets/store-icon-128.png) |
 | 小型宣传图 | [assets/promo-small-440x280.png](assets/promo-small-440x280.png) |
