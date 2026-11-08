@@ -112,6 +112,12 @@ const base = {
     },
   },
   brand: "Aside",
+  share: {
+    label: "Aside 공유",
+    text: "Aside는 웹페이지 번역, 선택한 글에 대한 질문, 유용한 구절 저장을 지원하는 무료 오픈 소스 브라우저 읽기 도우미입니다.",
+    copied: "소개와 링크를 복사했습니다",
+    failed: "복사하지 못했습니다. 다시 시도하세요.",
+  },
   about: {
     version: "현재 버전",
     resources: "프로젝트 및 지원",

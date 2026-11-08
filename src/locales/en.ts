@@ -114,6 +114,12 @@ const base = {
     },
   },
   brand: "Aside",
+  share: {
+    label: "Share Aside",
+    text: "Aside is a free, open-source browser reading assistant for webpage translation, questions about selected text, and saving useful passages.",
+    copied: "Text and link copied",
+    failed: "Could not copy. Please try again.",
+  },
   about: {
     version: "Current version",
     resources: "Project & support",

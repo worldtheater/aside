@@ -125,6 +125,12 @@ const base = {
     },
   },
   brand: "Aside",
+  share: {
+    label: "Partager Aside",
+    text: "Aside est un assistant de lecture gratuit et open source pour navigateur : traduction de pages web, questions sur le texte sélectionné et sauvegarde de passages utiles.",
+    copied: "Texte et lien copiés",
+    failed: "Copie impossible. Réessayez.",
+  },
   about: {
     version: "Version actuelle",
     resources: "Projet et assistance",

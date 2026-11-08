@@ -124,6 +124,12 @@ const base = {
     },
   },
   brand: "Aside",
+  share: {
+    label: "Aside teilen",
+    text: "Aside ist ein kostenloser Open-Source-Leseassistent für den Browser: Webseiten übersetzen, Fragen zu markiertem Text stellen und hilfreiche Textstellen speichern.",
+    copied: "Text und Link kopiert",
+    failed: "Kopieren fehlgeschlagen. Bitte erneut versuchen.",
+  },
   about: {
     version: "Aktuelle Version",
     resources: "Projekt und Support",

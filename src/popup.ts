@@ -12,7 +12,8 @@ import {
   WEBSITE_RESOURCE_ORIGINS,
 } from "./browser.js";
 import { storageChanges } from "./extension-storage.js";
-import { icon, languageControl } from "./ui.js";
+import { button, icon, languageControl } from "./ui.js";
+import { productShareText } from "./product.js";
 import { HoverTips } from "./hover-tips.js";
 import { escapeHtml as escape } from "./html.js";
 import brandMark from "../icons/brand-mark.svg";
@@ -45,8 +46,10 @@ const playIcon =
 const root = document.querySelector<HTMLElement>("#popup")!;
 const targets = new Map<string, string>();
 let settingsButton: HTMLElement, lightsButton: HTMLButtonElement;
+let shareNoticeTimer: ReturnType<typeof setTimeout> | undefined;
 const popupTips = new HoverTips(root, "#website-lights");
 function render() {
+  clearTimeout(shareNoticeTimer);
   const actionId = root.querySelector<HTMLSelectElement>("#action")?.value;
   const P = C.popup;
   closeMenu();
@@ -71,6 +74,7 @@ function render() {
       <p class="popup-status" id="status" role="status">${data.connections.some((c) => c.protocol !== "typesafe") ? C.processingNotice : C.real.noConnection}</p>
     </section>
     <section class="popup-features" aria-label="${P.features}" aria-describedby="feature-scope"><div id="feature-controls"></div><p class="popup-status" id="feature-scope">${P.allSites}</p><p class="popup-status" id="feature-status" role="status"></p></section>
+    <footer class="popup-share">${button(C.share.label, "share-product", "ghost", "share")}<span class="popup-status" id="share-status" role="status"></span></footer>
   </main>`;
   root.append(popupTips.element);
   settingsButton = root.querySelector<HTMLElement>("#settings")!;
@@ -323,7 +327,28 @@ document.addEventListener("change", async (event) => {
 document.addEventListener("click", async (event) => {
   const target = event.target as HTMLElement;
   const button = target.closest<HTMLButtonElement>("[data-op]");
-  if (!button || tab?.id === undefined) return;
+  if (!button) return;
+  if (button.dataset.op === "share-product") {
+    const status = root.querySelector<HTMLElement>("#share-status")!;
+    clearTimeout(shareNoticeTimer);
+    status.textContent = "";
+    status.removeAttribute("data-error");
+    button.disabled = true;
+    try {
+      await navigator.clipboard.writeText(productShareText(locale));
+      status.textContent = C.share.copied;
+      shareNoticeTimer = setTimeout(() => {
+        status.textContent = "";
+      }, 3000);
+    } catch {
+      status.dataset.error = "true";
+      status.textContent = C.share.failed;
+    } finally {
+      button.disabled = false;
+    }
+    return;
+  }
+  if (tab?.id === undefined) return;
   try {
     button.disabled = true;
     if (button.dataset.op === "run") {

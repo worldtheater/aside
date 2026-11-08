@@ -117,6 +117,12 @@ const base = {
     },
   },
   brand: "Aside",
+  share: {
+    label: "Chia sẻ Aside",
+    text: "Aside là trợ lý đọc trên trình duyệt miễn phí, mã nguồn mở, hỗ trợ dịch trang web, đặt câu hỏi về văn bản đã chọn và lưu những đoạn hữu ích.",
+    copied: "Đã sao chép nội dung và liên kết",
+    failed: "Không thể sao chép. Vui lòng thử lại.",
+  },
   about: {
     version: "Phiên bản hiện tại",
     resources: "Dự án và hỗ trợ",

@@ -41,7 +41,7 @@ import {
   selected,
   languageControl,
 } from "./ui.js";
-import siteLanguages from "../website/languages.json";
+import { productHomepage, productShareText } from "./product.js";
 import productLinks from "../website/links.json";
 import { HoverTips } from "./hover-tips.js";
 import { showColorPicker } from "./color-picker.js";
@@ -118,8 +118,6 @@ import {
   DECISION_MODELS_ENABLED,
 } from "./providers.js";
 import { summarizeUsage } from "./usage.js";
-
-const PRODUCT_SITE_URL = "https://worldtheater.github.io/aside/";
 
 const [data, initialCommands] = await Promise.all([
   request("snapshot"),
@@ -624,9 +622,7 @@ function renderPreferences() {
   </div>`;
 }
 function renderSidebar() {
-  const sitePath = siteLanguages.find((item) => item.code === locale)!.path;
-  const homepage = new URL(sitePath ? `${sitePath}/` : "", PRODUCT_SITE_URL)
-    .href;
+  const homepage = productHomepage(locale);
   const route = state.route === "editor" ? "actions" : state.route;
   const link = (
     name: string,
@@ -1028,7 +1024,7 @@ function renderHelp() {
     <div class="help-layout">
       <section class="help-current-version" aria-labelledby="help-version-title"><h2 id="help-version-title">${e(H.version)}</h2><span class="help-version">${e(manifest.version)}</span></section>
       <section class="help-resources" aria-labelledby="help-links-title"><h2 id="help-links-title">${e(H.resources)}</h2><div class="help-links">
-        ${externalLink(H.project, repository, "github")}${externalLink(H.feedback, feedbackUrl, "explain")}${externalLink(H.privacy, PRODUCT_SITE_URL + "privacy.html", "lock")}
+        ${externalLink(H.project, repository, "github")}${externalLink(H.feedback, feedbackUrl, "explain")}${externalLink(H.privacy, productLinks.homepage + "privacy.html", "lock")}${button(C.share.label, "share-product", "ghost", "share")}
       </div></section>
       <section class="help-credits" aria-labelledby="help-credits-title"><h2 id="help-credits-title">${e(H.openSource)}</h2><p>${e(H.licenseIntro).replace("{license}", licenseLink)}</p>
         <ul>${libraries.map((library) => `<li><a href="${e(library.url)}" target="_blank" rel="noopener noreferrer"><strong>${e(library.name)}</strong><span>${e(library.role)}</span></a><small>${e(library.license)}</small></li>`).join("")}</ul>
@@ -2042,6 +2038,13 @@ document.addEventListener("click", async (event) => {
       navigate("home");
     } else if (op === "shortcut-settings") {
       await openShortcutSettings();
+    } else if (op === "share-product") {
+      try {
+        await navigator.clipboard.writeText(productShareText(locale));
+        notify(C.share.copied);
+      } catch {
+        notify(C.share.failed, "error");
+      }
     } else if (op === "navigation-open") {
       setNavigationOpen(true);
       app.querySelector<HTMLElement>("[data-op=navigation-close]")?.focus();

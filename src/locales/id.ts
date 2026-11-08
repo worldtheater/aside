@@ -117,6 +117,12 @@ const base = {
     },
   },
   brand: "Aside",
+  share: {
+    label: "Bagikan Aside",
+    text: "Aside adalah asisten membaca di browser yang gratis dan bersumber terbuka untuk menerjemahkan halaman web, bertanya tentang teks pilihan, dan menyimpan kutipan berguna.",
+    copied: "Teks dan tautan disalin",
+    failed: "Tidak dapat menyalin. Coba lagi.",
+  },
   about: {
     version: "Versi saat ini",
     resources: "Proyek dan dukungan",

@@ -171,6 +171,25 @@ body {
   padding-top: 12px;
   border-top: 1px solid var(--line);
 }
+.popup-share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.popup-share .btn {
+  min-height: 32px;
+  height: 32px;
+  padding: 0 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+#share-status[data-error] {
+  color: var(--danger);
+}
 .popup-feature-row {
   display: flex;
   align-items: center;

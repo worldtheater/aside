@@ -102,6 +102,12 @@ const base = {
     },
   },
   brand: "旁白",
+  share: {
+    label: "分享旁白",
+    text: "旁白：免费开源的浏览器阅读助手，支持网页翻译、选文问答和片段收藏。",
+    copied: "介绍和链接已复制",
+    failed: "复制失败，请重试。",
+  },
   about: {
     version: "当前版本",
     resources: "项目与支持",

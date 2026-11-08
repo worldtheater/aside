@@ -123,6 +123,12 @@ const base = {
     },
   },
   brand: "Aside",
+  share: {
+    label: "Compartir Aside",
+    text: "Aside es un asistente de lectura gratuito y de código abierto para el navegador: traduce páginas web, responde preguntas sobre texto seleccionado y guarda pasajes útiles.",
+    copied: "Texto y enlace copiados",
+    failed: "No se pudo copiar. Inténtalo de nuevo.",
+  },
   about: {
     version: "Versión actual",
     resources: "Proyecto y soporte",

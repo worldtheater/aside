@@ -21,6 +21,7 @@ UI 设计原则与验收检查项集中在 [设计规范](../.agents/design-prin
 | `node tests/browser.cjs --onboarding-only` | 已构建产物的首次安装引导、设置跳转及配置实时更新回归 |
 | `node tests/browser.cjs --reset-only` | 隔离配置中的重置确认/取消、任务停止、数据清理和多页面恢复回归；不操作实际使用的插件数据 |
 | `node tests/credentials-browser.cjs` | 已构建产物的本机凭据加密、升级迁移、重启保留及密文损坏回归 |
+| `node tests/product-share-browser.cjs` | 分享入口专项检查：真实剪贴板写入、语言路由、无当前标签页、复制失败及亮暗色布局 |
 | `node tests/theme-browser.cjs` | 已构建产物的首屏主题专项回归 |
 | `node tests/controls-browser.cjs` | 共享下拉框的宿主尺寸通知、重定位、选项选择及关闭回归；设置 `CONTROLS_BROWSER=webkit` 可运行 WebKit 版本，需先安装 Playwright WebKit |
 | `npm run package` | 构建并生成 `artifacts/aside-<manifest版本>.zip` |
@@ -229,6 +230,8 @@ node tests/browser.cjs --lights-recovery-only
 数据处理、接收方、自动调用或保留规则发生变化时，同步更新政策及日期，再推送至 `main`。README 与插件「关于」均链接到同一地址；商店隐私披露也需与实际行为保持一致。
 
 ## 产品介绍页
+
+插件弹窗底部和「关于」页的「分享旁白」将当前界面语言的简短介绍和官网链接复制到剪贴板，使用 `src/product.ts` 共用的内容与路由生成逻辑；介绍及复制结果提示维护在 `src/locales/`，官网根地址维护在 `website/links.json`。此操作独立于当前网页和模型配置，不附加网页内容、账户或使用记录，也不会自动发送到外部平台。
 
 插件「意见反馈」和各语言官网页脚共用 `website/links.json` 中的 `feedback.en`、`feedback.zh` 地址：按当前界面语言，简体和繁体中文打开简体中文表单，其他语言打开英文表单。点击后在浏览器打开 Tally，不附加网页、模型或使用记录。两个表单在 Tally 分别管理，只有反馈内容必填，类型、截图和邮箱选填；分别在 Settings 中开启 Self email notifications 后，新反馈会发送到创建者账号邮箱。修改问题时同步两份表单的文案及必填设置；更换地址时同步隐私政策、README 和商店支持地址，并重新生成官网页面。
 

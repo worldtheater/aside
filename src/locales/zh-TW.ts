@@ -106,6 +106,12 @@ const base = {
     },
   },
   brand: "旁白",
+  share: {
+    label: "分享旁白",
+    text: "旁白：免費開源的瀏覽器閱讀助手，支援網頁翻譯、選文問答和片段收藏。",
+    copied: "介紹和連結已複製",
+    failed: "複製失敗，請重試。",
+  },
   about: {
     version: "目前版本",
     resources: "專案與支援",

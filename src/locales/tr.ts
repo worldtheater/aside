@@ -120,6 +120,12 @@ const base = {
     },
   },
   brand: "Aside",
+  share: {
+    label: "Aside’ı paylaş",
+    text: "Aside; web sayfalarını çevirmek, seçili metin hakkında sorular sormak ve yararlı bölümleri kaydetmek için ücretsiz ve açık kaynaklı bir tarayıcı okuma asistanıdır.",
+    copied: "Metin ve bağlantı kopyalandı",
+    failed: "Kopyalanamadı. Lütfen tekrar deneyin.",
+  },
   about: {
     version: "Geçerli sürüm",
     resources: "Proje ve destek",
