@@ -9,7 +9,9 @@ const readJson = async (name) =>
   JSON.parse(await readFile(path.join(root, name), "utf8"));
 const languages = await readJson("website/languages.json");
 const reference = await readJson("website/locales/en.json");
-const { feedback: feedbackUrls } = await readJson("website/links.json");
+const { feedback: feedbackUrls, homepage: site } =
+  await readJson("website/links.json");
+const screenshotCopy = await readJson("scripts/fixtures/store-assets.json");
 // Public download links must not advance when the next release is still a draft.
 const { version, browsers } = await readJson("website/release.json");
 const browserIcons = Object.fromEntries(
@@ -32,7 +34,6 @@ const template = await readFile(
   path.join(root, "website/template.html"),
   "utf8",
 );
-const site = "https://worldtheater.github.io/aside/";
 const repo = "https://github.com/worldtheater/aside";
 const check = process.argv.includes("--check");
 const url = (locale) => site + (locale.path ? locale.path + "/" : "");
@@ -99,6 +100,23 @@ for (const language of languages) {
   if (missing.length || extra.length)
     throw Error(`${language.code}: missing [${missing}], extra [${extra}]`);
   const prefix = language.path ? "../" : "./";
+  const screenshotPath = path.posix.join("assets", language.screenshots || "");
+  const qaSource =
+    screenshotCopy[language.screenshots || "en"].philosophySource;
+  const screenshotDimensions = {};
+  for (const [name, filename] of [
+    ["translation", "translation.png"],
+    ["qa", "quick-qa.png"],
+    ["collection", "collection.png"],
+    ["dark", "dark-reading.png"],
+  ]) {
+    const png = await readFile(
+      path.join(root, "docs", screenshotPath, filename),
+    );
+    // PNG's IHDR stores the actual dimensions of each localized capture.
+    screenshotDimensions[`${name}Width`] = png.readUInt32BE(16);
+    screenshotDimensions[`${name}Height`] = png.readUInt32BE(20);
+  }
   const fragments = {
     version: escape(version),
     darkReader:
@@ -186,6 +204,10 @@ for (const language of languages) {
   const values = {
     language: escape(language.code),
     root: prefix,
+    screenshotRoot: `${prefix}${screenshotPath}/`,
+    ...screenshotDimensions,
+    qaSourceUrl: escape(qaSource.url),
+    qaSourceLabel: escape(qaSource.label),
     styleVersion: assetVersions["home.css"],
     scriptVersion: assetVersions["home.js"],
     canonical: url(language),

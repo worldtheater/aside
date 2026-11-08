@@ -1,0 +1,161 @@
+{
+  "source": [
+    "Lire, c’est entrer dans une conversation",
+    "Lire ne consiste pas seulement à recueillir des informations. C’est une conversation entre ce que nous savons déjà et ce que nous cherchons à comprendre.",
+    "Une note utile ne se contente pas de répéter une phrase. Elle relie une idée à une question, à une expérience ou à une autre idée.",
+    "Avant de surligner un paragraphe, prenez un instant pour vous demander : qu’est-ce qui a changé dans ma compréhension ? Écrivez ce changement avec vos propres mots."
+  ],
+  "en": {
+    "siteTitle": "Fieldnotes",
+    "readingTagline": "Essays on reading & learning",
+    "philosophyTagline": "Readings in philosophy",
+    "readingCategory": "Reading practice / 004",
+    "philosophyCategory": "Zhuangzi / 026",
+    "footer": "An original sample article for Aside.",
+    "connectionName": "Demo connection",
+    "modelName": "Demo model",
+    "reading": [
+      "Reading is a conversation",
+      "Reading is not simply the act of collecting information. It is a conversation between what we already know and what we are trying to understand.",
+      "A useful note does more than repeat a sentence. It connects an idea to a question, an experience, or another idea.",
+      "Before highlighting a paragraph, pause and ask: what changed in my understanding? Write that change in your own words."
+    ],
+    "note": "A useful note does more than repeat a sentence. It connects an idea to a question, an experience, or another idea. Those connections make knowledge easier to recall and use.",
+    "philosophy": [
+      "Words and meaning",
+      "The raison d'être of a fish-trap is the fish. When the fish is caught, the trap may be ignored. The raison d'être of a rabbit-snare is the rabbit. When the rabbit is caught the snare may be ignored. The raison d'être of language is an idea to be expressed. When the idea is expressed, the language may be ignored. But where shall I find a man to ignore language, with whom I may be able to converse?"
+    ],
+    "question": "Does forgetting words mean that language has no value?",
+    "answer": "**One reading: grasp the meaning without becoming attached to the wording.**\n\nThe traps help us catch fish or rabbits; words help us understand. Their usefulness lies in what they make possible.\n\nThe final sentence still seeks a conversation. It suggests using language without mistaking the words for the understanding they enable.",
+    "summary": "- **Read actively.** Connect new ideas to what you already know.\n- **Write in your own words.** Capture the change in your understanding.\n- **Keep the context.** Save useful passages so you can revisit them.",
+    "reflection": "The best note is not the sentence you kept, but the thought it helped you find.",
+    "collection": [
+      {
+        "title": "Pause before highlighting",
+        "sourceText": "Before highlighting a paragraph, pause and ask: what changed in my understanding?",
+        "text": "Write down the change in your understanding. One precise sentence can be enough.",
+        "actionName": "Explain"
+      },
+      {
+        "title": "Read with a question in mind",
+        "sourceText": "Reading is not simply the act of collecting information. It is a conversation between what we already know and what we are trying to understand.",
+        "text": "Reading becomes active when a new idea meets a question you already have.",
+        "actionName": "Explain"
+      },
+      {
+        "title": "Keep the connection",
+        "sourceText": "A useful note does more than repeat a sentence. It connects an idea to a question, an experience, or another idea. Those connections make knowledge easier to recall and use.",
+        "text": "A useful note connects an idea to a question, an experience, or another idea.",
+        "actionName": "Key points"
+      }
+    ],
+    "philosophySource": {
+      "label": "Zhuangzi · Chapter 26, External Things",
+      "url": "https://en.wikisource.org/wiki/Chuang_Tz%C5%AD_(Giles)/Chapter_26",
+      "edition": "Herbert A. Giles translation, 1889",
+      "note": "Illustrative response."
+    }
+  },
+  "zh-CN": {
+    "siteTitle": "随读手记",
+    "readingTagline": "关于阅读与学习的随笔",
+    "philosophyTagline": "哲学原典阅读",
+    "readingCategory": "阅读练习 / 004",
+    "philosophyCategory": "庄子 / 026",
+    "footer": "为旁白撰写的原创演示文章。",
+    "connectionName": "演示连接",
+    "modelName": "演示模型",
+    "reading": [
+      "阅读，是一场对话",
+      "阅读不只是收集信息，也是已有的认识与正在探索的事物之间的一场对话。",
+      "有用的笔记不只是重复一句话。它把一个想法与一个问题、一段经历，或另一个想法联系起来。",
+      "标记一段文字之前，不妨先问自己：我的理解发生了什么变化？再用自己的话把这个变化写下来。"
+    ],
+    "note": "有用的笔记不只是重复一句话。它把一个想法与一个问题、一段经历，或另一个想法联系起来。这些联系让知识更容易被记住和运用。",
+    "philosophy": [
+      "得意而忘言",
+      "荃者所以在鱼，得鱼而忘荃。蹄者所以在兔，得兔而忘蹄。言者所以在意，得意而忘言。吾安得夫忘言之人而与之言哉？"
+    ],
+    "question": "“得意而忘言”是在否定语言的价值吗？",
+    "answer": "**一种读法：重在领会意思，不执着于字句。**\n\n“荃”和“蹄”是捕鱼、捕兔的工具；语言则帮助人理解意思。这个比喻把工具与目的区分开来。\n\n末句仍想找人交谈，因此“忘言”不必理解为拒绝语言，而可以理解为：借助言语领会意思，不把字句本身当成终点。",
+    "summary": "- **主动阅读。** 把新想法与已有认识联系起来。\n- **用自己的话记录。** 写下理解发生的变化。\n- **保留语境。** 收藏有用的段落，方便日后重读。",
+    "reflection": "最好的笔记，不是留下的那句话，而是它帮你发现的那个想法。",
+    "collection": [
+      {
+        "title": "标记之前，停一下",
+        "sourceText": "标记一段文字之前，不妨先问自己：我的理解发生了什么变化？",
+        "text": "写下理解发生的变化。一句准确的话，也许就已经足够。",
+        "actionName": "解释"
+      },
+      {
+        "title": "带着问题阅读",
+        "sourceText": "阅读不只是收集信息，也是已有的认识与正在探索的事物之间的一场对话。",
+        "text": "当一个新想法遇见你心中已有的问题，阅读就变得主动起来。",
+        "actionName": "解释"
+      },
+      {
+        "title": "留下想法之间的联系",
+        "sourceText": "有用的笔记不只是重复一句话。它把一个想法与一个问题、一段经历，或另一个想法联系起来。",
+        "text": "让笔记连接问题、经历和其他想法，知识才更容易被记住和运用。",
+        "actionName": "提炼要点"
+      }
+    ],
+    "philosophySource": {
+      "label": "《庄子·外物》第二十六篇",
+      "url": "https://zh.wikisource.org/wiki/莊子/外物",
+      "edition": "原文节选 · 简体字形",
+      "note": "回答为演示解读。"
+    }
+  },
+  "zh-TW": {
+    "siteTitle": "隨讀手記",
+    "readingTagline": "關於閱讀與學習的隨筆",
+    "philosophyTagline": "哲學原典閱讀",
+    "readingCategory": "閱讀練習 / 004",
+    "philosophyCategory": "莊子 / 026",
+    "footer": "為旁白撰寫的原創示範文章。",
+    "connectionName": "示範連線",
+    "modelName": "示範模型",
+    "reading": [
+      "閱讀，是一場對話",
+      "閱讀不只是蒐集資訊，也是已有的認識與正在探索的事物之間的一場對話。",
+      "有用的筆記不只是重複一句話。它把一個想法與一個問題、一段經歷，或另一個想法連結起來。",
+      "標記一段文字之前，不妨先問自己：我的理解發生了什麼變化？再用自己的話把這個變化寫下來。"
+    ],
+    "note": "有用的筆記不只是重複一句話。它把一個想法與一個問題、一段經歷，或另一個想法連結起來。這些連結讓知識更容易被記住和運用。",
+    "philosophy": [
+      "得意而忘言",
+      "荃者所以在魚，得魚而忘荃。蹄者所以在兔，得兔而忘蹄。言者所以在意，得意而忘言。吾安得夫忘言之人而與之言哉？"
+    ],
+    "question": "「得意而忘言」是在否定語言的價值嗎？",
+    "answer": "**一種讀法：重在領會意思，不執著於字句。**\n\n「荃」和「蹄」是捕魚、捕兔的工具；語言則幫助人理解意思。這個比喻把工具與目的區分開來。\n\n末句仍想找人交談，因此「忘言」不必理解為拒絕語言，而可以理解為：藉助言語領會意思，不把字句本身當成終點。",
+    "summary": "- **主動閱讀。** 把新想法與已有認識連結起來。\n- **用自己的話記錄。** 寫下理解發生的變化。\n- **保留語境。** 收藏有用的段落，方便日後重讀。",
+    "reflection": "最好的筆記，不是留下的那句話，而是它幫你發現的那個想法。",
+    "collection": [
+      {
+        "title": "標記之前，停一下",
+        "sourceText": "標記一段文字之前，不妨先問自己：我的理解發生了什麼變化？",
+        "text": "寫下理解發生的變化。一句準確的話，也許就已經足夠。",
+        "actionName": "解釋"
+      },
+      {
+        "title": "帶著問題閱讀",
+        "sourceText": "閱讀不只是蒐集資訊，也是已有的認識與正在探索的事物之間的一場對話。",
+        "text": "當一個新想法遇見你心中已有的問題，閱讀就變得主動起來。",
+        "actionName": "解釋"
+      },
+      {
+        "title": "留下想法之間的連結",
+        "sourceText": "有用的筆記不只是重複一句話。它把一個想法與一個問題、一段經歷，或另一個想法連結起來。",
+        "text": "讓筆記連結問題、經歷和其他想法，知識才更容易被記住和運用。",
+        "actionName": "擷取重點"
+      }
+    ],
+    "philosophySource": {
+      "label": "《莊子·外物》第二十六篇",
+      "url": "https://zh.wikisource.org/wiki/莊子/外物",
+      "edition": "原文節選 · 繁體字形",
+      "note": "回答為示範解讀。"
+    }
+  }
+}

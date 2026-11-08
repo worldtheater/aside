@@ -111,30 +111,30 @@
           <a
             class="screenshot-link"
             aria-haspopup="dialog"
-            href="{{root}}assets/translation.png"
+            href="{{screenshotRoot}}translation.png"
             aria-label="{{imagePreview}}"
             ><picture>
               <source
                 data-theme="dark"
                 data-media="(max-width: 600px)"
                 media="(max-width: 600px) and (prefers-color-scheme: dark)"
-                srcset="{{root}}assets/translation-mobile-dark.png"
+                srcset="{{screenshotRoot}}translation-mobile-dark.png"
               />
               <source
                 media="(max-width: 600px)"
-                srcset="{{root}}assets/translation-mobile.png"
+                srcset="{{screenshotRoot}}translation-mobile.png"
               />
               <source
                 data-theme="dark"
                 media="(prefers-color-scheme: dark)"
-                srcset="{{root}}assets/translation-dark.png"
+                srcset="{{screenshotRoot}}translation-dark.png"
               />
               <img
-                src="{{root}}assets/translation.png"
+                src="{{screenshotRoot}}translation.png"
                 alt="{{translationAlt}}"
                 fetchpriority="high"
-                width="1416"
-                height="824"
+                width="{{translationWidth}}"
+                height="{{translationHeight}}"
               /> </picture
           ></a>
           <figcaption>{{translationCaption}}</figcaption>
@@ -168,22 +168,30 @@
             <a
               class="screenshot-link"
               aria-haspopup="dialog"
-              href="{{root}}assets/quick-qa.png"
+              href="{{screenshotRoot}}quick-qa.png"
               aria-label="{{imagePreview}}"
               ><picture
                 ><source
                   data-theme="dark"
                   media="(prefers-color-scheme: dark)"
-                  srcset="{{root}}assets/quick-qa-dark.png" />
+                  srcset="{{screenshotRoot}}quick-qa-dark.png" />
                 <img
-                  src="{{root}}assets/quick-qa.png"
+                  src="{{screenshotRoot}}quick-qa.png"
                   alt="{{qaAlt}}"
                   loading="lazy"
                   decoding="async"
-                  width="1416"
-                  height="816" /></picture
+                  width="{{qaWidth}}"
+                  height="{{qaHeight}}" /></picture
             ></a>
-            <figcaption>{{screenshotCaption}}</figcaption>
+            <figcaption>
+              {{screenshotCaption}}
+              <a
+                href="{{qaSourceUrl}}"
+                target="_blank"
+                rel="noopener noreferrer"
+                >{{qaSourceLabel}}</a
+              >
+            </figcaption>
           </figure>
           <div class="feature-copy">
             <h3>{{qaTitle}}</h3>
@@ -202,20 +210,20 @@
             <a
               class="screenshot-link"
               aria-haspopup="dialog"
-              href="{{root}}assets/collection.png"
+              href="{{screenshotRoot}}collection.png"
               aria-label="{{imagePreview}}"
               ><picture
                 ><source
                   data-theme="dark"
                   media="(prefers-color-scheme: dark)"
-                  srcset="{{root}}assets/collection-dark.png" />
+                  srcset="{{screenshotRoot}}collection-dark.png" />
                 <img
-                  src="{{root}}assets/collection.png"
+                  src="{{screenshotRoot}}collection.png"
                   alt="{{collectionAlt}}"
                   loading="lazy"
                   decoding="async"
-                  width="2144"
-                  height="1322" /></picture
+                  width="{{collectionWidth}}"
+                  height="{{collectionHeight}}" /></picture
             ></a>
           </figure>
         </div>
@@ -236,15 +244,15 @@
             <a
               class="screenshot-link"
               aria-haspopup="dialog"
-              href="{{root}}assets/dark-reading.png"
+              href="{{screenshotRoot}}dark-reading.png"
               aria-label="{{imagePreview}}"
               ><img
-                src="{{root}}assets/dark-reading.png"
+                src="{{screenshotRoot}}dark-reading.png"
                 alt="{{darkAlt}}"
                 loading="lazy"
                 decoding="async"
-                width="2560"
-                height="1600"
+                width="{{darkWidth}}"
+                height="{{darkHeight}}"
             /></a>
           </figure>
         </div>

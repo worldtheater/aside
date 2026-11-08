@@ -9,13 +9,15 @@
     "code": "zh-CN",
     "name": "简体中文",
     "short": "简",
-    "path": "zh"
+    "path": "zh",
+    "screenshots": "zh-CN"
   },
   {
     "code": "zh-TW",
     "name": "繁體中文",
     "short": "繁",
-    "path": "zh-tw"
+    "path": "zh-tw",
+    "screenshots": "zh-TW"
   },
   {
     "code": "ja",

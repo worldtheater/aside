@@ -6,52 +6,53 @@ import os from "node:os";
 import http from "node:http";
 import { fileURLToPath } from "node:url";
 
-// All content and model replies below are authored demonstration fixtures.
+// Reading examples and model replies are authored demonstration fixtures.
+// The philosophy excerpt and its edition are credited in the fixture and image.
 // The installed extension renders them unchanged in an isolated, disposable profile.
 // No real account, API key, browsing history or external model service is used.
 const root = fileURLToPath(new URL("../", import.meta.url));
 const website = process.argv.includes("--website");
-const output = path.join(root, website ? "docs" : "web-store", "assets");
+const qaOnly = process.argv.includes("--qa-only");
+const locale =
+  process.argv.find((arg) => arg.startsWith("--locale="))?.slice(9) || "en";
+const fixtures = JSON.parse(
+  await readFile(
+    new URL("./fixtures/store-assets.json", import.meta.url),
+    "utf8",
+  ),
+);
+const copy = fixtures[locale];
+if (!copy?.reading || (!website && locale !== "en"))
+  throw new Error("Use --website --locale=en, zh-CN or zh-TW.");
+const output = path.join(
+  root,
+  website ? "docs" : "web-store",
+  "assets",
+  locale === "en" ? "" : locale,
+);
 const require = createRequire(import.meta.url);
 const { watchUI } = require("../tests/inspect-ui.cjs");
-const paragraph =
-  "Reading is not simply the act of collecting information. It is a conversation between what we already know and what we are trying to understand.";
-const note =
-  "A useful note does more than repeat a sentence. It connects an idea to a question, an experience, or another idea. Those connections make knowledge easier to recall and use.";
-const french = [
-  "Lire, c’est entrer dans une conversation",
-  "Lire ne consiste pas seulement à recueillir des informations. C’est une conversation entre ce que nous savons déjà et ce que nous cherchons à comprendre.",
-  "Une note utile ne se contente pas de répéter une phrase. Elle relie une idée à une question, à une expérience ou à une autre idée.",
-  "Avant de surligner un paragraphe, prenez un instant pour vous demander : qu’est-ce qui a changé dans ma compréhension ? Écrivez ce changement avec vos propres mots.",
-];
-const english = [
-  "Reading is a conversation",
-  paragraph,
-  "A useful note does more than repeat a sentence. It connects an idea to a question, an experience, or another idea.",
-  "Before highlighting a paragraph, pause and ask: what changed in my understanding? Write that change in your own words.",
-];
-const translations = new Map(french.map((text, i) => [text, english[i]]));
-const philosophy = [
-  "Explaining a belief, justifying a belief",
-  "A genealogy of belief accounts for its emergence without thereby establishing its warrant. The conditions under which an idea becomes persuasive are not necessarily the reasons that make it defensible.",
-  "This distinction is easily lost when a familiar explanation feels satisfying. Understanding the history of a judgment is one task; assessing its reasons is another.",
-  "Inquiry therefore asks us to examine both how we acquired a conviction and what could count as evidence for or against it.",
-];
-const answer =
-  "**An explanation tells us how a belief arose; a justification gives reasons to accept it.**\n\nYou may believe a claim because a respected teacher said it. That explains your confidence. Evidence and a sound argument would help justify the claim.\n\nIts origin alone neither proves nor disproves it.";
-const summary =
-  "- **Read actively.** Connect new ideas to what you already know.\n- **Write in your own words.** Capture the change in your understanding.\n- **Keep the context.** Save useful passages so you can revisit them.";
-const reflection =
-  "The best note is not the sentence you kept, but the thought it helped you find.";
+const { note, philosophy, answer, summary, reflection } = copy;
+const paragraph = copy.reading[1];
+const french = fixtures.source;
+const translations = new Map(french.map((text, i) => [text, copy.reading[i]]));
 function article(language, isPhilosophy = false) {
   const lines = isPhilosophy
     ? philosophy
     : language === "fr"
       ? french
-      : english;
-  return `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${lines[0]} — Fieldnotes</title><style>
+      : copy.reading;
+  const citation = isPhilosophy
+    ? `<div class="citation" id="citation"><a href="${copy.philosophySource.url}">${copy.philosophySource.label}</a><br>${copy.philosophySource.edition} · ${copy.philosophySource.note}</div>`
+    : "";
+  const paragraphs = lines
+    .slice(1)
+    .map((text, index) => `<p${index === 0 ? ' id="first"' : ""}>${text}</p>`)
+    .join("");
+  return `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${lines[0]} — ${copy.siteTitle}</title><style>
   *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#fafafa;color:#292e30;font:18px/1.8 Georgia,serif}header{height:82px;border-bottom:1px solid #dedbd3;display:flex;align-items:center;justify-content:space-between;padding:0 68px;font:14px system-ui;letter-spacing:.04em}header strong{font-size:20px}main{max-width:760px;margin:54px auto 90px}aside{font:12px system-ui;letter-spacing:.16em;color:#85765f;text-transform:uppercase;margin-bottom:20px}h1{font-weight:500;font-size:42px;line-height:1.18;letter-spacing:-.025em;margin:0 0 28px}p{margin:0 0 24px}footer{border-top:1px solid #dedbd3;padding-top:20px;margin-top:34px;color:#6d7376;font:13px system-ui}::selection{background:#d7e4ed}
-  ${website ? "main{width:calc(100% - 48px);max-width:660px}@media(max-width:600px){header{padding:0 24px}header span{display:none}main{margin-top:30px}h1{font-size:30px}body{font-size:18px}}" : ""}</style></head><body><header><strong>Fieldnotes</strong><span>${isPhilosophy ? "Essays on knowledge & belief" : "Essays on reading & learning"}</span></header><main><aside>${isPhilosophy ? "Philosophy notes / 004" : "Reading practice / 004"}</aside><h1>${lines[0]}</h1><p id="first">${lines[1]}</p><p>${lines[2]}</p><p>${lines[3]}</p><footer>An original sample article for Aside.</footer></main></body></html>`;
+  .citation{font:13px/1.6 system-ui;color:#6d7376;margin-bottom:16px}.citation a{color:inherit;text-underline-offset:3px}
+  ${website ? "main{width:calc(100% - 48px);max-width:660px}@media(max-width:600px){header{padding:0 24px}header span{display:none}main{margin-top:30px}h1{font-size:30px}body{font-size:18px}}" : ""}</style></head><body><header><strong>${copy.siteTitle}</strong><span>${isPhilosophy ? copy.philosophyTagline : copy.readingTagline}</span></header><main><aside>${isPhilosophy ? copy.philosophyCategory : copy.readingCategory}</aside><h1>${lines[0]}</h1>${citation}${paragraphs}${isPhilosophy ? "" : `<footer>${copy.footer}</footer>`}</main></body></html>`;
 }
 const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url.endsWith("/models")) {
@@ -97,8 +98,8 @@ const server = http.createServer(async (req, res) => {
   res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
   res.end(
     article(
-      req.url.startsWith("/fr") ? "fr" : "en",
-      req.url === "/en/belief-and-reasons",
+      req.url.startsWith("/fr") ? "fr" : locale,
+      req.url.endsWith("/words-and-meaning"),
     ),
   );
 });
@@ -113,7 +114,7 @@ const context = await chromium.launchPersistentContext(profile, {
   headless: true,
   viewport: { width: 1280, height: 800 },
   deviceScaleFactor: website ? 2 : 1,
-  locale: "en-US",
+  locale,
   ignoreDefaultArgs: ["--disable-extensions"],
   args: ["--enable-unsafe-extension-debugging"],
 });
@@ -147,10 +148,17 @@ try {
     patch: {
       preferences: {
         ...snapshot.preferences,
-        locale: "en",
+        locale,
         theme: "light",
         palette: "graphite",
       },
+      // Keep fixture translations on the local mock service even when the
+      // installed version defaults to an online translation engine.
+      actions: snapshot.actions.map((action) =>
+        action.kind === "translate"
+          ? { ...action, translationEngine: "ai" }
+          : action,
+      ),
     },
   });
   await app.evaluate(
@@ -162,10 +170,10 @@ try {
     key: "",
     connection: {
       id: null,
-      name: "Demo connection",
+      name: copy.connectionName,
       url: origin + "/v1",
       model: "demo-model",
-      models: [{ id: "demo-model", name: "Demo model" }],
+      models: [{ id: "demo-model", name: copy.modelName }],
       protocol: "chat",
       maxTokens: 4096,
       openaiCache: "auto",
@@ -173,6 +181,7 @@ try {
     },
   });
   const capture = async (page, filename) => {
+    if (qaOnly && !filename.startsWith("02-")) return;
     await page.mouse.move(5, 5);
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(500);
@@ -195,8 +204,9 @@ try {
             node.closest("#selection").getBoundingClientRect().toJSON(),
           );
         const passage = await page.locator("#first").boundingBox();
+        const citation = await page.locator("#citation").boundingBox();
         const left = Math.min(passage.x, panel.x);
-        const top = Math.min(passage.y, panel.y);
+        const top = Math.min(citation.y, panel.y);
         clip = {
           x: left - 24,
           y: top - 24,
@@ -246,10 +256,12 @@ try {
     panel: false,
   });
   await source.locator("#first > [data-pagework=result]").waitFor();
-  await source.waitForFunction(() =>
-    document
-      .querySelector("#first > [data-pagework=result]")
-      ?.shadowRoot?.textContent.includes("conversation"),
+  await source.waitForFunction(
+    (expected) =>
+      document
+        .querySelector("#first > [data-pagework=result]")
+        ?.shadowRoot?.textContent.includes(expected),
+    paragraph,
   );
   await source
     .locator("[data-pagework=ui] #toolbar[aria-busy=false]")
@@ -261,7 +273,7 @@ try {
       patch: {
         preferences: {
           ...snapshot.preferences,
-          locale: "en",
+          locale,
           theme: "dark",
           palette: "graphite",
         },
@@ -280,7 +292,7 @@ try {
       patch: {
         preferences: {
           ...snapshot.preferences,
-          locale: "en",
+          locale,
           theme: "light",
           palette: "graphite",
         },
@@ -293,7 +305,8 @@ try {
     await source.setViewportSize({ width: 1280, height: 800 });
   }
 
-  await source.goto(origin + "/en/belief-and-reasons");
+  if (website) await source.setViewportSize({ width: 1280, height: 1000 });
+  await source.goto(`${origin}/${locale}/words-and-meaning`);
   const ui = source.locator("[data-pagework=ui]");
   await ui.locator("#dock").waitFor();
   await source.locator("#first").evaluate((node) => {
@@ -308,9 +321,7 @@ try {
   await source.mouse.up();
   await ui.locator("#selection [data-selection-command=expand]").click();
   await ui.locator("#selection [data-selection-action=qa]").click();
-  await ui
-    .locator("#question-input")
-    .fill("Why doesn’t explaining the origin of a belief justify it?");
+  await ui.locator("#question-input").fill(copy.question);
   await ui.locator("[data-op=question-run]").click();
   await ui.locator("#output[aria-busy=false]").waitFor();
   if (website) {
@@ -342,7 +353,7 @@ try {
       patch: {
         preferences: {
           ...snapshot.preferences,
-          locale: "en",
+          locale,
           theme: "dark",
           palette: "graphite",
         },
@@ -358,7 +369,7 @@ try {
       patch: {
         preferences: {
           ...snapshot.preferences,
-          locale: "en",
+          locale,
           theme: "light",
           palette: "graphite",
         },
@@ -367,6 +378,7 @@ try {
   }
 
   const date = new Date().toLocaleDateString("en-CA");
+  if (website) await source.setViewportSize({ width: 1280, height: 800 });
   await send({
     type: "daily.save",
     daily: {
@@ -377,32 +389,12 @@ try {
       result: reflection,
     },
   });
-  for (const item of [
-    {
-      title: "Pause before highlighting",
-      sourceText:
-        "Before highlighting a paragraph, pause and ask: what changed in my understanding?",
-      text: "Write down the change in your understanding. One precise sentence can be enough.",
-      actionName: "Explain",
-    },
-    {
-      title: "Read with a question in mind",
-      sourceText: paragraph,
-      text: "Reading becomes active when a new idea meets a question you already have.",
-      actionName: "Explain",
-    },
-    {
-      title: "Keep the connection",
-      sourceText: note,
-      text: "A useful note connects an idea to a question, an experience, or another idea.",
-      actionName: "Key points",
-    },
-  ])
+  for (const item of copy.collection)
     await send({
       type: "collection.add",
       item: {
         ...item,
-        sourceTitle: "Reading is a conversation",
+        sourceTitle: copy.reading[0],
         url: "https://example.com/reading",
       },
     });
@@ -416,7 +408,7 @@ try {
       patch: {
         preferences: {
           ...snapshot.preferences,
-          locale: "en",
+          locale,
           theme: "dark",
           palette: "graphite",
         },
@@ -433,7 +425,7 @@ try {
       patch: {
         preferences: {
           ...snapshot.preferences,
-          locale: "en",
+          locale,
           theme: "light",
           palette: "graphite",
         },
@@ -453,13 +445,13 @@ try {
     patch: {
       preferences: {
         ...snapshot.preferences,
-        locale: "en",
+        locale,
         theme: "dark",
         palette: "graphite",
       },
     },
   });
-  await source.goto(origin + "/en/dark-reading");
+  await source.goto(`${origin}/${locale}/dark-reading`);
   await ui.locator("#dock").waitFor();
   await app.evaluate(() =>
     chrome.permissions.request({ origins: ["http://*/*", "https://*/*"] }),
