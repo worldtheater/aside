@@ -33,7 +33,7 @@ Microsoft translation is selected by default and needs no API key or model setup
 
 No Node.js is required for a packaged release.
 
-1. [Download Aside 0.1.7 for Chrome](https://github.com/worldtheater/aside/releases/download/v0.1.7/aside-0.1.7.zip) from GitHub Releases. Use the extension ZIP, not the automatically generated “Source code” archive.
+1. [Download Aside 0.1.8 for Chrome](https://github.com/worldtheater/aside/releases/download/v0.1.8/aside-0.1.8.zip) from GitHub Releases. Use the extension ZIP, not the automatically generated “Source code” archive.
 2. Extract the ZIP to a permanent folder.
 3. Open `chrome://extensions`, enable **Developer mode**, click **Load unpacked**, and select the extracted folder containing `manifest.json`.
 
@@ -41,7 +41,7 @@ Keep the extracted folder in place. To update, replace its contents and reload t
 
 ### Manual installation (Edge)
 
-1. [Download Aside 0.1.7 for Edge](https://github.com/worldtheater/aside/releases/download/v0.1.7/aside-0.1.7-edge.zip).
+1. [Download Aside 0.1.8 for Edge](https://github.com/worldtheater/aside/releases/download/v0.1.8/aside-0.1.8-edge.zip).
 2. Extract the ZIP to a permanent folder.
 3. Open `edge://extensions`, enable **Developer mode**, click **Load unpacked**, and select the extracted folder containing `manifest.json`.
 
@@ -49,7 +49,7 @@ Keep the extracted folder in place. To update, replace its contents and reload t
 
 ### Manual installation (Firefox)
 
-1. [Download Aside 0.1.7 for Firefox](https://github.com/worldtheater/aside/releases/download/v0.1.7/aside-0.1.7-firefox.zip). Choose this extension package, not the `firefox-source.zip` review archive.
+1. [Download Aside 0.1.8 for Firefox](https://github.com/worldtheater/aside/releases/download/v0.1.8/aside-0.1.8-firefox.zip). Choose this extension package, not the `firefox-source.zip` review archive.
 2. Extract the ZIP to a folder.
 3. Open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select `manifest.json` in the extracted folder.
 
