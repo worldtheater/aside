@@ -22,9 +22,9 @@ An AI reading assistant for Chrome, Microsoft Edge, and Firefox. Translate pages
 
 | Browser | Minimum desktop version | Installation |
 | --- | --- | --- |
-| Google Chrome | 120 | [Chrome Web Store](https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf) or [manual installation](#manual-installation-chrome) — version 0.1.6 available |
-| Microsoft Edge | 120 | [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp) or [manual installation](#manual-installation-edge) — version 0.1.6 available |
-| Firefox | 147 | [Mozilla Add-ons](https://addons.mozilla.org/en-US/firefox/addon/aside-ai/) — version 0.1.6 available; [manual installation](#manual-installation-firefox) for temporary testing |
+| Google Chrome | 120 | [Chrome Web Store](https://chromewebstore.google.com/detail/aside/fpepddfodhahbemmlphncnaifledggcf) or [manual installation](#manual-installation-chrome) — version 0.1.8 available |
+| Microsoft Edge | 120 | [Microsoft Edge Add-ons](https://microsoftedge.microsoft.com/addons/detail/aside/chkehhllhepnnfofjkdbpkgdfmekggnp) or [manual installation](#manual-installation-edge) — version 0.1.8 available |
+| Firefox | 147 | [Mozilla Add-ons](https://addons.mozilla.org/en-US/firefox/addon/aside-ai/) — version 0.1.8 available; [manual installation](#manual-installation-firefox) for temporary testing |
 | Safari for macOS | 26 | [Local development preview](docs/SAFARI.md) — requires Xcode; no cross-device sync |
 
 Microsoft translation is selected by default and needs no API key or model setup. For AI features, add a model under **Settings → Model connections**. Open a regular HTTP/HTTPS page to use the selection toolbar, floating menu, or extension popup.
