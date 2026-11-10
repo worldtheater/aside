@@ -54,6 +54,35 @@
       "url": "https://en.wikisource.org/wiki/Chuang_Tz%C5%AD_(Giles)/Chapter_26",
       "edition": "Herbert A. Giles translation, 1889",
       "note": "Illustrative response."
+    },
+    "store": {
+      "brand": "Aside",
+      "excerpt": "The raison d'être of language is an idea to be expressed. When the idea is expressed, the language may be ignored. But where shall I find a man to ignore language, with whom I may be able to converse?",
+      "answer": "**Words help us grasp the meaning.** Once we understand the idea, we can put it in our own words. The closing question still seeks a conversation, where those words can help someone else understand.",
+      "instruction": "Extract two takeaways. Start each with an action verb.",
+      "summary": "- **Connect new ideas** to what you already know.\n- **Link notes** to questions, experiences, or other ideas.",
+      "cards": [
+        {
+          "title": "Read both languages together",
+          "caption": "See the translation just below each original paragraph."
+        },
+        {
+          "title": "Ask about the passage",
+          "caption": "Select a passage and explore a question while you read."
+        },
+        {
+          "title": "Keep what you read",
+          "caption": "Save useful explanations with their original text and source."
+        },
+        {
+          "title": "Make the action your own",
+          "caption": "Write instructions and try them on a sample."
+        },
+        {
+          "title": "Read comfortably at night",
+          "caption": "Switch a website to dark mode from the floating menu."
+        }
+      ]
     }
   },
   "zh-CN": {
@@ -105,6 +134,35 @@
       "url": "https://zh.wikisource.org/wiki/莊子/外物",
       "edition": "原文节选 · 简体字形",
       "note": "回答为演示解读。"
+    },
+    "store": {
+      "brand": "旁白 Aside",
+      "excerpt": "言者所以在意，得意而忘言。吾安得夫忘言之人而与之言哉？",
+      "answer": "**语言帮助我们领会意思。** 懂了以后，可以用自己的话再讲一遍。末句仍在寻找可以交谈的人，因为理解也可以通过语言传给别人。",
+      "instruction": "提炼两条要点，每条都用动词开头。",
+      "summary": "- **联系已有认识**，理解正在探索的新想法。\n- **把笔记连到问题、经历或其他想法**，方便记忆和运用。",
+      "cards": [
+        {
+          "title": "原文和译文，对照着读",
+          "caption": "译文逐段显示在原文下方，边滚动边读。"
+        },
+        {
+          "title": "读到不懂的，选中问一句",
+          "caption": "围绕所选原文提问，答案就在当前网页。"
+        },
+        {
+          "title": "把值得再读的片段留下",
+          "caption": "原文、解读和来源，一起存进收藏。"
+        },
+        {
+          "title": "按自己的方式处理文字",
+          "caption": "写下你的要求，先试运行，再保存。"
+        },
+        {
+          "title": "夜里也能舒服地读",
+          "caption": "从悬浮菜单切换网页暗色模式。"
+        }
+      ]
     }
   },
   "zh-TW": {

@@ -249,7 +249,9 @@ GitHub Pages 从 `main` 分支的 `docs/` 提供静态页面。首页使用 `web
 
 首页通过中性色浏览器图标选择平台，首屏提供商店安装，底部展示对应浏览器的手动安装步骤；两处选择保持一致。默认识别 Edge、Firefox，其他浏览器显示 Chrome 并保留手动切换。`website/release.json` 的 `version` 记录公开的 GitHub 下载版本；`browsers` 分别维护商店地址、已上架版本与最低浏览器版本。每个浏览器的 `manual` 维护 ZIP 文件名后缀 `archiveSuffix`、手动安装指南、扩展管理地址和是否临时加载；下载地址统一由公开版本与文件名后缀生成。手动安装直接下载对应浏览器的 ZIP，不要求从源码构建。Firefox 的临时加载限制单独说明。未上架平台的 `storeUrl` 和 `version` 为 `null`，页面显示审核中；上架后填入实际地址与版本即可。新增浏览器还需在 `docs/assets/browsers/` 添加同名 SVG。公开信息不随 `package.json` 中的待发布版本自动变化。新版本的下载链接可提前在本地准备并提交，但须等草稿验收并公开发布后，再推送到 `main`，避免官网出现无法下载的入口。修改后运行 `npm run build:site`。发布流程见[自动发布](#自动发布)。
 
-使用 `node scripts/store-assets.mjs --website` 重新生成英文首页截图；添加 `--locale=zh-CN` 或 `--locale=zh-TW` 分别生成简体、繁体中文素材，保存在 `docs/assets/zh-CN/`、`docs/assets/zh-TW/`。演示文章、问答、收藏和模型回复集中维护在 `scripts/fixtures/store-assets.json`；问答原文采用《庄子·外物》篇末节选，中文按简繁字形呈现，英文使用 Herbert A. Giles 1889 年译文，来源链接与版本信息由 `philosophySource` 同时供截图和网页说明使用，演示解读与引文分开标识。添加 `--qa-only` 可仅导出问答图片，插件界面使用对应语言资源；翻译示例保留法语原文，输出当前截图语言。生成器复用商店素材的隔离浏览器与本地模拟服务，并显式使用 AI 翻译引擎，避免访问默认在线翻译服务；以 2 倍像素密度直接截取真实插件界面，为首屏提供移动端版本，为首屏、选文问答和收藏提供亮暗色版本。`website/languages.json` 的 `screenshots` 指定页面使用的截图目录，未指定的语言使用英文素材；页面生成时从 PNG 读取实际尺寸。无参数运行仍只生成英文商店素材。截图内容、显示比例与预览交互遵循设计规范。
+使用 `node scripts/store-assets.mjs --website` 重新生成英文首页截图；添加 `--locale=zh-CN` 或 `--locale=zh-TW` 分别生成简体、繁体中文素材，保存在 `docs/assets/zh-CN/`、`docs/assets/zh-TW/`。演示文章、问答、收藏和模型回复集中维护在 `scripts/fixtures/store-assets.json`；问答原文采用《庄子·外物》篇末节选，中文按简繁字形呈现，英文使用 Herbert A. Giles 1889 年译文，来源链接与版本信息由 `philosophySource` 同时供截图和网页说明使用，演示解读与引文分开标识。添加 `--qa-only` 可仅导出问答图片，插件界面使用对应语言资源；翻译示例保留法语原文，输出当前截图语言。生成器复用商店素材的隔离浏览器与本地模拟服务，并显式使用 AI 翻译引擎，避免访问默认在线翻译服务；以 2 倍像素密度直接截取真实插件界面，为首屏提供移动端版本，为首屏、选文问答和收藏提供亮暗色版本。`website/languages.json` 的 `screenshots` 指定页面使用的截图目录，未指定的语言使用英文素材；页面生成时从 PNG 读取实际尺寸。截图内容、显示比例与预览交互遵循设计规范。
+
+不加 `--website` 时，生成器默认输出英文商店素材；添加 `--locale=zh-CN` 生成简体中文展示图。文件和上传语言项见[商店发布材料](../web-store/README.md#展示素材)。
 
 首页主题选择保存在本站的本地存储中；主题交互和截图呈现遵循设计规范。修改 `docs/home.css` 或 `docs/home.js` 后也要运行 `npm run build:site`，生成页面中的资源版本随内容更新，避免旧缓存影响预览和发布。
 

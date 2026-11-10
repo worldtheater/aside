@@ -5,6 +5,7 @@ import path from "node:path";
 import os from "node:os";
 import http from "node:http";
 import { fileURLToPath } from "node:url";
+import { renderStoreScreenshot } from "./store-screenshot.mjs";
 
 // Reading examples and model replies are authored demonstration fixtures.
 // The philosophy excerpt and its edition are credited in the fixture and image.
@@ -22,8 +23,10 @@ const fixtures = JSON.parse(
   ),
 );
 const copy = fixtures[locale];
-if (!copy?.reading || (!website && locale !== "en"))
-  throw new Error("Use --website --locale=en, zh-CN or zh-TW.");
+if (!copy?.reading || (!website && !copy.store))
+  throw new Error(
+    "Store screenshots support en and zh-CN. Website screenshots also support zh-TW.",
+  );
 const output = path.join(
   root,
   website ? "docs" : "web-store",
@@ -32,27 +35,33 @@ const output = path.join(
 );
 const require = createRequire(import.meta.url);
 const { watchUI } = require("../tests/inspect-ui.cjs");
-const { note, philosophy, answer, summary, reflection } = copy;
+const { note, philosophy, reflection, store } = copy;
+const { answer, summary } = website ? copy : store;
 const paragraph = copy.reading[1];
 const french = fixtures.source;
 const translations = new Map(french.map((text, i) => [text, copy.reading[i]]));
-function article(language, isPhilosophy = false) {
+function article(language, isPhilosophy, dark) {
   const lines = isPhilosophy
-    ? philosophy
+    ? website
+      ? philosophy
+      : [philosophy[0], store.excerpt]
     : language === "fr"
       ? french
       : copy.reading;
   const citation = isPhilosophy
     ? `<div class="citation" id="citation"><a href="${copy.philosophySource.url}">${copy.philosophySource.label}</a><br>${copy.philosophySource.edition} · ${copy.philosophySource.note}</div>`
     : "";
+  const category = website
+    ? `<aside>${isPhilosophy ? copy.philosophyCategory : copy.readingCategory}</aside>`
+    : "";
   const paragraphs = lines
-    .slice(1)
+    .slice(1, website ? undefined : 2)
     .map((text, index) => `<p${index === 0 ? ' id="first"' : ""}>${text}</p>`)
     .join("");
   return `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${lines[0]} — ${copy.siteTitle}</title><style>
   *{box-sizing:border-box}body{margin:0;min-height:100vh;background:#fafafa;color:#292e30;font:18px/1.8 Georgia,serif}header{height:82px;border-bottom:1px solid #dedbd3;display:flex;align-items:center;justify-content:space-between;padding:0 68px;font:14px system-ui;letter-spacing:.04em}header strong{font-size:20px}main{max-width:760px;margin:54px auto 90px}aside{font:12px system-ui;letter-spacing:.16em;color:#85765f;text-transform:uppercase;margin-bottom:20px}h1{font-weight:500;font-size:42px;line-height:1.18;letter-spacing:-.025em;margin:0 0 28px}p{margin:0 0 24px}footer{border-top:1px solid #dedbd3;padding-top:20px;margin-top:34px;color:#6d7376;font:13px system-ui}::selection{background:#d7e4ed}
   .citation{font:13px/1.6 system-ui;color:#6d7376;margin-bottom:16px}.citation a{color:inherit;text-underline-offset:3px}
-  ${website ? "main{width:calc(100% - 48px);max-width:660px}@media(max-width:600px){header{padding:0 24px}header span{display:none}main{margin-top:30px}h1{font-size:30px}body{font-size:18px}}" : ""}</style></head><body><header><strong>${copy.siteTitle}</strong><span>${isPhilosophy ? copy.philosophyTagline : copy.readingTagline}</span></header><main><aside>${isPhilosophy ? copy.philosophyCategory : copy.readingCategory}</aside><h1>${lines[0]}</h1>${citation}${paragraphs}${isPhilosophy ? "" : `<footer>${copy.footer}</footer>`}</main></body></html>`;
+  ${website ? "main{width:calc(100% - 48px);max-width:660px}@media(max-width:600px){header{padding:0 24px}header span{display:none}main{margin-top:30px}h1{font-size:30px}body{font-size:18px}}" : isPhilosophy ? "main{max-width:515px}body{font-size:22px}" : dark ? "main{max-width:700px;margin:190px auto 0}body{font-size:24px}" : "body{font-size:22px}"}</style></head><body><header><strong>${copy.siteTitle}</strong><span>${isPhilosophy ? copy.philosophyTagline : copy.readingTagline}</span></header><main>${category}<h1>${lines[0]}</h1>${citation}${paragraphs}${isPhilosophy || !website ? "" : `<footer>${copy.footer}</footer>`}</main></body></html>`;
 }
 const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url.endsWith("/models")) {
@@ -100,6 +109,7 @@ const server = http.createServer(async (req, res) => {
     article(
       req.url.startsWith("/fr") ? "fr" : locale,
       req.url.endsWith("/words-and-meaning"),
+      req.url.endsWith("/dark-reading"),
     ),
   );
 });
@@ -113,7 +123,7 @@ const context = await chromium.launchPersistentContext(profile, {
     : { channel: "chrome" }),
   headless: true,
   viewport: { width: 1280, height: 800 },
-  deviceScaleFactor: website ? 2 : 1,
+  deviceScaleFactor: 2,
   locale,
   ignoreDefaultArgs: ["--disable-extensions"],
   args: ["--enable-unsafe-extension-debugging"],
@@ -180,11 +190,26 @@ try {
       connected: true,
     },
   });
+  const canvas = website ? null : await context.newPage();
+  const logo = await readFile(path.join(root, "icons/brand-mark.svg"), "utf8");
   const capture = async (page, filename) => {
     if (qaOnly && !filename.startsWith("02-")) return;
     await page.mouse.move(5, 5);
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(500);
+    if (canvas && /^\d{2}-/.test(filename)) {
+      await renderStoreScreenshot({
+        page,
+        canvas,
+        filename,
+        output,
+        locale,
+        copy: store,
+        logo,
+      });
+      console.log(filename);
+      return;
+    }
     let clip;
     if (website) {
       if (filename.startsWith("01-")) {
@@ -237,6 +262,7 @@ try {
     await page.screenshot({
       path: path.join(output, filename),
       clip,
+      scale: website ? "device" : "css",
       animations: "disabled",
     });
     console.log(filename);
@@ -305,7 +331,7 @@ try {
     await source.setViewportSize({ width: 1280, height: 800 });
   }
 
-  if (website) await source.setViewportSize({ width: 1280, height: 1000 });
+  await source.setViewportSize({ width: 1280, height: 1000 });
   await source.goto(`${origin}/${locale}/words-and-meaning`);
   const ui = source.locator("[data-pagework=ui]");
   await ui.locator("#dock").waitFor();
@@ -324,7 +350,7 @@ try {
   await ui.locator("#question-input").fill(copy.question);
   await ui.locator("[data-op=question-run]").click();
   await ui.locator("#output[aria-busy=false]").waitFor();
-  if (website) {
+  {
     const passage = await source.locator("#first").boundingBox();
     const bar = await ui.locator(".selection-toolbar-row").boundingBox();
     const panel = await ui.locator("#selection").boundingBox();
@@ -334,7 +360,7 @@ try {
     await source.mouse.down();
     await source.mouse.move(
       start.x + passage.x + (passage.width - panel.width) / 2 - panel.x,
-      start.y + passage.y + passage.height + 22 - panel.y,
+      start.y + passage.y + passage.height + (website ? 22 : 48) - panel.y,
       { steps: 8 },
     );
     await source.mouse.up();
@@ -378,7 +404,7 @@ try {
   }
 
   const date = new Date().toLocaleDateString("en-CA");
-  if (website) await source.setViewportSize({ width: 1280, height: 800 });
+  await source.setViewportSize({ width: 1280, height: 800 });
   await send({
     type: "daily.save",
     daily: {
@@ -435,6 +461,7 @@ try {
   if (website) await app.reload();
   await app.locator(".sidebar [data-route=actions]").click();
   await app.locator("[data-op=edit-action][data-id=summary]").click();
+  if (!website) await app.locator("#instruction").fill(store.instruction);
   await app.locator("#test-input").fill(paragraph + "\n\n" + note);
   await app.locator("[data-op=test-run]").click();
   await app.locator(".result-paper").waitFor();
@@ -463,7 +490,7 @@ try {
   await ui.locator("#dock").click();
   await capture(source, "05-dark-reading.png");
 
-  if (!website) {
+  if (!website && locale === "en") {
     // Promotional artwork uses the repository's vector logo and native HTML/CSS.
     const promo = await context.newPage();
     const logo = await readFile(path.join(root, "icons/icon.svg"), "utf8");

@@ -27,17 +27,17 @@
 
 ## 展示素材
 
-已保存的截图由真实插件界面生成；发布前检查是否仍与目标版本一致，必要时重新生成。英文截图可用于其他语言的列表，完整本地化截图需另行制作。
+英文和简体中文各有一套展示图，分别上传到控制台对应的语言项。每张图用短标题介绍一个功能，主体为真实界面中与操作直接相关的区域。发布前核对截图与目标版本是否一致。
 
-| 顺序 | 文件 | 展示内容 |
-| --- | --- | --- |
-| 1 | [01-inline-translation.png](assets/01-inline-translation.png) | 法语原文与英文行内译文 |
-| 2 | [02-quick-qa.png](assets/02-quick-qa.png) | 选文快问快答结果 |
-| 3 | [03-collection.png](assets/03-collection.png) | 收藏片段与今日随想 |
-| 4 | [04-reusable-actions.png](assets/04-reusable-actions.png) | 处理方式编辑与试运行 |
-| 5 | [05-dark-reading.png](assets/05-dark-reading.png) | Dark Reader 暗色网页和悬浮菜单 |
+| 顺序 | 展示内容 | English | 简体中文 |
+| --- | --- | --- | --- |
+| 1 | 法语原文与行内译文 | [01-inline-translation.png](assets/01-inline-translation.png) | [01-inline-translation.png](assets/zh-CN/01-inline-translation.png) |
+| 2 | 选中的原文和问答结果 | [02-quick-qa.png](assets/02-quick-qa.png) | [02-quick-qa.png](assets/zh-CN/02-quick-qa.png) |
+| 3 | 收藏片段、解读与来源 | [03-collection.png](assets/03-collection.png) | [03-collection.png](assets/zh-CN/03-collection.png) |
+| 4 | 自定义处理要求与试运行结果 | [04-reusable-actions.png](assets/04-reusable-actions.png) | [04-reusable-actions.png](assets/zh-CN/04-reusable-actions.png) |
+| 5 | Dark Reader 暗色网页和悬浮菜单 | [05-dark-reading.png](assets/05-dark-reading.png) | [05-dark-reading.png](assets/zh-CN/05-dark-reading.png) |
 
-截图中的文章、收藏和回复是自编示例，使用隔离的临时 Chrome 资料与本地模拟服务生成，不含实际账号、密钥或个人浏览记录。安装包不包含示例数据或模拟服务。
+问答图使用《庄子·外物》节选，在画面内标明出处、英文译本及演示解读。其余文章、收藏和模型回复为演示内容。截图使用隔离的临时 Chrome 资料与本地模拟服务生成，不含实际账号、密钥或个人浏览记录。安装包不包含示例数据或模拟服务。
 
 截图尺寸为 **1280 × 800 PNG**；图标为 **128 × 128**，宣传图为 **440 × 280** 与 **1400 × 560**。提交时核对[官方素材规格](https://developer.chrome.com/docs/webstore/images)。
 
@@ -50,6 +50,7 @@ npm ci
 npm run build:icons
 npm run build
 node scripts/store-assets.mjs
+node scripts/store-assets.mjs --locale=zh-CN
 ```
 
 截图脚本使用临时 Chrome 资料与本地示例服务，完成后删除临时资料目录。运行期间不要重新构建插件。安装包由独立的打包流程生成，见[开发文档](../docs/DEVELOPMENT.md#自动发布)。
