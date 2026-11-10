@@ -11,6 +11,14 @@ export const supportsConfigurationSync = !isSafari;
 export const supportsNativeLanguagePacks = !isFirefox;
 export const usesPrivateSettingsStore = isFirefox || isSafari;
 export const requiresDirectPermissionRequest = isFirefox || isSafari;
+export async function canOpenFirefoxActionPopup(): Promise<boolean> {
+  if (!isFirefox) return false;
+  const runtime = chrome.runtime as typeof chrome.runtime & {
+    getBrowserInfo(): Promise<{ version: string }>;
+  };
+  // Firefox 149 allows the background to open a toolbar popup from a page click.
+  return Number.parseInt((await runtime.getBrowserInfo()).version, 10) >= 149;
+}
 export const isEdge =
   !isFirefox &&
   !isSafari &&

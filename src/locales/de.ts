@@ -10,6 +10,9 @@ import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice =
+  "Website-Zugriff erlauben, damit der Dunkelmodus die Seitenstile lesen kann.";
+
 const base = {
   sync: {
     browserBoundary:
@@ -615,9 +618,11 @@ const full = {
     lightsEnabled: "Dunkelmodus: Ein",
     lightsDisabled: "Dunkelmodus: Aus",
     lightsSystem: "Dunkelmodus: System",
+    lightsPermissionNotice,
+    waitingForPermission: "Warten auf Berechtigung…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Öffne Aside über die Browser-Symbolleiste und aktiviere dort den Dunkelmodus, um den Website-Zugriff zu erlauben."
-      : "Website-Zugriff erlauben, damit der Dunkelmodus die Seitenstile lesen kann.",
+      : lightsPermissionNotice,
     resizePanel: "Fenstergröße ändern",
     processing: "Wird verarbeitet…",
     chooseAction: "Aktion wählen",

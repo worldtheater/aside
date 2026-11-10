@@ -10,6 +10,8 @@ import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice = "請允許網站存取，讓暗色模式讀取網頁樣式。";
+
 const base = {
   sync: {
     browserBoundary:
@@ -560,9 +562,11 @@ const full = {
     lightsEnabled: "暗色模式：開啟",
     lightsDisabled: "暗色模式：關閉",
     lightsSystem: "暗色模式：跟隨系統",
+    lightsPermissionNotice,
+    waitingForPermission: "等待授權…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "請從瀏覽器工具列開啟旁白，在彈出視窗中開啟暗色模式並允許網站存取。"
-      : "請允許網站存取，讓暗色模式讀取網頁樣式。",
+      : lightsPermissionNotice,
     resizePanel: "調整面板大小",
     processing: "處理中…",
     chooseAction: "選擇處理方式",

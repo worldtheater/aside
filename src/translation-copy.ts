@@ -16,6 +16,7 @@ export const TRANSLATION_COPY = {
         microsoft: "Microsoft online",
         browser: "Browser on-device",
       },
+      microsoftAuthorize: "Allow and translate",
       microsoftNotice: "Text is sent to Microsoft. No API key is needed.",
       browserNotice:
         "Text stays on this device. A supported browser and language packs are required; the first translation may download them.",
@@ -50,6 +51,7 @@ export const TRANSLATION_COPY = {
         microsoft: "微软在线翻译",
         browser: "浏览器本地翻译",
       },
+      microsoftAuthorize: "授权并翻译",
       microsoftNotice: "文字会发送到微软，无需 API Key。",
       browserNotice:
         "文字在本机处理，需要浏览器与语言包支持；首次翻译可能需要下载语言包。",
@@ -82,6 +84,7 @@ export const TRANSLATION_COPY = {
         microsoft: "微軟線上翻譯",
         browser: "瀏覽器本機翻譯",
       },
+      microsoftAuthorize: "授權並翻譯",
       microsoftNotice: "文字會傳送到微軟，無需 API Key。",
       browserNotice:
         "文字在本機處理，需要瀏覽器與語言套件支援；首次翻譯可能需要下載語言套件。",
@@ -115,6 +118,7 @@ export const TRANSLATION_COPY = {
         microsoft: "Microsoft オンライン翻訳",
         browser: "ブラウザー内翻訳",
       },
+      microsoftAuthorize: "許可して翻訳",
       microsoftNotice:
         "テキストは Microsoft に送信されます。API キーは不要です。",
       browserNotice:
@@ -151,6 +155,7 @@ export const TRANSLATION_COPY = {
         microsoft: "Microsoft 온라인 번역",
         browser: "브라우저 기기 내 번역",
       },
+      microsoftAuthorize: "허용하고 번역",
       microsoftNotice:
         "텍스트가 Microsoft로 전송됩니다. API 키는 필요하지 않습니다.",
       browserNotice:
@@ -186,6 +191,7 @@ export const TRANSLATION_COPY = {
         microsoft: "Microsoft en ligne",
         browser: "Traduction locale du navigateur",
       },
+      microsoftAuthorize: "Autoriser et traduire",
       microsoftNotice:
         "Le texte est envoyé à Microsoft. Aucune clé API nécessaire.",
       browserNotice:
@@ -222,6 +228,7 @@ export const TRANSLATION_COPY = {
         microsoft: "Microsoft online",
         browser: "Lokale Browserübersetzung",
       },
+      microsoftAuthorize: "Erlauben und übersetzen",
       microsoftNotice:
         "Der Text wird an Microsoft gesendet. Kein API-Schlüssel erforderlich.",
       browserNotice:
@@ -259,6 +266,7 @@ export const TRANSLATION_COPY = {
         microsoft: "Microsoft en línea",
         browser: "Traducción local del navegador",
       },
+      microsoftAuthorize: "Permitir y traducir",
       microsoftNotice:
         "El texto se envía a Microsoft. No se necesita clave API.",
       browserNotice:
@@ -296,6 +304,7 @@ export const TRANSLATION_COPY = {
         microsoft: "Microsoft online",
         browser: "Tradução local do navegador",
       },
+      microsoftAuthorize: "Permitir e traduzir",
       microsoftNotice:
         "O texto é enviado à Microsoft. Não é necessária uma chave de API.",
       browserNotice:
@@ -332,6 +341,7 @@ export const TRANSLATION_COPY = {
         microsoft: "Microsoft онлайн",
         browser: "Локальный перевод браузера",
       },
+      microsoftAuthorize: "Разрешить и перевести",
       microsoftNotice: "Текст отправляется в Microsoft. Ключ API не требуется.",
       browserNotice:
         "Текст остаётся на устройстве. Нужны совместимый браузер и языковые пакеты; при первом использовании возможна их загрузка.",
@@ -367,6 +377,7 @@ export const TRANSLATION_COPY = {
         microsoft: "Microsoft online",
         browser: "Terjemahan lokal browser",
       },
+      microsoftAuthorize: "Izinkan dan terjemahkan",
       microsoftNotice: "Teks dikirim ke Microsoft. Tidak memerlukan kunci API.",
       browserNotice:
         "Teks tetap di perangkat ini. Memerlukan browser dan paket bahasa yang didukung; penggunaan pertama mungkin mengunduhnya.",
@@ -402,6 +413,7 @@ export const TRANSLATION_COPY = {
         microsoft: "Microsoft online",
         browser: "Traduzione locale del browser",
       },
+      microsoftAuthorize: "Consenti e traduci",
       microsoftNotice:
         "Il testo viene inviato a Microsoft. Non serve una chiave API.",
       browserNotice:
@@ -438,6 +450,7 @@ export const TRANSLATION_COPY = {
         microsoft: "Microsoft çevrimiçi",
         browser: "Tarayıcıda yerel çeviri",
       },
+      microsoftAuthorize: "İzin ver ve çevir",
       microsoftNotice: "Metin Microsoft’a gönderilir. API anahtarı gerekmez.",
       browserNotice:
         "Metin bu cihazda kalır. Desteklenen bir tarayıcı ve dil paketleri gerekir; ilk kullanımda indirilebilir.",
@@ -472,6 +485,7 @@ export const TRANSLATION_COPY = {
         microsoft: "Microsoft ออนไลน์",
         browser: "แปลในอุปกรณ์ผ่านเบราว์เซอร์",
       },
+      microsoftAuthorize: "อนุญาตและแปล",
       microsoftNotice: "ข้อความจะส่งไปยัง Microsoft ไม่ต้องใช้คีย์ API",
       browserNotice:
         "ข้อความอยู่บนอุปกรณ์นี้ ต้องใช้เบราว์เซอร์และชุดภาษาที่รองรับ การใช้ครั้งแรกอาจต้องดาวน์โหลด",
@@ -506,6 +520,7 @@ export const TRANSLATION_COPY = {
         microsoft: "Microsoft trực tuyến",
         browser: "Dịch cục bộ trong trình duyệt",
       },
+      microsoftAuthorize: "Cho phép và dịch",
       microsoftNotice: "Văn bản được gửi đến Microsoft. Không cần khóa API.",
       browserNotice:
         "Văn bản ở trên thiết bị này. Cần trình duyệt và gói ngôn ngữ được hỗ trợ; lần đầu có thể cần tải xuống.",

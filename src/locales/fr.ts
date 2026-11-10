@@ -10,6 +10,9 @@ import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice =
+  "Autorisez l’accès au site pour que le mode sombre puisse lire les styles de la page.";
+
 const base = {
   sync: {
     browserBoundary:
@@ -614,9 +617,11 @@ const full = {
     lightsEnabled: "Mode sombre : activé",
     lightsDisabled: "Mode sombre : désactivé",
     lightsSystem: "Mode sombre : système",
+    lightsPermissionNotice,
+    waitingForPermission: "En attente d’autorisation…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Ouvrez Aside depuis la barre d’outils du navigateur et activez le mode sombre dans la fenêtre pour autoriser l’accès aux sites."
-      : "Autorisez l’accès au site pour que le mode sombre puisse lire les styles de la page.",
+      : lightsPermissionNotice,
     resizePanel: "Redimensionner le panneau",
     processing: "Traitement…",
     chooseAction: "Choisir une action",

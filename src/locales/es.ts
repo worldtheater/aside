@@ -10,6 +10,9 @@ import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice =
+  "Permite el acceso al sitio para que el modo oscuro pueda leer los estilos de la página.";
+
 const base = {
   sync: {
     browserBoundary:
@@ -612,9 +615,11 @@ const full = {
     lightsEnabled: "Modo oscuro: activado",
     lightsDisabled: "Modo oscuro: desactivado",
     lightsSystem: "Modo oscuro: sistema",
+    lightsPermissionNotice,
+    waitingForPermission: "Esperando autorización…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Abre Aside desde la barra del navegador y activa allí el modo oscuro para permitir el acceso a los sitios."
-      : "Permite el acceso al sitio para que el modo oscuro pueda leer los estilos de la página.",
+      : lightsPermissionNotice,
     resizePanel: "Cambiar tamaño del panel",
     processing: "Procesando…",
     chooseAction: "Elegir acción",

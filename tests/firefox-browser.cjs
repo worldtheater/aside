@@ -62,7 +62,10 @@ const server = http.createServer(async (req, res) => {
       .addArguments("-headless")
       // Resolve a non-localhost HTTP provider inside this isolated profile only.
       // Loopback URLs are exempt from Firefox MV3 HTTPS upgrades.
-      .setPreference("network.dns.localDomains", providerHost)
+      .setPreference(
+        "network.dns.localDomains",
+        `${providerHost},edge.microsoft.com`,
+      )
       .setPreference(
         "extensions.webextensions.uuids",
         JSON.stringify({ [id]: uuid }),
@@ -136,6 +139,12 @@ const server = http.createServer(async (req, res) => {
       10000,
     );
     const appTab = await driver.getWindowHandle();
+    const usePermissionPopup =
+      Number.parseInt(
+        (await evaluate("return await chrome.runtime.getBrowserInfo();"))
+          .version,
+        10,
+      ) >= 149;
     assert.equal((await send({ type: "snapshot" })).connections.length, 0);
     const commands = await evaluate("return await chrome.commands.getAll();");
     assert(commands.some((command) => command.name === "text-translate"));
@@ -502,6 +511,235 @@ const server = http.createServer(async (req, res) => {
     assert.equal(
       (await send({ type: "snapshot" })).connections[0].name,
       "Changed on another extension page",
+    );
+    const translate = (await send({ type: "snapshot" })).actions.find(
+      (action) => action.id === "translate",
+    );
+    // Revoke the default HTTPS grant while keeping access to the HTTP fixture.
+    assert.equal(
+      await evaluate(
+        `return await chrome.permissions.remove({origins:["https://*/*"]});`,
+      ),
+      true,
+    );
+    assert.equal(
+      await evaluate(
+        `return await chrome.permissions.contains({origins:["https://edge.microsoft.com/*"]});`,
+      ),
+      false,
+    );
+    await send({
+      type: "actions.save",
+      changes: [
+        {
+          ...translate,
+          translationEngine: "microsoft",
+          targetLanguage: "zh-Hans",
+        },
+      ],
+    });
+    await driver.switchTo().window(websiteTab);
+    await driver
+      .actions()
+      .move({ origin: await driver.findElement(By.css("#source")) })
+      .doubleClick()
+      .perform();
+    await driver.wait(
+      () => element("#selection").then((e) => e.isDisplayed()),
+      5000,
+      "The source selection opens the toolbar",
+    );
+    const startSelectionTranslation = () =>
+      click('[data-selection-action="translate"]');
+    const permissionPage = (feature) =>
+      extensionUrl + "page-permission.html?feature=" + feature;
+    const clickPermissionPopup = (selector, feature = "translation") =>
+      privileged(
+        `
+        const done = arguments[arguments.length - 1];
+        const [url, selector] = arguments;
+        const popup = Array.from(document.querySelectorAll("browser.webextension-popup-browser"))
+          .find((browser) => browser.currentURI.spec.startsWith(url + "#") && browser.getBoundingClientRect().width > 0);
+        if (!popup) { done(false); return; }
+        const topic = "Aside:TestPermissionClick";
+        const manager = popup.messageManager;
+        const response = ({data}) => {
+          manager.removeMessageListener(topic, response);
+          done(data);
+        };
+        manager.addMessageListener(topic, response);
+        const script = \`
+          const button = content.document.querySelector(\${JSON.stringify(selector)});
+          const rect = button?.getBoundingClientRect();
+          if (!rect?.width) {
+            sendAsyncMessage(\${JSON.stringify(topic)}, false);
+          } else {
+            sendAsyncMessage(\${JSON.stringify(topic)}, true);
+            const input = content.windowUtils.setHandlingUserInput(true);
+            try { button.click(); } finally { input.destruct(); }
+          }
+        \`;
+        manager.loadFrameScript("data:application/javascript," + encodeURIComponent(script), false);
+      `,
+        permissionPage(feature),
+        selector,
+      );
+    const grantPagePermission = async (start, feature = "translation") => {
+      const beforePermission = await driver.getAllWindowHandles();
+      await start();
+      let permissionTab;
+      if (usePermissionPopup) {
+        await driver.wait(
+          () => clickPermissionPopup("[data-op=authorize]", feature),
+          5000,
+          "The page control opens the toolbar permission popup",
+        );
+        assert.deepEqual(await driver.getAllWindowHandles(), beforePermission);
+      } else {
+        permissionTab = await driver.wait(
+          async () =>
+            (await driver.getAllWindowHandles()).find(
+              (handle) => !beforePermission.includes(handle),
+            ),
+          5000,
+          "Older Firefox opens the dedicated permission tab",
+        );
+        await driver.switchTo().window(permissionTab);
+        const authorize = await driver.wait(
+          async () =>
+            (await driver.findElements(By.css('[data-op="authorize"]')))[0],
+          5000,
+        );
+        assert.equal(await driver.getCurrentUrl(), permissionPage(feature));
+        await authorize.click();
+      }
+      await driver.wait(
+        () =>
+          privileged(`
+        const done = arguments[arguments.length - 1];
+        const panel = PopupNotifications.panel;
+        const button = panel.querySelector('#addon-webext-permissions-notification')?.button;
+        if (panel.state !== 'open' || !button) { done(false); return; }
+        button.click();
+        done(true);
+      `),
+        5000,
+        "The extension opens the native permission prompt",
+      );
+      if (permissionTab) {
+        await driver.wait(
+          async () =>
+            !(await driver.getAllWindowHandles()).includes(permissionTab),
+          5000,
+          "The permission tab closes after granting access",
+        );
+        await driver.switchTo().window(websiteTab);
+      } else {
+        assert.deepEqual(await driver.getAllWindowHandles(), beforePermission);
+        assert.equal(await driver.getWindowHandle(), websiteTab);
+      }
+    };
+    if (usePermissionPopup) {
+      const tabs = await driver.getAllWindowHandles();
+      await startSelectionTranslation();
+      await driver.wait(
+        async () =>
+          (await read("#result-status")) === "Waiting for permission…",
+        5000,
+        "The selection shows its waiting status while authorization is open",
+      );
+      await driver.wait(
+        () => clickPermissionPopup("[data-op=cancel]"),
+        5000,
+        "The toolbar authorization can be cancelled",
+      );
+      await driver.wait(
+        async () =>
+          (await element("#result")).getAttribute("hidden").then(Boolean),
+        5000,
+        "Cancelling authorization returns to the selection toolbar",
+      );
+      assert.deepEqual(await driver.getAllWindowHandles(), tabs);
+    }
+    await grantPagePermission(startSelectionTranslation);
+    assert.equal(
+      (await shadow.findElements(By.css("[data-op=allow-microsoft]"))).length,
+      0,
+    );
+    // The isolated profile routes the Microsoft host to loopback, so the
+    // network error confirms the original selection ran after authorization.
+    await driver.wait(
+      async () => (await read("#result-status")).includes("Translation failed"),
+      10000,
+    );
+    await driver.switchTo().window(appTab);
+    if (usePermissionPopup)
+      assert.equal(
+        await evaluate(
+          "return await chrome.action.getPopup({ tabId: arguments[0] });",
+          tabId,
+        ),
+        extensionUrl + "popup.html",
+      );
+    assert(
+      await evaluate(
+        `return await chrome.permissions.contains({origins:["https://edge.microsoft.com/*"]});`,
+      ),
+    );
+    console.log(
+      "PASS: Firefox opens Microsoft authorization from the selection translation click and resumes after grant.",
+    );
+    assert(
+      await evaluate(
+        `return await chrome.permissions.remove({origins:["https://edge.microsoft.com/*"]});`,
+      ),
+    );
+    assert.equal(
+      await evaluate(
+        `return await chrome.permissions.contains({origins:["https://edge.microsoft.com/*"]});`,
+      ),
+      false,
+    );
+    await driver.switchTo().window(websiteTab);
+    await driver.actions().sendKeys(Key.ESCAPE).perform();
+    await click("#dock");
+    await driver.wait(
+      async () =>
+        (await element("#radial"))
+          .getAttribute("class")
+          .then((value) => value.includes("open")),
+      5000,
+    );
+    await evaluate(
+      "await Promise.all(arguments[0].getAnimations({subtree:true}).map(a=>a.finished));return true;",
+      await element("#radial"),
+    );
+    await grantPagePermission(() => click("[data-op=page-translate]"));
+    await driver.wait(
+      async () =>
+        (await read("#translation-recovery")).includes("Translation failed"),
+      10000,
+      "The page translation runs after the native grant",
+    );
+    console.log(
+      "PASS: the Firefox floating control opens authorization on its first click and continues page translation.",
+    );
+    await grantPagePermission(() => click("[data-op=toggle-lights]"), "lights");
+    await driver.wait(
+      () =>
+        driver.executeScript(
+          'return document.documentElement.dataset.darkreaderMode === "dynamic";',
+        ),
+      10000,
+      "The original dark mode toggle takes effect after authorization",
+    );
+    await driver.switchTo().window(appTab);
+    assert.equal(
+      (await send({ type: "snapshot" })).website.sites["127.0.0.1"].lights,
+      "on",
+    );
+    console.log(
+      "PASS: the Firefox floating dark mode control opens authorization and applies the original setting after grant.",
     );
     const shortcutPage = await evaluate(
       `const {openShortcutSettings}=await import('./browser.js');await openShortcutSettings();return true;`,

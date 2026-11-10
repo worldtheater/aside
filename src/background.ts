@@ -4,7 +4,9 @@ registerAppleTranslation();
 import {
   supportsConfigurationSync,
   hostPermissionPattern,
+  isFirefox,
   requiresDirectPermissionRequest,
+  canOpenFirefoxActionPopup,
   WEBSITE_RESOURCE_ORIGINS,
 } from "./browser.js";
 import {
@@ -238,6 +240,119 @@ async function openSettings(tabId: number | undefined, route = "home") {
     ),
   });
 }
+async function authorizePagePermission(
+  tab: chrome.tabs.Tab,
+  feature: "translation" | "lights",
+) {
+  const permissions = {
+    origins:
+      feature === "lights" ? WEBSITE_RESOURCE_ORIGINS : [MICROSOFT_ORIGIN],
+  };
+  // Chromium forwards the click activation with the message.
+  if (!requiresDirectPermissionRequest)
+    return chrome.permissions.request(permissions);
+  if (await chrome.permissions.contains(permissions)) return true;
+  const url = new URL(chrome.runtime.getURL("page-permission.html"));
+  url.searchParams.set("feature", feature);
+  if (await canOpenFirefoxActionPopup())
+    return authorizeFromFirefoxPopup(tab, url, permissions);
+  const permissionTab = await chrome.tabs.create({
+    url: url.href,
+    openerTabId: tab.id,
+  });
+  const id = permissionTab.id!;
+  return new Promise<boolean>((resolve, reject) => {
+    const closed = (tabId: number) => {
+      if (tabId !== id) return;
+      chrome.tabs.onRemoved.removeListener(closed);
+      chrome.permissions.contains(permissions).then(resolve, reject);
+    };
+    chrome.tabs.onRemoved.addListener(closed);
+    void chrome.tabs.get(id).catch(() => closed(id));
+  });
+}
+let firefoxAuthorization: { url: string; result: Promise<boolean> } | undefined;
+function authorizeFromFirefoxPopup(
+  tab: chrome.tabs.Tab,
+  url: URL,
+  permissions: chrome.permissions.Permissions,
+) {
+  if (firefoxAuthorization)
+    return firefoxAuthorization.url === url.href
+      ? firefoxAuthorization.result
+      : false;
+  const tabId = tab.id!;
+  const popup = new URL(url);
+  popup.hash = crypto.randomUUID();
+  const result = (async () => {
+    const original = await chrome.action.getPopup({ tabId });
+    await chrome.action.setPopup({ tabId, popup: popup.href });
+    try {
+      if (!(await chrome.tabs.get(tabId)).active) return false;
+      return await new Promise<boolean>((resolve, reject) => {
+        const popupLoadTimeoutMs = 5000;
+        const permissionResponseTimeoutMs = 60000;
+        let settled = false;
+        let timeout = setTimeout(() => finish(false), popupLoadTimeoutMs);
+        function cleanUp() {
+          settled = true;
+          clearTimeout(timeout);
+          chrome.runtime.onConnect.removeListener(connect);
+          chrome.permissions.onAdded.removeListener(granted);
+        }
+        function finish(value: boolean) {
+          if (settled) return;
+          cleanUp();
+          resolve(value);
+        }
+        function granted(added: chrome.permissions.Permissions) {
+          if (!added.origins?.length) return;
+          void chrome.permissions.contains(permissions).then((allowed) => {
+            if (allowed) finish(true);
+          });
+        }
+        function connect(port: chrome.runtime.Port) {
+          if (
+            port.name !== popup.hash ||
+            port.sender?.id !== chrome.runtime.id ||
+            port.sender.url !== popup.href
+          )
+            return;
+          clearTimeout(timeout);
+          chrome.runtime.onConnect.removeListener(connect);
+          let requested = false;
+          port.onMessage.addListener((message) => {
+            if (typeof message === "boolean") finish(message);
+            else requested = message === "requesting";
+          });
+          port.onDisconnect.addListener(() => {
+            if (settled) return;
+            if (!requested) finish(false);
+            // The browser prompt can outlive the toolbar popup.
+            else
+              timeout = setTimeout(
+                () => finish(false),
+                permissionResponseTimeoutMs,
+              );
+          });
+        }
+        chrome.permissions.onAdded.addListener(granted);
+        chrome.runtime.onConnect.addListener(connect);
+        chrome.action.openPopup({ windowId: tab.windowId }).catch((error) => {
+          cleanUp();
+          reject(error);
+        });
+      });
+    } finally {
+      // A closed tab discards its override automatically.
+      await chrome.action.setPopup({ tabId, popup: original }).catch(() => {});
+    }
+  })().finally(() => {
+    firefoxAuthorization = undefined;
+  });
+  firefoxAuthorization = { url: url.href, result };
+  return result;
+}
 function assertTrusted(sender: chrome.runtime.MessageSender) {
   if (!trusted(sender)) throw new ModelError("notAllowed");
 }
@@ -405,6 +520,23 @@ chrome.runtime.onMessage.addListener(
       respond(failure(new ModelError("cancelled")));
       return false;
     }
+    if (message.type === "translation.authorize") {
+      // Permission prompts may remain open while settings are being reset.
+      (async () => {
+        if (
+          sender.id !== chrome.runtime.id ||
+          sender.frameId !== 0 ||
+          trusted(sender)
+        )
+          throw new ModelError("notAllowed");
+        lightsWebsite(sender);
+        return authorizePagePermission(sender.tab!, "translation");
+      })().then(
+        (value) => respond({ ok: true, value }),
+        (error) => respond(failure(error)),
+      );
+      return true;
+    }
     const request = (async () => {
       if (sender.id !== chrome.runtime.id) throw new ModelError("notAllowed");
       if (message.type === "tab.run" && message.requestMicrosoftPermission) {
@@ -434,8 +566,8 @@ chrome.runtime.onMessage.addListener(
       }
       if (message.type === "website.update") {
         const fromPage = !trusted(sender);
+        const pageUrl = fromPage ? lightsWebsite(sender) : undefined;
         if (fromPage) {
-          lightsWebsite(sender);
           // The floating control can change only its own top-level site's lights.
           if (
             sender.frameId !== 0 ||
@@ -446,19 +578,35 @@ chrome.runtime.onMessage.addListener(
           )
             throw new ModelError("notAllowed");
         }
-        // Request access in the popup on browsers that require direct activation.
-        // Page controls use existing grants.
         if (["on", "system"].includes(message.patch?.lights as string)) {
           const permissions = { origins: WEBSITE_RESOURCE_ORIGINS };
-          const granted = requiresDirectPermissionRequest
-            ? await chrome.permissions.contains(permissions)
-            : await chrome.permissions.request(permissions);
-          if (!granted)
-            throw new ModelError(
-              requiresDirectPermissionRequest
-                ? "lightsPermissionRequired"
-                : "permissionRequired",
+          if (fromPage && isFirefox) {
+            const generation = resetGeneration;
+            const granted = await authorizePagePermission(
+              sender.tab!,
+              "lights",
             );
+            const tab = await chrome.tabs
+              .get(sender.tab!.id!)
+              .catch(() => null);
+            if (
+              !granted ||
+              generation !== resetGeneration ||
+              tab?.url !== pageUrl
+            )
+              throw new ModelError("cancelled");
+          } else {
+            // The toolbar popup acquires the permission itself on Safari/Firefox.
+            const granted = requiresDirectPermissionRequest
+              ? await chrome.permissions.contains(permissions)
+              : await chrome.permissions.request(permissions);
+            if (!granted)
+              throw new ModelError(
+                requiresDirectPermissionRequest
+                  ? "lightsPermissionRequired"
+                  : "permissionRequired",
+              );
+          }
         }
         await initialize();
         if (!DECISION_MODELS_ENABLED && message.patch?.enhance === true)
@@ -472,9 +620,7 @@ chrome.runtime.onMessage.addListener(
         if (lightsChanged) {
           if (tabId === undefined) throw new ModelError("invalidInput");
           hostname = websiteHostname(
-            fromPage
-              ? sender.tab!.url!
-              : (await chrome.tabs.get(tabId)).url || "",
+            pageUrl ?? (await chrome.tabs.get(tabId)).url ?? "",
           );
         }
         const website = await mutate((data) => {

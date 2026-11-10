@@ -11,6 +11,9 @@ import type { UsageSummary } from "../types.js";
 
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice =
+  "Koyu modun sayfa stillerini okuyabilmesi için site erişimine izin verin.";
+
 const base = {
   sync: {
     browserBoundary:
@@ -602,9 +605,11 @@ const full = {
     lightsEnabled: "Koyu mod: Açık",
     lightsDisabled: "Koyu mod: Kapalı",
     lightsSystem: "Koyu mod: Sistem",
+    lightsPermissionNotice,
+    waitingForPermission: "İzin bekleniyor…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Tarayıcı araç çubuğundan Aside’ı açın ve site erişimine izin vermek için panelde koyu modu etkinleştirin."
-      : "Koyu modun sayfa stillerini okuyabilmesi için site erişimine izin verin.",
+      : lightsPermissionNotice,
     resizePanel: "Paneli yeniden boyutlandır",
     processing: "İşleniyor…",
     chooseAction: "Bir işlem seçin",

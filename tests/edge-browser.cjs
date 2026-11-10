@@ -84,6 +84,7 @@ const profile = fs.mkdtempSync(path.join(os.tmpdir(), "aside-edge-profile-"));
     };
     for (const args of [
       ["tests/credentials-browser.cjs"],
+      ["tests/browser.cjs", "--onboarding-only"],
       ["tests/browser.cjs", "--page-translation-only"],
       ["tests/browser.cjs", "--translation-engines-only"],
       ["tests/browser.cjs", "--qa-only"],

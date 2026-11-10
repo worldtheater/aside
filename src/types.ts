@@ -324,6 +324,7 @@ export interface RequestMap {
   snapshot: { payload: {}; result: Snapshot };
   "settings.reset": { payload: {}; result: boolean };
   "settings.public": { payload: {}; result: PublicConfig };
+  "translation.authorize": { payload: {}; result: boolean };
   "settings.open": {
     payload: { tabId?: number | null; route?: string };
     result: boolean;

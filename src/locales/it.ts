@@ -11,6 +11,9 @@ import type { UsageSummary } from "../types.js";
 
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice =
+  "Consenti l’accesso al sito affinché la modalità scura possa leggere gli stili della pagina.";
+
 const base = {
   sync: {
     browserBoundary:
@@ -615,9 +618,11 @@ const full = {
     lightsEnabled: "Modalità scura: Attiva",
     lightsDisabled: "Modalità scura: Disattiva",
     lightsSystem: "Modalità scura: Sistema",
+    lightsPermissionNotice,
+    waitingForPermission: "In attesa dell’autorizzazione…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Apri Aside dalla barra del browser e attiva la modalità scura nel pannello per consentire l’accesso ai siti."
-      : "Consenti l’accesso al sito affinché la modalità scura possa leggere gli stili della pagina.",
+      : lightsPermissionNotice,
     resizePanel: "Ridimensiona pannello",
     processing: "Elaborazione…",
     chooseAction: "Scegli un’azione",

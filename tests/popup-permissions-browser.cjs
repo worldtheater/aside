@@ -25,8 +25,15 @@ module.exports = async ({ page, context, source, popup, tab }) => {
       chrome.tabs.sendMessage = send;
       globalThis.fetch = fetch;
     };
-    chrome.permissions.request = (permissions) => {
+    chrome.permissions.request = async (permissions) => {
       state.requests.push(permissions);
+      if (state.useNative) {
+        const granted = await request(permissions);
+        if (!granted || !state.defer) {
+          state.granted = granted;
+          return granted;
+        }
+      }
       if (!state.defer) return Promise.resolve(false);
       return new Promise((resolve) => {
         state.resolve = (granted) => {
@@ -140,6 +147,173 @@ module.exports = async ({ page, context, source, popup, tab }) => {
     await source.locator("[data-pagework=ui] #dock").waitFor();
     console.log(
       "PASS: denied Microsoft permission stays retryable; granting after popup closure resumes exactly one page request; navigation cancels the pending request.",
+    );
+
+    const host = source.locator("[data-pagework=ui]");
+    const selectionResult = host.locator("#result");
+    const waiting = selectionResult
+      .locator("#result-status")
+      .filter({ hasText: "等待授权…" });
+    const translateSelection = host.locator(
+      "[data-selection-action=translate]",
+    );
+    const select = async (selector) => {
+      await source.locator(selector).dblclick({ position: { x: 14, y: 10 } });
+      const text = await source.evaluate(() =>
+        getSelection().toString().trim(),
+      );
+      assert(text);
+      await translateSelection.click();
+      return text;
+    };
+    const clearPermission = () =>
+      worker.evaluate(() => {
+        Object.assign(popupPermissionTest, {
+          granted: false,
+          resolve: null,
+          texts: [],
+          requests: [],
+        });
+      });
+    await clearPermission();
+    await select("#first");
+    await pending();
+    await waiting.waitFor();
+    assert.equal(await host.locator("[data-op=allow-microsoft]").count(), 0);
+    await worker.evaluate(() => popupPermissionTest.resolve(false));
+    await selectionResult.waitFor({ state: "hidden" });
+    assert(await translateSelection.isEnabled());
+    assert.deepEqual(
+      await worker.evaluate(() => popupPermissionTest.texts),
+      [],
+    );
+
+    await worker.evaluate(() => {
+      popupPermissionTest.resolve = null;
+    });
+    await translateSelection.click();
+    await pending();
+    await source.keyboard.press("Escape");
+    await selectionResult.waitFor({ state: "hidden" });
+    await worker.evaluate(() => popupPermissionTest.resolve(true));
+
+    // Use the actual permission API for the final click. Chromium checks user
+    // activation even when this isolated profile already has the origin grant.
+    const manager = context
+      .pages()
+      .find((p) => /^(chrome|edge):\/\/extensions\/$/.test(p.url()));
+    assert(manager, "The browser's extension manager is open");
+    await manager.evaluate(
+      (id) =>
+        chrome.developerPrivate.addHostPermission(
+          id,
+          "https://edge.microsoft.com/*",
+        ),
+      new URL(page.url()).hostname,
+    );
+    assert.deepEqual(
+      await worker.evaluate(() => popupPermissionTest.texts),
+      [],
+    );
+    await clearPermission();
+    await worker.evaluate(() => {
+      popupPermissionTest.useNative = true;
+    });
+    const selected = await select("#second");
+    await pending();
+    await waiting.waitFor();
+    // The original selection remains the input even after the DOM range clears.
+    await source.evaluate(() => getSelection().removeAllRanges());
+    await worker.evaluate(() => popupPermissionTest.resolve(true));
+    await host
+      .locator("#output")
+      .filter({ hasText: "微软测试译文：" + selected })
+      .waitFor();
+    assert.deepEqual(await worker.evaluate(() => popupPermissionTest.texts), [
+      selected,
+    ]);
+    assert.deepEqual(
+      await worker.evaluate(() => popupPermissionTest.requests),
+      [{ origins: ["https://edge.microsoft.com/*"] }],
+    );
+    await source.keyboard.press("Escape");
+    console.log(
+      "PASS: selection authorization can be denied or cancelled, and a trusted click resumes the original selection exactly once.",
+    );
+
+    const dock = host.locator("#dock");
+    const translate = host.locator("#radial [data-op=page-translate]");
+    const first = source.locator("#first");
+    const firstResult = first.locator("[data-pagework=result]");
+    const setFirst = (text) =>
+      first.evaluate((node, text) => {
+        node.textContent = text;
+      }, text);
+    const waitForFirstTranslation = (text) =>
+      source.waitForFunction(
+        (expected) =>
+          document.querySelector("#first [data-pagework=result]")?.shadowRoot
+            .textContent ===
+          "微软测试译文：" + expected,
+        text,
+      );
+    const initialText = "Translate directly from the floating control.";
+    await setFirst(initialText);
+    await clearPermission();
+    await worker.evaluate(() => {
+      popupPermissionTest.useNative = false;
+    });
+    await dock.click();
+    await translate.click();
+    await pending();
+    await translate.click();
+    assert.deepEqual(
+      await worker.evaluate(() => popupPermissionTest.requests),
+      [{ origins: ["https://edge.microsoft.com/*"] }],
+    );
+    await worker.evaluate(() => popupPermissionTest.resolve(false));
+    await host.locator("#notice").filter({ hasText: "已停止" }).waitFor();
+    assert.equal(await firstResult.count(), 0);
+    assert.deepEqual(
+      await worker.evaluate(() => popupPermissionTest.texts),
+      [],
+    );
+
+    await clearPermission();
+    await worker.evaluate(() => {
+      popupPermissionTest.useNative = true;
+      popupPermissionTest.defer = false;
+    });
+    await translate.click();
+    await waitForFirstTranslation(initialText);
+    assert.deepEqual(
+      await worker.evaluate(() => popupPermissionTest.requests),
+      [{ origins: ["https://edge.microsoft.com/*"] }],
+    );
+    assert.equal(
+      (await worker.evaluate(() => popupPermissionTest.texts)).filter(
+        (text) => text === initialText,
+      ).length,
+      1,
+    );
+
+    await clearPermission();
+    const updatedText = "Continue this page after restoring permission.";
+    await setFirst(updatedText);
+    const recovery = host.locator("#translation-recovery");
+    const authorizePage = recovery.getByRole("button", {
+      name: "授权并翻译",
+    });
+    await authorizePage.waitFor();
+    assert((await recovery.textContent()).includes("文字会发送到微软"));
+    await authorizePage.click();
+    await waitForFirstTranslation(updatedText);
+    await recovery.waitFor({ state: "hidden" });
+    assert.deepEqual(await worker.evaluate(() => popupPermissionTest.texts), [
+      updatedText,
+    ]);
+    console.log(
+      "PASS: the floating control requests Microsoft permission on the first click, continues after grant, and reauthorizes a paused session.",
     );
   } catch (error) {
     console.log(

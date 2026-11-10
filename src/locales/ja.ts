@@ -10,6 +10,9 @@ import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice =
+  "ダークモードがページのスタイルを読み取れるよう、サイトへのアクセスを許可してください。";
+
 const base = {
   sync: {
     browserBoundary:
@@ -584,9 +587,11 @@ const full = {
     lightsEnabled: "ダークモード：オン",
     lightsDisabled: "ダークモード：オフ",
     lightsSystem: "ダークモード：システム",
+    lightsPermissionNotice,
+    waitingForPermission: "権限の許可を待っています…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "ブラウザーのツールバーから Aside を開き、ポップアップでダークモードをオンにしてサイトへのアクセスを許可してください。"
-      : "ダークモードがページのスタイルを読み取れるよう、サイトへのアクセスを許可してください。",
+      : lightsPermissionNotice,
     resizePanel: "パネルのサイズを変更",
     processing: "処理中…",
     chooseAction: "アクションを選択",

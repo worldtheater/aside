@@ -10,6 +10,9 @@ import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import { LANGUAGE_NAMES } from "../locale.js";
 
+const lightsPermissionNotice =
+  "Allow website access so dark mode can read page styles.";
+
 const base = {
   sync: {
     browserBoundary:
@@ -572,9 +575,11 @@ const full = {
     lightsEnabled: "Dark mode: On",
     lightsDisabled: "Dark mode: Off",
     lightsSystem: "Dark mode: System",
+    lightsPermissionNotice,
+    waitingForPermission: "Waiting for permission…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Open Aside from the browser toolbar and turn on dark mode there to allow website access."
-      : "Allow website access so dark mode can read page styles.",
+      : lightsPermissionNotice,
     resizePanel: "Resize panel",
     processing: "Processing…",
     chooseAction: "Choose an action",

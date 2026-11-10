@@ -10,6 +10,9 @@ import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice =
+  "开启暗色模式需要读取网页样式，请允许网站访问权限。";
+
 const base = {
   sync: {
     browserBoundary:
@@ -554,9 +557,11 @@ const full = {
     lightsEnabled: "暗色模式-开",
     lightsDisabled: "暗色模式-关",
     lightsSystem: "暗色模式-跟随系统",
+    lightsPermissionNotice,
+    waitingForPermission: "等待授权…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "请从浏览器工具栏打开旁白，在弹窗中开启暗色模式并允许网站访问。"
-      : "开启暗色模式需要读取网页样式，请允许网站访问权限。",
+      : lightsPermissionNotice,
     resizePanel: "调整面板大小",
     processing: "正在处理…",
     chooseAction: "选择处理方式",

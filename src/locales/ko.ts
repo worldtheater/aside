@@ -10,6 +10,9 @@ import { MAX_ACTIONS, MAX_COLLAPSED_ACTIONS } from "../action-policy.js";
 import type { UsageSummary } from "../types.js";
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice =
+  "다크 모드가 페이지 스타일을 읽을 수 있도록 사이트 접근을 허용하세요.";
+
 const base = {
   sync: {
     browserBoundary:
@@ -581,9 +584,11 @@ const full = {
     lightsEnabled: "다크 모드: 켬",
     lightsDisabled: "다크 모드: 끔",
     lightsSystem: "다크 모드: 시스템",
+    lightsPermissionNotice,
+    waitingForPermission: "권한 허용 대기 중…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "브라우저 도구 모음에서 Aside를 열고 팝업에서 다크 모드를 켜 사이트 접근을 허용하세요."
-      : "다크 모드가 페이지 스타일을 읽을 수 있도록 사이트 접근을 허용하세요.",
+      : lightsPermissionNotice,
     resizePanel: "패널 크기 조절",
     processing: "처리 중…",
     chooseAction: "작업 선택",

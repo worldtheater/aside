@@ -11,6 +11,9 @@ import type { UsageSummary } from "../types.js";
 
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice =
+  "Izinkan akses situs agar mode gelap dapat membaca gaya halaman.";
+
 const base = {
   sync: {
     browserBoundary:
@@ -607,9 +610,11 @@ const full = {
     lightsEnabled: "Mode gelap: Aktif",
     lightsDisabled: "Mode gelap: Nonaktif",
     lightsSystem: "Mode gelap: Ikuti sistem",
+    lightsPermissionNotice,
+    waitingForPermission: "Menunggu izin…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Buka Aside dari bilah alat browser dan aktifkan mode gelap di panel untuk mengizinkan akses situs."
-      : "Izinkan akses situs agar mode gelap dapat membaca gaya halaman.",
+      : lightsPermissionNotice,
     resizePanel: "Ubah ukuran panel",
     processing: "Memproses…",
     chooseAction: "Pilih tindakan",

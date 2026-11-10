@@ -11,6 +11,9 @@ import type { UsageSummary } from "../types.js";
 
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice =
+  "Cho phép truy cập trang web để chế độ tối đọc được kiểu hiển thị của trang.";
+
 const base = {
   sync: {
     browserBoundary:
@@ -595,9 +598,11 @@ const full = {
     lightsEnabled: "Chế độ tối: Bật",
     lightsDisabled: "Chế độ tối: Tắt",
     lightsSystem: "Chế độ tối: Theo hệ thống",
+    lightsPermissionNotice,
+    waitingForPermission: "Đang chờ cấp quyền…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Mở Aside từ thanh công cụ trình duyệt, bật chế độ tối trong bảng và cho phép truy cập trang web."
-      : "Cho phép truy cập trang web để chế độ tối đọc được kiểu hiển thị của trang.",
+      : lightsPermissionNotice,
     resizePanel: "Đổi kích thước bảng",
     processing: "Đang xử lý…",
     chooseAction: "Chọn thao tác",

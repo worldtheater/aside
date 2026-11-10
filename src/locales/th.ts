@@ -11,6 +11,9 @@ import type { UsageSummary } from "../types.js";
 
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice =
+  "อนุญาตการเข้าถึงเว็บไซต์เพื่อให้โหมดมืดอ่านรูปแบบหน้าเว็บได้";
+
 const base = {
   sync: {
     browserBoundary:
@@ -587,9 +590,11 @@ const full = {
     lightsEnabled: "โหมดมืด: เปิด",
     lightsDisabled: "โหมดมืด: ปิด",
     lightsSystem: "โหมดมืด: ตามระบบ",
+    lightsPermissionNotice,
+    waitingForPermission: "กำลังรอการอนุญาต…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "เปิด Aside จากแถบเครื่องมือเบราว์เซอร์ แล้วเปิดโหมดมืดในแผงเพื่ออนุญาตการเข้าถึงเว็บไซต์"
-      : "อนุญาตการเข้าถึงเว็บไซต์เพื่อให้โหมดมืดอ่านรูปแบบหน้าเว็บได้",
+      : lightsPermissionNotice,
     resizePanel: "ปรับขนาดแผง",
     processing: "กำลังประมวลผล…",
     chooseAction: "เลือกคำสั่ง",

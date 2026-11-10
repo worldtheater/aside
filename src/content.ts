@@ -3,6 +3,7 @@ import {
   translationEngine,
   usesModel,
 } from "./translation-engine.js";
+import { isFirefox, requiresDirectPermissionRequest } from "./browser.js";
 import {
   detectNativeLanguage,
   NativeTranslationSession,
@@ -33,7 +34,7 @@ import {
   selectedPageText,
   selectionResultMarkup,
 } from "./selection-tools.js";
-import { modelError } from "./providers.js";
+import { ModelError, modelError } from "./providers.js";
 import { renderMarkdown } from "./result-content.js";
 import {
   hasSameLanguages,
@@ -42,6 +43,7 @@ import {
 } from "./translation.js";
 import type {
   ProcessJob,
+  ProcessPayload,
   ProcessStats,
   ExtractedBlock,
   ResultPart,
@@ -67,6 +69,7 @@ async function initializePagework() {
     dockY = 0.5,
     draggedAt = -Infinity,
     run: ProcessJob | null = null,
+    pageAuthorization: Promise<boolean> | null = null,
     pageTranslation: {
       readonly busy: boolean;
       readonly error: ReturnType<typeof modelError> | null;
@@ -179,7 +182,7 @@ async function initializePagework() {
       if (currentAction !== id) translation = undefined;
       currentAction = id;
       if (action()?.kind === "qa") openQuestion(text, action());
-      else await runSelection(text);
+      else await runSelection(text, { fromControl: true });
     },
     dismissResult: () => closeResult(false),
     pinned: () => pinned,
@@ -374,7 +377,7 @@ async function initializePagework() {
     const anchor = !tools.hidden ? tools.getBoundingClientRect() : null;
     showRadial(false);
     showTools(false);
-    pageTranslation?.cancel();
+    cancelPageTranslation();
     run?.cancel();
     run = null;
     currentAction = qa.id;
@@ -422,11 +425,9 @@ async function initializePagework() {
       : question;
     currentAction = qa.id;
     translation = undefined;
-    await runSelection(
-      text,
-      false,
-      $("result").classList.contains("selection-result"),
-    );
+    await runSelection(text, {
+      integrated: $("result").classList.contains("selection-result"),
+    });
   }
   function useTranslate() {
     const t = translateAction();
@@ -454,6 +455,10 @@ async function initializePagework() {
       ? "translated"
       : "original";
   }
+  const pageRetryLabel = () =>
+    pageTranslation?.error?.code === "translationPermission"
+      ? S.translation.microsoftAuthorize
+      : S.translation.retryContinue;
   let translationIndicatorState: ReturnType<typeof translationState> =
       "original",
     translationIndicatorTimer: number | undefined;
@@ -484,7 +489,7 @@ async function initializePagework() {
     target.setAttribute(
       "aria-label",
       translationIndicatorState === "paused"
-        ? `${S.translation.paused} · ${S.translation.retryContinue}`
+        ? `${S.translation.paused} · ${pageRetryLabel()}`
         : S.translationStates[translationIndicatorState],
     );
     target.setAttribute(
@@ -663,12 +668,13 @@ async function initializePagework() {
     const dock = $("dock");
     const busy = Boolean(run || pageTranslation?.busy);
     const paused = pageTranslation?.error;
-    if (paused) status = `${S.translation.paused} · ${errorText(paused)}`;
+    if (paused)
+      status = `${S.translation.paused} · ${pageTranslationError(paused)}`;
     dock.hidden = !websiteFeatures().floating;
     updateDockExpanded();
     $("toolbar").setAttribute("aria-busy", String(busy));
     $("toolbar").innerHTML =
-      `<div class="header"><button class="icon tools-brand" data-op="open-settings" aria-label="${escape(S.settings)}">${brandMark}</button><strong>${escape(S.currentPage)}</strong>${button("open-settings", S.settings, "icon", "settings")}${button("hide-toolbar", S.collapseTools, "icon", "close")}</div><div class="body"><button class="choose" data-op="choose">${escape(chosen?.name || S.noConnection)}${icon("down")}</button><div id="actions" class="menu" hidden>${config.actions.map((a: { id: string; name: string }) => `<button data-action="${escape(a.id)}" class="${a.id === currentAction ? "active" : ""}">${escape(a.name)}</button>`).join("")}</div>${languageFields()}<div class="row scope">${button("scope-body", S.body, pageScope() === "body" ? "primary" : "")}${button("scope-all", S.all, pageScope() === "all" ? "primary" : "")}</div><div class="row">${button("run", paused ? S.translation.retryContinue : run || pageTranslation ? S.stop : S.start, "primary", "", same && !run && !pageTranslation ? "disabled" : "")}${button("restore", S.restore)}${parts.length && !busy ? button("refresh-page", S.regenerate, "icon", "refresh", same ? "disabled" : "") : ""}${parts.length ? button("bookmark", S.bookmark, "icon", "book") : ""}</div><div id="status" class="status" role="status">${escape(same ? S.errors.sameLanguages : status)}</div></div>`;
+      `<div class="header"><button class="icon tools-brand" data-op="open-settings" aria-label="${escape(S.settings)}">${brandMark}</button><strong>${escape(S.currentPage)}</strong>${button("open-settings", S.settings, "icon", "settings")}${button("hide-toolbar", S.collapseTools, "icon", "close")}</div><div class="body"><button class="choose" data-op="choose">${escape(chosen?.name || S.noConnection)}${icon("down")}</button><div id="actions" class="menu" hidden>${config.actions.map((a: { id: string; name: string }) => `<button data-action="${escape(a.id)}" class="${a.id === currentAction ? "active" : ""}">${escape(a.name)}</button>`).join("")}</div>${languageFields()}<div class="row scope">${button("scope-body", S.body, pageScope() === "body" ? "primary" : "")}${button("scope-all", S.all, pageScope() === "all" ? "primary" : "")}</div><div class="row">${button("run", paused ? pageRetryLabel() : run || pageTranslation ? S.stop : S.start, "primary", "", same && !run && !pageTranslation ? "disabled" : "")}${button("restore", S.restore)}${parts.length && !busy ? button("refresh-page", S.regenerate, "icon", "refresh", same ? "disabled" : "") : ""}${parts.length ? button("bookmark", S.bookmark, "icon", "book") : ""}</div><div id="status" class="status" role="status">${escape(same ? S.errors.sameLanguages : status)}</div></div>`;
     if (!actionAvailable(chosen, config))
       $("toolbar")
         .querySelectorAll<HTMLButtonElement | HTMLSelectElement>(
@@ -681,12 +687,17 @@ async function initializePagework() {
     updateTranslationButton();
     renderTranslationRecovery();
   }
+  function pageTranslationError(error: ModelError) {
+    return error.code === "translationPermission"
+      ? S.translation.microsoftNotice
+      : errorText(error);
+  }
   function renderTranslationRecovery() {
     const notice = $("translation-recovery");
     const error = pageTranslation?.error;
     notice.hidden = !error;
     if (!error) return;
-    const markup = `<div role="alert"><strong>${escape(S.translation.paused)}</strong><span>${escape(errorText(error))}</span></div><div class="translation-recovery-actions">${button("restore", S.restore)}${button("retry-page", S.translation.retryContinue)}</div>`;
+    const markup = `<div role="alert"><strong>${escape(S.translation.paused)}</strong><span>${escape(pageTranslationError(error))}</span></div><div class="translation-recovery-actions">${button("restore", S.restore)}${button("retry-page", pageRetryLabel())}</div>`;
     if (notice.innerHTML !== markup) notice.innerHTML = markup;
   }
   function translationAllowed() {
@@ -753,8 +764,12 @@ async function initializePagework() {
       }
     }
   }
-  function restore() {
+  function cancelPageTranslation() {
+    pageAuthorization = null;
     pageTranslation?.cancel();
+  }
+  function restore() {
+    cancelPageTranslation();
     run?.cancel();
     run = null;
     for (const el of document.querySelectorAll<HTMLElement>(
@@ -1358,6 +1373,31 @@ async function initializePagework() {
     toolbar(S.noContent);
     if ($("toolbar").hidden) notify(S.noContent);
   }
+  async function runPageFromControl(refresh = false, inPanel?: boolean) {
+    if (pageAuthorization) return;
+    const stopping =
+      !refresh && !pageTranslation?.error && (run || pageTranslation);
+    if (!stopping && translationEngine(action()) === "microsoft") {
+      if (!translationAllowed()) return;
+      // Send from the click before any await so Chromium can open its prompt.
+      const authorization = send("translation.authorize");
+      pageAuthorization = authorization;
+      try {
+        const granted = await authorization;
+        if (pageAuthorization !== authorization) return;
+        if (!granted) {
+          if (!pageTranslation?.error) notify(S.errors.cancelled);
+          return;
+        }
+      } catch (error) {
+        if (pageAuthorization !== authorization) return;
+        throw error;
+      } finally {
+        if (pageAuthorization === authorization) pageAuthorization = null;
+      }
+    }
+    await runPage(refresh, inPanel);
+  }
   async function runPage(
     refresh = false,
     inPanel = action()?.placement === "panel" || action()?.mode === "whole",
@@ -1564,17 +1604,59 @@ async function initializePagework() {
     renderMarkdown($("output"), text || "");
     if (follow) body.scrollTop = body.scrollHeight;
   }
+  function waitForMicrosoftPermission(signal: AbortSignal): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const notice = document.createElement("div");
+      const description = document.createElement("p");
+      description.textContent = S.translation.microsoftNotice;
+      const allow = document.createElement("button");
+      allow.type = "button";
+      allow.dataset.op = "allow-microsoft";
+      allow.className = "primary";
+      allow.textContent = S.translation.microsoftAuthorize;
+      notice.append(description, allow);
+      const cancel = () => {
+        notice.remove();
+        reject(new ModelError("cancelled"));
+      };
+      if (signal.aborted) {
+        cancel();
+        return;
+      }
+      signal.addEventListener("abort", cancel, { once: true });
+      $("output").after(notice);
+      resultStatus(false, null);
+      allow.addEventListener("click", async (event) => {
+        if (!event.isTrusted) return;
+        allow.disabled = true;
+        resultStatus(false, S.waitingForPermission);
+        try {
+          const granted = await send("translation.authorize");
+          if (signal.aborted) return;
+          if (granted) {
+            signal.removeEventListener("abort", cancel);
+            notice.remove();
+            resolve();
+          } else resultStatus(false, S.errors.cancelled);
+        } catch (error) {
+          if (!signal.aborted) resultStatus(false, errorText(error));
+        } finally {
+          allow.disabled = false;
+        }
+      });
+    });
+  }
   async function runSelection(
     text: string,
-    refresh = false,
-    integrated = true,
+    { refresh = false, integrated = true, fromControl = false } = {},
   ) {
-    if (!action()) {
+    const chosen = action();
+    if (!chosen) {
       notify(S.noConnection);
       return;
     }
     if (!translationAllowed()) return;
-    pageTranslation?.cancel();
+    cancelPageTranslation();
     run?.cancel();
     const previousContext =
       resultKind === "selection" && original === text
@@ -1595,34 +1677,78 @@ async function initializePagework() {
       : previousContext;
     const context =
       action()?.kind === "translate" ? originalContext : undefined;
-    showResult(true, integrated);
+    const microsoft = translationEngine(chosen) === "microsoft";
+    const authorizeDirectly =
+      microsoft &&
+      (isFirefox || (fromControl && !requiresDirectPermissionRequest));
+    showResult(!authorizeDirectly, integrated);
     const download = nativeNotice.track();
     const draft = new Map<string, string>();
-    const job = process(
-      {
-        source: "selection",
-        refresh,
-        actionId: currentAction,
-        translation,
-        stream: true,
-        blocks: [{ id: "selection", text, context }],
+    const payload: ProcessPayload = {
+      source: "selection",
+      refresh,
+      actionId: currentAction,
+      translation,
+      stream: true,
+      blocks: [{ id: "selection", text, context }],
+    };
+    const controller = new AbortController();
+    const start = () =>
+      process(
+        payload,
+        undefined,
+        (id, delta) => {
+          if (run !== job) return;
+          draft.set(id, (draft.get(id) || "") + delta);
+          resultText([...draft.values()].join("\n\n"));
+        },
+        (event) => {
+          if (run !== job) return;
+          download.report(event);
+          resultStatus(
+            true,
+            nativeProgressText(event, S.translation.packs, S.languages),
+          );
+        },
+        download.waitForActivation,
+      );
+    let attempt: ProcessJob | undefined;
+    const job: ProcessJob = {
+      promise: (async () => {
+        if (authorizeDirectly) {
+          resultStatus(false, S.waitingForPermission);
+          // Chromium needs the original click, before awaiting a processing job.
+          const granted = await send("translation.authorize");
+          if (controller.signal.aborted) throw new ModelError("cancelled");
+          if (!granted) {
+            closeResult(false);
+            throw new ModelError("cancelled");
+          }
+          resultStatus(true, S.processing);
+        }
+        attempt = start();
+        try {
+          return await attempt.promise;
+        } catch (error) {
+          if (
+            authorizeDirectly ||
+            controller.signal.aborted ||
+            !microsoft ||
+            modelError(error).code !== "translationPermission"
+          )
+            throw error;
+          await waitForMicrosoftPermission(controller.signal);
+          if (controller.signal.aborted) throw new ModelError("cancelled");
+          resultStatus(true, S.processing);
+          attempt = start();
+          return attempt.promise;
+        }
+      })(),
+      cancel() {
+        controller.abort();
+        attempt?.cancel();
       },
-      undefined,
-      (id, delta) => {
-        if (run !== job) return;
-        draft.set(id, (draft.get(id) || "") + delta);
-        resultText([...draft.values()].join("\n\n"));
-      },
-      (event) => {
-        if (run !== job) return;
-        download.report(event);
-        resultStatus(
-          true,
-          nativeProgressText(event, S.translation.packs, S.languages),
-        );
-      },
-      download.waitForActivation,
-    );
+    };
     run = job;
     toolbar();
     try {
@@ -1643,6 +1769,7 @@ async function initializePagework() {
     }
   }
   function closeResult(hideToolbar = true) {
+    if (resultKind === "page") pageAuthorization = null;
     run?.cancel();
     run = null;
     $("result").hidden = true;
@@ -1724,15 +1851,16 @@ async function initializePagework() {
           showRadial(!radialOpen, (event as MouseEvent).detail === 0);
         }
       } else if (op === "retry-page") {
-        pageTranslation?.retry();
+        if (pageTranslation?.error) await runPageFromControl();
       } else if (op === "page-translate") {
-        if (pageTranslation?.error) pageTranslation.retry();
+        if (pageAuthorization) return;
+        if (pageTranslation?.error) await runPageFromControl();
         else if (translationState() !== "original") restore();
         else {
           restore();
           useTranslate();
           scopeOverride = undefined;
-          await runPage();
+          await runPageFromControl();
         }
       } else if (op === "quick-question") {
         openQuestion("", questionAction(), "dock");
@@ -1770,15 +1898,18 @@ async function initializePagework() {
         restore();
         scopeOverride = op.slice(6) as Scope;
         toolbar();
-      } else if (op === "run") await runPage();
-      else if (op === "refresh-page") await runPage(true);
+      } else if (op === "run") await runPageFromControl();
+      else if (op === "refresh-page") await runPageFromControl(true);
       else if (op === "refresh-result") {
-        if (resultKind === "page") await runPage(true, true);
+        if (resultKind === "page") await runPageFromControl(true, true);
         else
           await runSelection(
             action()?.kind === "qa" ? original : selectedPageText() || original,
-            true,
-            $("result").classList.contains("selection-result"),
+            {
+              refresh: true,
+              integrated: $("result").classList.contains("selection-result"),
+              fromControl: true,
+            },
           );
       } else if (op === "restore") {
         restore();
@@ -1796,6 +1927,8 @@ async function initializePagework() {
       } else if (op === "bookmark") await bookmark();
     } catch (caught) {
       const error = modelError(caught);
+      if (target.dataset.op === "toggle-lights" && error.code === "cancelled")
+        return;
       notify(
         target.dataset.op === "toggle-lights" &&
           error.code === "permissionRequired"
@@ -1809,7 +1942,7 @@ async function initializePagework() {
     if (!select.dataset.language) return;
     const chosen = action();
     if (chosen?.kind !== "translate") return;
-    if (pageTranslation) restore();
+    if (pageTranslation || pageAuthorization) restore();
     translation = {
       sourceLanguage: chosen.sourceLanguage!,
       targetLanguage: chosen.targetLanguage!,
@@ -1863,7 +1996,8 @@ async function initializePagework() {
     )
       return;
     if (!pinned) {
-      $("result").hidden = true;
+      if (resultKind === "selection") closeResult(false);
+      else $("result").hidden = true;
       selectionPanelTop = selectionPanelLeft = null;
     }
     $("selection").hidden = false;
@@ -2123,7 +2257,7 @@ async function initializePagework() {
       }
       if (message.type === "page.run") {
         await refresh();
-        pageTranslation?.cancel();
+        cancelPageTranslation();
         if (message.actionId) {
           run?.cancel();
           run = null;

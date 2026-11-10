@@ -11,6 +11,9 @@ import type { UsageSummary } from "../types.js";
 
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice =
+  "Permita o acesso ao site para que o modo escuro possa ler os estilos da página.";
+
 const base = {
   sync: {
     browserBoundary:
@@ -611,9 +614,11 @@ const full = {
     lightsEnabled: "Modo escuro: Ativado",
     lightsDisabled: "Modo escuro: Desativado",
     lightsSystem: "Modo escuro: Sistema",
+    lightsPermissionNotice,
+    waitingForPermission: "Aguardando autorização…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Abra o Aside pela barra do navegador e ative o modo escuro no painel para permitir o acesso aos sites."
-      : "Permita o acesso ao site para que o modo escuro possa ler os estilos da página.",
+      : lightsPermissionNotice,
     resizePanel: "Redimensionar painel",
     processing: "Processando…",
     chooseAction: "Escolha uma ação",

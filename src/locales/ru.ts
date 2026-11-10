@@ -11,6 +11,9 @@ import type { UsageSummary } from "../types.js";
 
 import type { Copy } from "./en.js";
 
+const lightsPermissionNotice =
+  "Разрешите доступ к сайту, чтобы тёмный режим мог читать стили страницы.";
+
 const base = {
   sync: {
     browserBoundary:
@@ -613,9 +616,11 @@ const full = {
     lightsEnabled: "Тёмный режим: Вкл.",
     lightsDisabled: "Тёмный режим: Выкл.",
     lightsSystem: "Тёмный режим: Как в системе",
+    lightsPermissionNotice,
+    waitingForPermission: "Ожидание разрешения…",
     lightsPermissionNeeded: requiresDirectPermissionRequest
       ? "Откройте Aside на панели браузера и включите тёмный режим во всплывающем окне, чтобы разрешить доступ к сайтам."
-      : "Разрешите доступ к сайту, чтобы тёмный режим мог читать стили страницы.",
+      : lightsPermissionNotice,
     resizePanel: "Изменить размер панели",
     processing: "Обработка…",
     chooseAction: "Выберите действие",

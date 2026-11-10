@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Aside</title>
+    <script src="theme-bootstrap.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="themes.css" />
+    <style>
+      [data-permission-popup] .dialog {
+        position: static;
+        width: 340px;
+        max-width: none;
+        max-height: none;
+        margin: 0;
+        padding: 20px;
+        border: 0;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    </style>
+  </head>
+  <body>
+    <dialog class="dialog is-visible" aria-labelledby="permission-title">
+      <h2 id="permission-title"></h2>
+      <p id="permission-notice"></p>
+      <p role="status" id="permission-status"></p>
+      <div class="dialog-actions">
+        <button type="button" class="btn ghost" data-op="cancel"></button>
+        <button type="button" class="btn primary" data-op="authorize"></button>
+      </div>
+    </dialog>
+    <script type="module" src="page-permission.js"></script>
+  </body>
+</html>
